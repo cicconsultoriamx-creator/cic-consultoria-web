@@ -1,1222 +1,833 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CIC Consultoría — Consultoría Estratégica para Empresas en Crecimiento</title>
-<style>
-:root{
-  --bg:#F8F9FA; --bg-alt:#EFE3F4; --ink:#212529; --ink-soft:#6C757D;
-  --purple:#7C4F9D; --purple-deep:#54356E; --purple-pale:#F3ECF8;
-  --white:#FFFFFF; --radius:14px; --border:#E4E1E9;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
-h1,h2,h3,h4{font-family:Georgia,'Times New Roman',serif;font-weight:700;line-height:1.2;}
-a{text-decoration:none;color:inherit;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIC Consultoría | Consultoría Estratégica para Empresas en Crecimiento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 🔥 FIREBASE SDK (versión modular v10.12.2) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* UTILIDADES */
-.wrap{max-width:1140px;margin:0 auto;padding:0 28px;}
-.eyebrow{display:inline-block;background:var(--purple-pale);color:var(--purple-deep);font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:12px;padding:6px 14px;border-radius:999px;margin-bottom:14px;letter-spacing:.4px;}
-.btn-primary{display:inline-block;background:var(--purple);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:15px;padding:14px 30px;border-radius:999px;transition:.2s;cursor:pointer;border:none;}
-.btn-primary:hover{background:var(--purple-deep);}
-.btn-ghost{display:inline-block;border:1.5px solid var(--purple);color:var(--purple-deep);font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:13.5px;padding:10px 22px;border-radius:999px;cursor:pointer;}
-.btn-ghost:hover{background:var(--purple-pale);}
-.section{padding:64px 0;}
-.section-head{text-align:center;max-width:640px;margin:0 auto 44px;}
-.section-head h2{font-size:28px;margin-bottom:10px;}
-.section-head p{color:var(--ink-soft);font-size:15.5px;}
-.orbit{position:absolute;border:2px solid var(--purple);border-radius:50%;opacity:.15;pointer-events:none;}
-.art-box{position:relative;background:var(--bg-alt);border-radius:22px;display:flex;align-items:center;justify-content:center;text-align:center;}
-.art-box .ph{color:var(--purple-deep);font-weight:600;font-size:13.5px;padding:24px;}
-.art-box .emoji{font-size:48px;display:block;margin-bottom:8px;}
+        // Tu configuración exacta de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6perkQ9d4LaC4DwABXozl0HI87gFJrdA",
+            authDomain: "cic-consultoria---admin.firebaseapp.com",
+            projectId: "cic-consultoria---admin",
+            storageBucket: "cic-consultoria---admin.firebasestorage.app",
+            messagingSenderId: "418942590121",
+            appId: "1:418942590121:web:3f42a2e5e426bfa9061db8",
+            measurementId: "G-5443VZJ6V0"
+        };
 
-/* NAVBAR */
-.navbar{position:sticky;top:0;background:var(--white);border-bottom:1px solid var(--border);z-index:100;box-shadow:0 1px 8px rgba(84,53,110,.06);}
-.navbar .wrap{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;gap:12px;}
-.nav-logo img{height:38px;display:block;}
-.nav-links{display:flex;align-items:center;gap:4px;overflow-x:auto;}
-.tab{background:none;border:none;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13.5px;font-weight:600;color:var(--ink-soft);padding:9px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.15s;}
-.tab:hover{background:var(--purple-pale);color:var(--purple-deep);}
-.tab.active{background:var(--purple);color:var(--white);}
-.nav-cta{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:700;background:var(--purple);color:var(--white);padding:9px 20px;border-radius:999px;white-space:nowrap;transition:.2s;border:none;cursor:pointer;}
-.nav-cta:hover{background:var(--purple-deep);}
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-/* HAMBURGUESA MÓVIL */
-.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;background:none;border:none;}
-.nav-hamburger span{display:block;width:24px;height:2.5px;background:var(--purple-deep);border-radius:2px;transition:.25s;}
-.nav-hamburger.open span:nth-child(1){transform:translateY(7.5px) rotate(45deg);}
-.nav-hamburger.open span:nth-child(2){opacity:0;}
-.nav-hamburger.open span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg);}
+        // Exponer funciones al scope global para usarlas desde el HTML
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseSignIn = signInWithEmailAndPassword;
+        window.firebaseSignOut = signOut;
+        window.firebaseOnAuth = onAuthStateChanged;
+        window.firebaseCollection = collection;
+        window.firebaseAddDoc = addDoc;
+        window.firebaseUpdateDoc = updateDoc;
+        window.firebaseDeleteDoc = deleteDoc;
+        window.firebaseDoc = doc;
+        window.firebaseOnSnapshot = onSnapshot;
+        window.firebaseQuery = query;
+        window.firebaseOrderBy = orderBy;
 
-/* MENÚ MÓVIL DESPLEGABLE */
-.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(33,37,41,.5);z-index:99;}
-.mobile-menu.open{display:block;}
-.mobile-menu-panel{position:absolute;top:0;right:0;width:280px;height:100%;background:var(--white);padding:80px 24px 32px;display:flex;flex-direction:column;gap:6px;box-shadow:-4px 0 24px rgba(84,53,110,.15);}
-.mobile-tab{background:none;border:none;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:600;color:var(--ink);text-align:left;padding:14px 16px;border-radius:10px;cursor:pointer;transition:.15s;width:100%;}
-.mobile-tab:hover{background:var(--purple-pale);color:var(--purple-deep);}
-.mobile-tab.active{background:var(--purple);color:var(--white);}
-.mobile-menu-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border);}
-.mobile-menu-footer a{display:flex;align-items:center;gap:10px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;color:var(--ink-soft);padding:10px 0;}
-.mobile-menu-close{position:absolute;top:18px;right:18px;font-size:22px;background:none;border:none;cursor:pointer;color:var(--ink-soft);}
+        // Escuchar cambios en tiempo real en la colección "cursos"
+        const cursosRef = collection(db, "cursos");
+        const q = query(cursosRef, orderBy("fecha", "asc"));
+        
+        onSnapshot(q, (snapshot) => {
+            const cursos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            window.cursosData = cursos;
+            if (typeof window.renderCursosPublicos === 'function') window.renderCursosPublicos(cursos);
+            if (typeof window.renderHistorial === 'function') window.renderHistorial(cursos);
+        }, (error) => {
+            console.error("Error al cargar cursos:", error);
+        });
 
-/* PÁGINAS */
-.page{display:none;}
-.page.active{display:block;}
+        // Escuchar estado de autenticación del admin
+        onAuthStateChanged(auth, (user) => {
+            window.currentUser = user;
+            if (user && document.getElementById('admin-panel').classList.contains('active')) {
+                document.getElementById('admin-login').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                document.getElementById('adminEmail').textContent = user.email;
+                if (typeof window.renderHistorial === 'function') window.renderHistorial(window.cursosData || []);
+            }
+        });
 
-/* ============ HOME ============ */
-.hero{position:relative;overflow:hidden;padding:64px 0 72px;}
-.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;position:relative;z-index:2;}
-.hero h1{font-size:40px;margin-bottom:16px;}
-.hero h1 span{color:var(--purple-deep);}
-.hero .sub{font-size:16.5px;color:var(--ink-soft);max-width:480px;margin-bottom:28px;line-height:1.7;}
-.hero-art{aspect-ratio:1/1;}
+        console.log("✅ Firebase inicializado correctamente con Analytics");
+    </script>
 
-/* TICKER */
-.ticker-bar{background:var(--purple-deep);color:var(--white);padding:14px 0 10px;}
-.ticker-inner{display:flex;gap:0;align-items:stretch;justify-content:center;flex-wrap:wrap;}
-.ticker-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 40px;}
-.ticker-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.65;}
-.ticker-value{font-family:'Helvetica Neue',Arial,sans-serif;font-size:20px;font-weight:700;}
-.ticker-sub{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;opacity:.55;}
-.ticker-div{width:1px;background:rgba(255,255,255,.2);margin:4px 0;}
-.ticker-footer{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;opacity:.45;text-align:center;margin-top:6px;}
-
-/* MASCOTAS HOME */
-.mascotas-band{background:var(--bg-alt);padding:52px 0;}
-.mascotas-band .wrap{display:grid;grid-template-columns:.45fr 1.55fr;gap:36px;align-items:center;}
-.mascotas-band h2{font-size:22px;margin-bottom:12px;}
-.mascotas-band p{color:var(--ink-soft);font-size:15.5px;max-width:560px;}
-
-/* BALANCE */
-.balance-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px;}
-.balance-col{border-radius:var(--radius);padding:30px 26px;}
-.balance-col.caos{background:var(--white);border:1.5px solid var(--border);}
-.balance-col.cic{background:var(--purple-deep);color:var(--white);}
-.balance-col h4{font-size:16px;margin-bottom:18px;}
-.balance-col.cic h4{color:var(--white);}
-.balance-list{list-style:none;display:flex;flex-direction:column;gap:14px;}
-.balance-list li{font-size:14.5px;padding-left:24px;position:relative;line-height:1.55;}
-.balance-col.caos .balance-list li:before{content:"✗";color:#B0473E;position:absolute;left:0;font-weight:700;}
-.balance-col.cic .balance-list li:before{content:"✓";color:#C9A8E8;position:absolute;left:0;font-weight:700;}
-.balance-col.cic .balance-list li{color:rgba(255,255,255,.9);}
-
-/* SECTORES */
-.sector-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:16px;}
-.sector-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px 22px;transition:.2s;}
-.sector-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(84,53,110,.1);}
-.sector-icon{font-size:30px;margin-bottom:14px;display:block;}
-.sector-card h4{font-size:16px;margin-bottom:8px;}
-.sector-card p{font-size:13.5px;color:var(--ink-soft);line-height:1.65;}
-
-/* CAPACITACIÓN HOME */
-.cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px;}
-.cap-card{background:var(--bg-alt);border-radius:var(--radius);padding:30px 26px;}
-.cap-icon{font-size:28px;display:block;margin-bottom:12px;}
-.cap-card h4{font-size:16px;margin-bottom:8px;}
-.cap-card p{font-size:14px;color:var(--ink-soft);line-height:1.65;}
-
-/* ALIANZAS */
-.alianzas-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:36px;text-align:center;}
-.alianzas-box p{font-size:15.5px;color:var(--ink-soft);max-width:720px;margin:0 auto;line-height:1.7;}
-
-/* CTA FINAL HOME */
-.cta-final{background:var(--purple-deep);color:var(--white);border-radius:22px;padding:54px 44px;text-align:center;position:relative;overflow:hidden;}
-.cta-final h2{color:var(--white);font-size:27px;margin-bottom:14px;}
-.cta-final p{opacity:.9;font-size:15.5px;max-width:620px;margin:0 auto 28px;line-height:1.7;}
-.btn-white{display:inline-block;background:var(--white);color:var(--purple-deep);font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:15px;padding:15px 32px;border-radius:999px;transition:.2s;}
-.btn-white:hover{background:var(--purple-pale);}
-
-/* ============ SERVICIOS ============ */
-.servicio-block{display:grid;grid-template-columns:.85fr 1.15fr;gap:36px;align-items:center;padding:44px 0;border-bottom:1px solid var(--border);}
-.servicio-block:last-of-type{border-bottom:none;}
-.servicio-art{background:var(--bg-alt);border-radius:var(--radius);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:44px;}
-.servicio-block .tag{font-size:12px;font-weight:700;color:var(--purple-deep);background:var(--purple-pale);font-family:'Helvetica Neue',Arial,sans-serif;padding:5px 13px;border-radius:999px;display:inline-block;margin-bottom:12px;}
-.servicio-block h3{font-size:21px;margin-bottom:12px;}
-.benef-list{list-style:none;margin:14px 0;}
-.benef-list li{font-size:14.5px;margin-bottom:10px;padding-left:22px;position:relative;line-height:1.55;}
-.benef-list li:before{content:"✓";color:var(--purple);position:absolute;left:0;font-weight:700;}
-.para-quien{font-size:13.5px;color:var(--ink-soft);font-style:italic;margin-top:14px;}
-.faq-item{border-bottom:1px solid var(--border);padding:18px 0;}
-.faq-item h4{font-size:15.5px;margin-bottom:6px;font-family:Georgia,serif;font-weight:700;}
-.faq-item p{font-size:14px;color:var(--ink-soft);}
-
-/* ============ SOBRE NOSOTROS ============ */
-.historia{max-width:700px;margin:0 auto;text-align:center;}
-.historia p{color:var(--ink-soft);font-size:16px;margin-bottom:14px;line-height:1.75;}
-.mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:40px;}
-.mv-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px 24px;}
-.mv-card .mv-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:700;color:var(--purple-deep);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
-.mv-card p{font-size:14.5px;color:var(--ink);line-height:1.65;}
-.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px;}
-.pillar{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px 18px;text-align:center;}
-.pillar .num{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;color:var(--purple-deep);margin-bottom:8px;letter-spacing:.5px;}
-.pillar h3{font-size:15.5px;margin-bottom:8px;}
-.pillar p{font-size:13px;color:var(--ink-soft);}
-.mascot-feature{background:var(--bg-alt);border-radius:22px;padding:40px;display:grid;grid-template-columns:.6fr 1.4fr;gap:30px;align-items:center;margin-top:50px;}
-.mascot-feature h3{font-size:20px;margin-bottom:10px;}
-.mascot-feature p{font-size:14.5px;color:var(--ink-soft);line-height:1.65;}
-.metodologia-box{background:#F0F0F2;border-radius:var(--radius);padding:30px 34px;margin-top:44px;}
-.metodologia-box h3{font-size:18px;margin-bottom:10px;}
-.metodologia-box p{font-size:14px;color:var(--ink-soft);max-width:760px;line-height:1.7;}
-.sello-badge{display:inline-flex;align-items:center;gap:8px;background:#E8E8EA;border:1px solid #D8D8DA;border-radius:999px;padding:8px 16px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--ink-soft);margin-top:14px;}
-
-/* ============ CAPACITACIÓN ============ */
-.cursos-block1{padding:60px 0;background:var(--white);}
-.cursos-block1 .block-head{display:grid;grid-template-columns:.45fr 1.55fr;gap:30px;align-items:center;margin-bottom:44px;}
-.course-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
-.course-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;transition:.2s;}
-.course-card:hover{box-shadow:0 8px 22px rgba(84,53,110,.1);}
-.course-card .level{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;font-weight:700;color:var(--purple-deep);background:var(--purple-pale);padding:4px 10px;border-radius:999px;display:inline-block;margin-bottom:10px;}
-.course-card h4{font-size:15.5px;margin-bottom:8px;}
-.course-card p{font-size:13.5px;color:var(--ink-soft);margin-bottom:14px;line-height:1.6;}
-.course-card .price{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--ink-soft);display:block;margin-top:8px;}
-.agenda-wrap{margin-top:50px;}
-.agenda-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
-.agenda-head h3{font-size:20px;}
-.agenda-note{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;color:var(--ink-soft);}
-.agenda-list{display:flex;flex-direction:column;gap:12px;}
-.agenda-row{display:grid;grid-template-columns:100px 1.6fr 1fr 1fr auto;gap:16px;align-items:center;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 20px;}
-.agenda-date{text-align:center;background:var(--purple-pale);border-radius:10px;padding:10px 8px;}
-.agenda-date .day{font-size:20px;font-weight:700;color:var(--purple-deep);font-family:'Helvetica Neue',Arial,sans-serif;display:block;}
-.agenda-date .month{font-size:11px;color:var(--purple-deep);font-family:'Helvetica Neue',Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px;}
-.agenda-course h4{font-size:15px;margin-bottom:3px;}
-.agenda-course span{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--ink-soft);}
-.agenda-meta{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--ink-soft);}
-.agenda-spots{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;font-weight:600;}
-.agenda-spots.low{color:#B0473E;}
-.agenda-spots.ok{color:#3E8E5B;}
-.btn-small{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;padding:9px 18px;background:var(--purple);color:var(--white);border-radius:999px;white-space:nowrap;cursor:pointer;border:none;transition:.2s;}
-.btn-small:hover{background:var(--purple-deep);}
-.coco-quote{background:var(--purple-pale);border-radius:var(--radius);padding:24px 28px;margin-top:36px;display:flex;align-items:center;gap:18px;}
-.coco-quote .emoji{font-size:36px;}
-.coco-quote p{font-style:italic;color:var(--purple-deep);font-size:15.5px;}
-.cursos-block2{padding:64px 0;background:#F4F2F6;border-top:1px solid var(--border);}
-.cursos-block2 .block-head{display:grid;grid-template-columns:.45fr 1.55fr;gap:30px;align-items:center;margin-bottom:36px;}
-.benef-empresa{list-style:none;margin:18px 0;}
-.benef-empresa li{font-size:15px;margin-bottom:14px;padding-left:24px;position:relative;line-height:1.55;}
-.benef-empresa li:before{content:"✓";color:var(--purple-deep);font-weight:700;position:absolute;left:0;}
-.empresa-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:start;}
-.cotiza-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px;}
-.cotiza-box h4{font-size:16px;margin-bottom:16px;}
-.cici-quote{background:var(--white);border-left:3px solid var(--purple-deep);padding:18px 22px;margin-top:24px;border-radius:0 10px 10px 0;}
-.cici-quote p{font-style:italic;color:var(--ink);font-size:14.5px;}
-
-/* ============ RECURSOS ============ */
-.newsletter-banner{background:var(--purple-deep);color:var(--white);border-radius:var(--radius);padding:34px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:50px;}
-.newsletter-banner h3{color:var(--white);font-size:20px;margin-bottom:6px;}
-.newsletter-banner p{opacity:.9;font-size:14px;}
-.newsletter-banner .btn-primary{background:var(--white);color:var(--purple-deep);}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:56px;}
-.lead-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;}
-.lead-card .tag-pill{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:700;color:var(--purple-deep);background:var(--purple-pale);padding:4px 10px;border-radius:999px;}
-.lead-card h4{font-size:15.5px;margin:12px 0 8px;font-weight:700;}
-.lead-card p{font-size:13px;color:var(--ink-soft);margin-bottom:14px;line-height:1.6;}
-.blog-row{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
-.blog-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;display:flex;align-items:center;gap:16px;transition:.2s;}
-.blog-card:hover{box-shadow:0 6px 18px rgba(84,53,110,.09);}
-.blog-card .dot{width:38px;height:38px;border-radius:50%;background:var(--purple-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--purple-deep);font-weight:700;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
-.blog-card h4{font-size:14px;font-weight:700;line-height:1.5;}
-
-/* ============ CONTACTO + ASESORÍA ============ */
-.contacto-tabs{display:flex;gap:10px;margin-bottom:36px;border-bottom:2px solid var(--border);padding-bottom:0;}
-.ctab{background:none;border:none;font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;font-weight:600;color:var(--ink-soft);padding:12px 22px;border-bottom:3px solid transparent;cursor:pointer;transition:.15s;margin-bottom:-2px;}
-.ctab:hover{color:var(--purple-deep);}
-.ctab.active{color:var(--purple-deep);border-bottom-color:var(--purple-deep);}
-.ctab-content{display:none;}
-.ctab-content.active{display:block;}
-.contacto-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;}
-.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:32px;}
-.field{margin-bottom:18px;}
-.field label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:600;color:var(--ink);display:block;margin-bottom:6px;}
-.field input, .field select, .field textarea{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;font-family:Georgia,serif;font-size:14px;background:var(--bg);color:var(--ink);outline:none;transition:.15s;}
-.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--purple);}
-.field textarea{height:88px;resize:vertical;}
-.info-side{display:flex;flex-direction:column;gap:20px;justify-content:center;}
-.info-row{display:flex;align-items:center;gap:14px;font-size:15px;color:var(--ink-soft);}
-.info-row .ico{width:42px;height:42px;border-radius:50%;background:var(--purple-pale);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.progress{display:flex;align-items:center;gap:8px;margin-bottom:28px;max-width:460px;}
-.progress .step{flex:1;height:5px;border-radius:999px;background:var(--border);}
-.progress .step.done{background:var(--purple);}
-.agendar-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:540px;}
-.opt-row{border:1.5px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:10px;font-size:14.5px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;}
-.opt-row:hover{border-color:var(--purple);background:var(--purple-pale);}
-.opt-row.selected{border-color:var(--purple);background:var(--purple-pale);color:var(--purple-deep);font-weight:600;}
-.confirm-box{background:var(--bg-alt);border-radius:var(--radius);padding:34px;text-align:center;max-width:480px;margin:24px auto 0;}
-.confirm-box .emoji{font-size:42px;}
-.confirm-box h4{font-size:19px;margin:12px 0 8px;}
-.confirm-box p{font-size:14px;color:var(--ink-soft);font-family:'Helvetica Neue',Arial,sans-serif;}
-
-/* MODAL DETALLES DE CURSO */
-.modal-detalle-overlay{position:fixed;inset:0;background:rgba(33,37,41,.6);display:none;align-items:center;justify-content:center;z-index:199;padding:20px;}
-.modal-detalle-overlay.show{display:flex;}
-.modal-detalle-box{background:var(--white);border-radius:18px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;position:relative;}
-.modal-detalle-header{background:var(--purple-deep);color:var(--white);padding:28px 32px 24px;border-radius:18px 18px 0 0;position:relative;}
-.modal-detalle-header h3{color:var(--white);font-size:21px;margin-bottom:8px;}
-.modal-detalle-header .slogan{font-size:14px;opacity:.85;font-style:italic;}
-.modal-detalle-close{position:absolute;top:14px;right:18px;font-size:20px;color:rgba(255,255,255,.8);cursor:pointer;background:none;border:none;font-family:'Helvetica Neue',Arial,sans-serif;}
-.modal-detalle-body{padding:28px 32px;}
-.detalle-pill{display:inline-flex;align-items:center;gap:6px;background:var(--purple-pale);color:var(--purple-deep);font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;margin-bottom:16px;}
-.detalle-desc{font-size:15px;color:var(--ink-soft);margin-bottom:20px;line-height:1.7;}
-.detalle-temario h4{font-size:15px;margin-bottom:10px;color:var(--ink);}
-.detalle-temario ul{list-style:none;margin-bottom:20px;}
-.detalle-temario ul li{font-size:14px;color:var(--ink-soft);padding:8px 0 8px 22px;position:relative;border-bottom:1px solid var(--border);line-height:1.5;}
-.detalle-temario ul li:last-child{border-bottom:none;}
-.detalle-temario ul li:before{content:"✓";color:var(--purple);position:absolute;left:0;font-weight:700;}
-.detalle-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;}
-.detalle-meta-item{background:var(--bg);border-radius:10px;padding:12px 14px;}
-.detalle-meta-item .label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.detalle-meta-item .value{font-size:14.5px;font-weight:700;color:var(--ink);}
-.detalle-precio{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-top:1px solid var(--border);margin-top:4px;}
-.detalle-precio .precio-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--ink-soft);}
-.detalle-precio .precio-val{font-size:22px;font-weight:700;color:var(--purple-deep);}
-.detalle-btns{display:flex;gap:12px;margin-top:16px;}
-.detalle-btns .btn-primary{flex:1;text-align:center;}
-.detalle-btns .btn-wa{flex:1;text-align:center;background:#25D366;color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;padding:14px 20px;border-radius:999px;border:none;cursor:pointer;transition:.2s;}
-.detalle-btns .btn-wa:hover{background:#1ebe5b;}
-
-/* MODAL INSCRIPCIÓN */
-.modal-overlay{position:fixed;inset:0;background:rgba(33,37,41,.55);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
-.modal-overlay.show{display:flex;}
-.modal-box{background:var(--white);border-radius:18px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:32px;position:relative;}
-.modal-close{position:absolute;top:16px;right:18px;font-size:20px;color:var(--ink-soft);cursor:pointer;background:none;border:none;font-family:'Helvetica Neue',Arial,sans-serif;}
-.modal-summary{background:var(--purple-pale);border-radius:10px;padding:14px 16px;margin-bottom:20px;}
-.modal-summary h4{font-size:15.5px;margin-bottom:4px;}
-.modal-summary span{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;color:var(--purple-deep);}
-.modal-section-title{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:18px 0 10px;}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.modal-total{display:flex;justify-content:space-between;align-items:center;font-family:'Helvetica Neue',Arial,sans-serif;padding:14px 0;border-top:1px solid var(--border);margin-top:10px;font-size:15px;font-weight:700;}
-.modal-total span.amount{color:var(--purple-deep);font-size:19px;}
-.modal-legal{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;color:var(--ink-soft);margin-top:10px;line-height:1.5;}
-.success-state{text-align:center;padding:12px 0;}
-.success-state .emoji{font-size:44px;}
-.success-state h4{font-size:19px;margin:12px 0 8px;}
-.success-state p{font-size:13.5px;color:var(--ink-soft);font-family:'Helvetica Neue',Arial,sans-serif;}
-
-/* FOOTER */
-.site-footer{background:var(--white);border-top:1px solid var(--border);padding:52px 0 24px;}
-.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:32px;margin-bottom:32px;}
-.footer-grid h5{font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:14px;font-family:'Helvetica Neue',Arial,sans-serif;}
-.footer-grid p, .footer-grid a{font-size:13.5px;color:var(--ink-soft);display:block;margin-bottom:8px;transition:.15s;}
-.footer-grid a:hover{color:var(--purple-deep);}
-.footer-bottom{border-top:1px solid var(--border);padding-top:18px;display:flex;justify-content:space-between;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;color:var(--ink-soft);flex-wrap:wrap;gap:10px;}
-
-/* RESPONSIVE */
-@media(max-width:900px){
-  .hero .wrap,.mascotas-band .wrap,.mascot-feature,.empresa-grid,.contacto-grid{grid-template-columns:1fr;}
-  .balance-grid,.cap-grid,.mv-grid,.field-row{grid-template-columns:1fr;}
-  .sector-grid,.course-grid,.grid-3,.blog-row,.footer-grid,.pillars{grid-template-columns:1fr 1fr;}
-  .agenda-row{grid-template-columns:1fr;gap:8px;}
-  .hero h1{font-size:30px;}
-  .nav-links,.nav-cta{display:none;}
-  .nav-hamburger{display:flex;}
-  .pillars{grid-template-columns:1fr 1fr;}
-  .ticker-inner{gap:0;}
-  .ticker-item{padding:6px 20px;}
-}
-@media(max-width:560px){
-  .sector-grid,.course-grid,.grid-3,.blog-row,.footer-grid,.pillars{grid-template-columns:1fr;}
-  .ticker-inner{flex-direction:row;flex-wrap:wrap;gap:0;}
-  .ticker-item{padding:6px 12px;flex:1;min-width:100px;}
-  .ticker-div{display:none;}
-  .hero h1{font-size:26px;}
-  .section-head h2{font-size:22px;}
-  .balance-grid{grid-template-columns:1fr;}
-  .detalle-meta{grid-template-columns:1fr 1fr;}
-  .detalle-btns{flex-direction:column;}
-  .modal-detalle-body{padding:20px;}
-  .cta-final{padding:36px 24px;}
-}
-</style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cic: {
+                            primary: '#5E1B96', secondary: '#7B3FA8', accent: '#9B5FD9',
+                            light: '#F3E5F5', lighter: '#FAF5FC', text: '#4A148C', textLight: '#7C4D9F',
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { color: #4A148C; }
+        .gradient-hero { background: linear-gradient(135deg, #5E1B96 0%, #9B5FD9 50%, #7B3FA8 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(94, 27, 150, 0.15); }
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); z-index: 100; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; transition: all 0.3s ease; text-decoration: none; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        .glass-nav { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-bottom: 2px solid rgba(94, 27, 150, 0.1); }
+        .mascot-fade { animation: fadeInUp 0.8s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .gradient-purple-light { background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 20, 140, 0.7); z-index: 1000; overflow-y: auto; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { animation: slideUp 0.4s ease; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .admin-panel { display: none; }
+        .admin-panel.active { display: block; }
+        .status-programado { background: #DBEAFE; color: #1E40AF; }
+        .status-encurso { background: #FEF3C7; color: #92400E; }
+        .status-finalizado { background: #D1FAE5; color: #065F46; }
+        .loading-spinner { border: 3px solid #F3E5F5; border-top: 3px solid #5E1B96; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-<body>
+<body class="bg-cic-lighter font-sans antialiased">
 
-<!-- ====== NAVBAR ====== -->
-<nav class="navbar">
-  <div class="wrap">
-    <a class="nav-logo" href="#"><img src="Logocicc.png" alt="CIC Consultoría"></a>
-    <div class="nav-links">
-      <button class="tab active" onclick="showPage('home',this)">Inicio</button>
-      <button class="tab" onclick="showPage('sobre',this)">Sobre Nosotros</button>
-      <button class="tab" onclick="showPage('servicios',this)">Servicios</button>
-      <button class="tab" onclick="showPage('cursos',this)">Capacitación y Cursos</button>
-      <button class="tab" onclick="showPage('recursos',this)">Recursos</button>
-      <button class="tab" onclick="showPage('contacto',this)">Contacto y Asesoría</button>
-    </div>
-    <button class="nav-cta" onclick="showPage('contacto',document.querySelectorAll('.tab')[5])">Diagnóstico gratuito</button>
-    <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menú">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-
-<!-- MENÚ MÓVIL -->
-<div class="mobile-menu" id="mobile-menu" onclick="closeMobileMenu(event)">
-  <div class="mobile-menu-panel">
-    <button class="mobile-menu-close" onclick="toggleMenu()">✕</button>
-    <button class="mobile-tab active" onclick="mobileNav('home')">🏠 Inicio</button>
-    <button class="mobile-tab" onclick="mobileNav('sobre')">👥 Sobre Nosotros</button>
-    <button class="mobile-tab" onclick="mobileNav('servicios')">💼 Servicios</button>
-    <button class="mobile-tab" onclick="mobileNav('cursos')">🎓 Capacitación y Cursos</button>
-    <button class="mobile-tab" onclick="mobileNav('recursos')">📚 Recursos</button>
-    <button class="mobile-tab" onclick="mobileNav('contacto')">📬 Contacto y Asesoría</button>
-    <div class="mobile-menu-footer">
-      <a href="https://wa.me/522227756653" target="_blank">💬 +52 222 775 6653</a>
-      <a href="mailto:admin@cicconsultora.com">📧 admin@cicconsultora.com</a>
-    </div>
-  </div>
-</div>
-
-<!-- ====== HOME ====== -->
-<div class="page active" id="page-home">
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="orbit" style="width:480px;height:480px;top:-170px;right:-150px;"></div>
-    <div class="wrap">
-      <div>
-        <span class="eyebrow">Consultoría Estratégica para Empresas en Crecimiento</span>
-        <h1>Tu negocio merece crecer con <span>orden, control y visión global.</span></h1>
-        <p class="sub">Transformamos el caos operativo y administrativo en sistemas eficientes. Te ayudamos a estructurar tus finanzas, proteger tu negocio ante el SAT y expandir tus fronteras con estrategias prácticas, rentables y sin tecnicismos.</p>
-        <a class="btn-primary" href="#" onclick="showPage('contacto',document.querySelectorAll('.tab')[5]);return false;">Agenda tu diagnóstico empresarial sin costo</a>
-      </div>
-      <div class="art-box hero-art">
-        <div class="ph"><span class="emoji">🦝🦝</span>[Cici y Coco — Hero]</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TICKER -->
-  <div class="ticker-bar">
-    <div class="ticker-inner">
-      <div class="ticker-item">
-        <span class="ticker-label">USD / MXN</span>
-        <span class="ticker-value" id="usd-mxn">—</span>
-        <span class="ticker-sub">Tipo de cambio</span>
-      </div>
-      <div class="ticker-div"></div>
-      <div class="ticker-item">
-        <span class="ticker-label">EUR / MXN</span>
-        <span class="ticker-value" id="eur-mxn">—</span>
-        <span class="ticker-sub">Tipo de cambio</span>
-      </div>
-      <div class="ticker-div"></div>
-      <div class="ticker-item">
-        <span class="ticker-label">TIIE 28 días</span>
-        <span class="ticker-value" id="tiie-val">8.50%</span>
-        <span class="ticker-sub">Tasa de referencia Banxico</span>
-      </div>
-    </div>
-    <p class="ticker-footer" id="ticker-time">Cargando datos...</p>
-  </div>
-
-  <!-- MASCOTAS -->
-  <section class="mascotas-band">
-    <div class="wrap">
-      <div class="art-box" style="aspect-ratio:1/1;background:var(--white);">
-        <div class="ph"><span class="emoji">🦝🦝</span>[Cici y Coco — bienvenida]</div>
-      </div>
-      <div>
-        <h2>Eficiencia y claridad conceptual en cada proceso 🐾</h2>
-        <p>En CIC Consultoría, bajo la supervisión de nuestra identidad dinámica con Cici y Coco, rompemos con la rigidez corporativa tradicional. Traducimos marcos normativos, financieros y aduaneros complejos en soluciones tácticas que cuidan tu patrimonio y que puedes aplicar en tu operación hoy mismo.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- BALANCE ANTES/DESPUÉS -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">El Balance Empresarial</span>
-        <h2>¿En qué lado está tu negocio hoy?</h2>
-      </div>
-      <div class="balance-grid">
-        <div class="balance-col caos">
-          <h4>❌ La Empresa en Caos (Sin Estructura)</h4>
-          <ul class="balance-list">
-            <li>Depende al 100% de que el dueño resuelva los problemas diarios.</li>
-            <li>Miedo constante a requerimientos o multas imprevistas por parte del SAT.</li>
-            <li>El dinero fluye pero la utilidad real al final del mes es una incógnita.</li>
-          </ul>
-        </div>
-        <div class="balance-col cic">
-          <h4>✅ La Empresa Eficiente (Con CIC)</h4>
-          <ul class="balance-list">
-            <li>Manuales de procesos operativos que trazan un camino marcado para delegar con total certeza.</li>
-            <li>Contabilidad preventiva y cumplimiento estratégico en Comercio Exterior.</li>
-            <li>Control absoluto del flujo de efectivo e indicadores financieros (KPIs) de alta dirección.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECTORES -->
-  <section class="section" style="background:var(--bg-alt);padding:64px 0;">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Especialización Sectorial</span>
-        <h2>Soluciones a la Medida de tu Industria</h2>
-      </div>
-      <div class="sector-grid">
-        <div class="sector-card">
-          <span class="sector-icon">🚜</span>
-          <h4>Sector Primario y Agrocomercialización</h4>
-          <p>Apoyamos a productores y agroindustrias a estructurar costos de cultivo, empaque y distribución. Exportación alimentaria con cumplimiento de NOMs, certificaciones de origen e inocuidad, y logística internacional.</p>
-        </div>
-        <div class="sector-card">
-          <span class="sector-icon">🛍️</span>
-          <h4>Comercializadoras y Retail</h4>
-          <p>Estructuración técnica de inventarios, planeación de compras e importaciones internacionales seguras, y reingeniería fiscal preventiva para asegurar márgenes de utilidad reales.</p>
-        </div>
-        <div class="sector-card">
-          <span class="sector-icon">💼</span>
-          <h4>Servicios Profesionales, Oficios y PyMEs</h4>
-          <p>Estandarización de manuales de procedimientos para despachos, clínicas, talleres y negocios que buscan automatizar operaciones y crecer de forma ordenada.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CAPACITACIÓN HOME -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Capacitación y Desarrollo</span>
-        <h2>Impulsando a la Próxima Generación de Profesionales</h2>
-        <p>Nuestros programas de capacitación con estándar instruccional proveen herramientas clave para el ecosistema laboral.</p>
-      </div>
-      <div class="cap-grid">
-        <div class="cap-card">
-          <span class="cap-icon">🎓</span>
-          <h4>Estudiantes y Recién Egresados</h4>
-          <p>Adquiere las competencias laborales reales que el mercado exige y la universidad no enseña. Aprende a operar sistemas administrativos, interpretar estados financieros y ejecutar trámites aduaneros reales.</p>
-        </div>
-        <div class="cap-card">
-          <span class="cap-icon">📈</span>
-          <h4>Profesionales en Actualización</h4>
-          <p>Especialización técnica para contadores, administradores y negociadores internacionales que buscan dominar normativas fiscales vigentes, herramientas de modernización digital (CRMs/ERPs) y metodologías ágiles.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ALIANZAS -->
-  <section class="section" style="background:var(--bg-alt);padding:64px 0;">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Red Profesional</span>
-        <h2>Nuestra Red de Aliados Profesionales</h2>
-      </div>
-      <div class="alianzas-box">
-        <p>Para brindar soluciones de alta dirección con cobertura integral, respaldamos nuestras estrategias a través de alianzas profesionales interdisciplinarias. Colaboramos activamente con una red especializada de abogados corporativos, contadores fiscales, agrónomos e ingenieros agroindustriales para blindar cada proyecto desde todas las aristas técnicas y legales.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA FINAL -->
-  <section class="section">
-    <div class="wrap">
-      <div class="cta-final">
-        <div class="orbit" style="width:380px;height:380px;top:-160px;right:-120px;border-color:rgba(255,255,255,.12);"></div>
-        <h2>Consultoría de Resultados, Cero Teoría de Cubículo</h2>
-        <p>Diseñamos trajes a la medida de tu estructura actual. Permítenos realizar una primera radiografía de tu negocio para identificar tus cuellos de botella operativos y fiscales.<br><br>Una vez agendado, Cici y Coco optimizarán tu tiempo analizando tu situación desde el primer minuto.</p>
-        <a class="btn-white" href="#" onclick="showPage('contacto',document.querySelectorAll('.tab')[5]);return false;">Agendar Diagnóstico Empresarial Inicial</a>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ====== SOBRE NOSOTROS ====== -->
-<div class="page" id="page-sobre">
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Sobre Nosotros</span>
-        <h2>El aliado estratégico que tu negocio necesita para trascender</h2>
-      </div>
-      <div class="historia">
-        <p>En CIC Consultoría nacimos con la convicción de que las micro, pequeñas y medianas empresas (MiPyMEs) son el motor económico de México. No vendemos teorías de cubículo ni manuales que se quedan archivados: diseñamos e implementamos soluciones tácticas, reales y aplicables, pensadas para negocios que necesitan resultados, no charlas eternas.</p>
-      </div>
-
-      <div class="mv-grid">
-        <div class="mv-card">
-          <div class="mv-label">Misión</div>
-          <p>Profesionalizar la gestión interna y la proyección internacional de las empresas mexicanas, brindando herramientas claras y aplicables que impulsen su crecimiento ordenado y sostenible.</p>
-        </div>
-        <div class="mv-card">
-          <div class="mv-label">Visión</div>
-          <p>Consolidarnos como la consultora de referencia para las empresas en desarrollo en México, reconocida por un acompañamiento práctico, honesto y orientado a resultados medibles.</p>
-        </div>
-      </div>
-
-      <div style="text-align:center;margin:44px 0 20px;">
-        <span class="eyebrow">Nuestros Pilares</span>
-      </div>
-      <div class="pillars">
-        <div class="pillar"><div class="num">01</div><h3>Claridad y Transparencia</h3><p>Decimos las cosas como son, sin tecnicismos innecesarios.</p></div>
-        <div class="pillar"><div class="num">02</div><h3>Pragmatismo y Estructura</h3><p>Herramientas que se usan hoy, no que se archivan.</p></div>
-        <div class="pillar"><div class="num">03</div><h3>Innovación y Modernización</h3><p>Tecnología y procesos actuales al alcance de tu negocio.</p></div>
-        <div class="pillar"><div class="num">04</div><h3>Crecimiento Sostenible y Legalidad</h3><p>Bases sólidas, sin atajos que comprometan tu negocio.</p></div>
-      </div>
-
-      <div class="mascot-feature">
-        <div class="art-box" style="aspect-ratio:1/1;background:var(--white);">
-          <div class="ph"><span class="emoji">🦝🦝</span>[Cici y Coco supervisores]</div>
-        </div>
-        <div>
-          <span class="eyebrow" style="background:var(--white);">Supervisores de Contenido y Dinamismo</span>
-          <h3 style="margin-top:8px;">Conoce a Cici y Coco</h3>
-          <p>Vigilan que nada de lo que hacemos suene aburrido, rígido o innecesariamente complicado. Cero rollos sin sentido — garantizado por ellos mismos.</p>
-        </div>
-      </div>
-
-      <div class="metodologia-box">
-        <h3>Metodología con Estándar Nacional</h3>
-        <p>En CIC Consultoría, cada curso, taller y proceso de consultoría se diseña bajo un riguroso método instruccional: objetivos de aprendizaje claros, contenidos estructurados por niveles de competencia y evaluación constante de resultados. Nuestra estructura pedagógica está alineada con las mejores prácticas y estándares de calidad reconocidos a nivel nacional en materia de capacitación y desarrollo de competencias laborales en México.</p>
-        <div class="sello-badge">🛡️ Diseño instruccional alineado con los más altos estándares de calidad en capacitación a nivel nacional.</div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ====== SERVICIOS ====== -->
-<div class="page" id="page-servicios">
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Servicios</span>
-        <h2>Soluciones de Alta Dirección para el Éxito de Tu Negocio</h2>
-        <p>No es una lista de materias escolares. Es lo que tu negocio necesita resolver hoy.</p>
-      </div>
-
-      <div class="servicio-block">
-        <div class="servicio-art">📊</div>
-        <div>
-          <span class="tag">Administración Eficiente y Reingeniería de Procesos</span>
-          <h3>De apagar incendios a tener el control total de tu operación.</h3>
-          <ul class="benef-list">
-            <li><strong>Estructuración Financiera Integral:</strong> orden y control real de tus números.</li>
-            <li><strong>Manuales de Procesos y Procedimientos:</strong> orden integral, estandarización y delegación.</li>
-            <li><strong>Contabilidad y Gestión Fiscal Preventiva:</strong> sin sorpresas del SAT.</li>
-          </ul>
-          <p class="para-quien">Para dueños de microempresas que sienten que trabajan para su negocio, no con él.</p>
-        </div>
-      </div>
-
-      <div class="servicio-block">
-        <div class="servicio-art">🌎</div>
-        <div>
-          <span class="tag">Comercio Exterior y Adaptación de Productos</span>
-          <h3>Pierde el miedo a las fronteras y abre tu empresa a mercados internacionales.</h3>
-          <ul class="benef-list">
-            <li><strong>Investigaciones de Mercado Internacionales:</strong> identifica oportunidades reales.</li>
-            <li><strong>Adaptación de Productos y Cumplimiento Normativo:</strong> NOMs, etiquetado y certificaciones.</li>
-            <li><strong>Logística, Aranceles y Clasificación Arancelaria:</strong> Incoterms aplicados a tu negocio.</li>
-          </ul>
-          <p class="para-quien">Para negocios que quieren expandirse más allá de las fronteras mexicanas.</p>
-        </div>
-      </div>
-
-      <div class="servicio-block">
-        <div class="servicio-art">💻</div>
-        <div>
-          <span class="tag">Modernización y Digitalización Empresarial</span>
-          <h3>La tecnología correcta para automatizar tu negocio y proyectar formalidad.</h3>
-          <ul class="benef-list">
-            <li><strong>Arquitectura de Canales Digitales:</strong> web, redes sociales y presencia profesional.</li>
-            <li><strong>Sistemas Tecnológicos Administrativos:</strong> CRMs, ERPs y facturación electrónica.</li>
-            <li><strong>Formalidad e Infraestructura Corporativa:</strong> correo @tuempresa.com, cloud y más.</li>
-          </ul>
-          <p class="para-quien">Para empresas que quieren dejar de operar "a mano" y dar el salto digital.</p>
-        </div>
-      </div>
-
-      <div class="servicio-block">
-        <div class="servicio-art">🗂️</div>
-        <div>
-          <span class="tag">Gestión Estratégica de Proyectos</span>
-          <h3>De la planeación a los resultados medibles, controlando tiempos y presupuestos.</h3>
-          <ul class="benef-list">
-            <li><strong>Metodología de Ruta Crítica:</strong> previsión y KPIs que te dan control real del proyecto.</li>
-            <li><strong>Seguimiento y control:</strong> cumple fechas y presupuestos sin sorpresas.</li>
-            <li><strong>Gestión de equipos:</strong> todos alineados hacia el mismo objetivo.</li>
-          </ul>
-          <p class="para-quien">Para quienes necesitan ejecutar proyectos con claridad y orden.</p>
-        </div>
-      </div>
-
-      <div class="servicio-block">
-        <div class="servicio-art">🚀</div>
-        <div>
-          <span class="tag">Emprendimiento y Validación de Negocios</span>
-          <h3>Reduce el riesgo financiero analizando la viabilidad de tu idea antes de invertir.</h3>
-          <ul class="benef-list">
-            <li><strong>Modelado de Negocios de Alta Viabilidad:</strong> valida tu idea con datos reales.</li>
-            <li><strong>Análisis de mercado y competencia:</strong> conoce el terreno antes de entrar.</li>
-            <li><strong>Plan de acción realista:</strong> primeros pasos concretos y medibles.</li>
-          </ul>
-          <p class="para-quien">Para emprendedores que quieren lanzar de forma inteligente, no de forma impulsiva.</p>
-        </div>
-      </div>
-
-      <div style="margin-top:50px;">
-        <h3 style="font-size:20px;margin-bottom:16px;">Preguntas frecuentes</h3>
-        <div class="faq-item"><h4>¿Son accesibles para microempresas?</h4><p>Sí, diseñamos opciones para distintos presupuestos. Tu primera asesoría es gratuita.</p></div>
-        <div class="faq-item"><h4>¿Necesito experiencia previa?</h4><p>Para nada, explicamos todo en lenguaje claro y práctico.</p></div>
-        <div class="faq-item"><h4>¿Funcionan para negocios muy pequeños?</h4><p>Sí, son nuestro público principal.</p></div>
-        <div class="faq-item"><h4>¿En qué formato son las sesiones?</h4><p>En línea o presenciales, individuales o grupales.</p></div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ====== CAPACITACIÓN Y CURSOS ====== -->
-<div class="page" id="page-cursos">
-  <section class="cursos-block1">
-    <div class="wrap">
-      <div class="block-head">
-        <div class="art-box" style="aspect-ratio:1/1;background:var(--bg-alt);">
-          <div class="ph"><span class="emoji">🎒</span>[Coco con laptop]</div>
-        </div>
-        <div>
-          <span class="eyebrow">Para principiantes y emprendedores</span>
-          <h2 style="font-size:26px;margin-bottom:12px;">Tu primer paso en el mundo real</h2>
-          <p style="color:var(--ink-soft);font-size:15.5px;max-width:560px;">Olvídate de los cursos eternos y llenos de teoría. Aquí aprendes lo esencial, a tu ritmo, con herramientas listas para usar desde la primera clase. Precios accesibles, cero miedo a sentirte perdido.</p>
-        </div>
-      </div>
-
-      <div class="course-grid">
-        <div class="course-card">
-          <span class="level">Nivel: Principiante</span>
-          <h4>Administración para no administradores</h4>
-          <p>Organiza las finanzas de tu negocio y toma mejores decisiones, sin estudiar contabilidad.</p>
-          <button class="btn-ghost" onclick="openDetalle('admin')" style="width:100%;margin-top:4px;">Ver más detalles</button>
-          <span class="price">Desde $750 MXN</span>
-        </div>
-        <div class="course-card">
-          <span class="level">Nivel: Principiante</span>
-          <h4>Importa tu primer producto desde cero</h4>
-          <p>Los pasos reales para traer tu primer producto del extranjero, sin perderte en trámites.</p>
-          <button class="btn-ghost" onclick="openDetalle('importa')" style="width:100%;margin-top:4px;">Ver más detalles</button>
-          <span class="price">Desde $690 MXN</span>
-        </div>
-        <div class="course-card">
-          <span class="level">Nivel: Principiante</span>
-          <h4>Finanzas personales para emprendedores</h4>
-          <p>Separa tus finanzas personales de las del negocio y construye hábitos que se sostienen.</p>
-          <button class="btn-ghost" onclick="openDetalle('finanzas')" style="width:100%;margin-top:4px;">Ver más detalles</button>
-          <span class="price">Desde $590 MXN</span>
-        </div>
-      </div>
-
-      <div class="agenda-wrap">
-        <div class="agenda-head">
-          <h3>Próximas fechas</h3>
-          <span class="agenda-note">🦝 Cici y Coco actualizan esta agenda cada semana.</span>
-        </div>
-        <div class="agenda-list">
-          <div class="agenda-row">
-            <div class="agenda-date"><span class="day">14</span><span class="month">Jul</span></div>
-            <div class="agenda-course"><h4>Administración para no administradores</h4><span>Curso en línea · 4 sesiones</span></div>
-            <div class="agenda-meta">Lun y Mié · 6:00 PM</div>
-            <div class="agenda-spots ok">12 lugares disponibles</div>
-            <button class="btn-small" onclick="openRegister('Administración para no administradores','14 Jul · Lun y Mié, 6:00 PM','750')">Regístrate</button>
-          </div>
-          <div class="agenda-row">
-            <div class="agenda-date"><span class="day">21</span><span class="month">Jul</span></div>
-            <div class="agenda-course"><h4>Importa tu primer producto desde cero</h4><span>Curso en línea · 3 sesiones</span></div>
-            <div class="agenda-meta">Sábados · 10:00 AM</div>
-            <div class="agenda-spots low">3 lugares disponibles</div>
-            <button class="btn-small" onclick="openRegister('Importa tu primer producto desde cero','21 Jul · Sábados, 10:00 AM','690')">Regístrate</button>
-          </div>
-          <div class="agenda-row">
-            <div class="agenda-date"><span class="day">04</span><span class="month">Ago</span></div>
-            <div class="agenda-course"><h4>Finanzas personales para emprendedores</h4><span>Curso en línea · 2 sesiones</span></div>
-            <div class="agenda-meta">Mar y Jue · 7:00 PM</div>
-            <div class="agenda-spots ok">20 lugares disponibles</div>
-            <button class="btn-small" onclick="openRegister('Finanzas personales para emprendedores','04 Ago · Mar y Jue, 7:00 PM','590')">Regístrate</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="coco-quote">
-        <div class="emoji">🦝</div>
-        <p>"Anímate, todos empezamos sin saber. Lo importante es dar el primer paso." — Coco</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="cursos-block2">
-    <div class="wrap">
-      <div class="block-head">
-        <div class="art-box" style="aspect-ratio:1/1;background:var(--white);">
-          <div class="ph"><span class="emoji">📋</span>[Cici con carpeta]</div>
-        </div>
-        <div>
-          <span class="eyebrow" style="background:var(--white);">Capacitación In-Company</span>
-          <h2 style="font-size:26px;margin-bottom:12px;">Soluciones a medida para empresas en crecimiento</h2>
-          <p style="color:var(--ink-soft);font-size:15.5px;max-width:580px;">Adaptamos nuestros módulos a las necesidades específicas de tu industria, tu equipo y tus objetivos. Nada genérico — solo lo que tu empresa realmente necesita.</p>
-        </div>
-      </div>
-
-      <div class="empresa-grid">
-        <div>
-          <ul class="benef-empresa">
-            <li><strong>Estandarización de procesos:</strong> todo tu equipo con los mismos criterios y herramientas.</li>
-            <li><strong>Actualización fiscal y comercial:</strong> tu personal al día con cambios normativos.</li>
-            <li><strong>Optimización de tiempos:</strong> menos errores operativos, más eficiencia.</li>
-          </ul>
-          <div class="cici-quote">
-            <p>"Cuando un equipo está bien capacitado, todo el negocio avanza distinto." — Cici</p>
-          </div>
-        </div>
-        <div class="cotiza-box">
-          <h4>Solicita una propuesta personalizada para tu equipo</h4>
-          <div class="field"><label>Nombre</label><input type="text" placeholder="Tu nombre completo"></div>
-          <div class="field"><label>Empresa</label><input type="text" placeholder="Nombre de tu empresa"></div>
-          <div class="field"><label>Personas a capacitar</label><input type="text" placeholder="Ej. 15 personas"></div>
-          <button class="btn-primary" style="width:100%;text-align:center;">Solicitar propuesta</button>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ====== RECURSOS ====== -->
-<div class="page" id="page-recursos">
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Recursos y Blog</span>
-        <h2>Herramientas y aprendizaje para tu negocio</h2>
-      </div>
-
-      <div class="newsletter-banner">
-        <div>
-          <h3>Tu negocio, un paso más organizado cada semana</h3>
-          <p>Suscríbete y recibe recursos gratuitos directo en tu correo.</p>
-        </div>
-        <button class="btn-primary">Quiero mis recursos gratis</button>
-      </div>
-
-      <div class="grid-3">
-        <div class="lead-card">
-          <span class="tag-pill">EXCEL GRATIS</span>
-          <h4>Control de Gastos para Negocios que Empiezan</h4>
-          <p>Plantilla simple para saber a dónde se va tu dinero cada mes.</p>
-          <a class="btn-ghost" href="#">Descargar gratis</a>
-        </div>
-        <div class="lead-card">
-          <span class="tag-pill">CHECKLIST</span>
-          <h4>¿Tu Idea de Negocio es Viable?</h4>
-          <p>Responde estas preguntas antes de invertir tiempo y dinero.</p>
-          <a class="btn-ghost" href="#">Descargar gratis</a>
-        </div>
-        <div class="lead-card">
-          <span class="tag-pill">GUÍA</span>
-          <h4>Primeros Pasos para Exportar sin Miedo al SAT</h4>
-          <p>Requisitos legales y fiscales esenciales, explicados simple.</p>
-          <a class="btn-ghost" href="#">Descargar gratis</a>
-        </div>
-      </div>
-
-      <h3 style="font-size:20px;margin-bottom:18px;">Del blog</h3>
-      <div class="blog-row">
-        <div class="blog-card"><div class="dot">01</div><h4>5 señales de que tu negocio necesita organizar su administración (antes de que sea tarde)</h4></div>
-        <div class="blog-card"><div class="dot">02</div><h4>SAT sin miedo: lo que todo dueño de microempresa debería saber y nadie le explicó</h4></div>
-        <div class="blog-card"><div class="dot">03</div><h4>¿Por qué tu negocio no crece aunque trabajes todo el día? El problema puede ser la organización</h4></div>
-        <div class="blog-card"><div class="dot">04</div><h4>Exportar desde México: 3 errores comunes que cometen los negocios pequeños y cómo evitarlos</h4></div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ====== CONTACTO Y ASESORÍA (MERGED) ====== -->
-<div class="page" id="page-contacto">
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">Contacto y Asesoría</span>
-        <h2>Hablemos de tu negocio, sin compromiso</h2>
-        <p>No hay preguntas tontas ni negocios "demasiado pequeños". Aquí empezamos por escuchar.</p>
-      </div>
-
-      <div class="contacto-tabs">
-        <button class="ctab active" onclick="showCtab('form',this)">📬 Envíanos un mensaje</button>
-        <button class="ctab" onclick="showCtab('agendar',this)">📅 Agendar asesoría gratuita</button>
-      </div>
-
-      <!-- TAB: FORMULARIO DE CONTACTO -->
-      <div class="ctab-content active" id="ctab-form">
-        <div class="contacto-grid">
-          <div class="form-card">
-            <div class="field"><label>Nombre completo</label><input type="text" placeholder="¿Cómo te llamas?"></div>
-            <div class="field"><label>Correo electrónico</label><input type="email" placeholder="Tu correo electrónico"></div>
-            <div class="field"><label>WhatsApp / Teléfono</label><input type="text" placeholder="Tu número de contacto"></div>
-            <div class="field">
-              <label>¿En qué te podemos ayudar?</label>
-              <select>
-                <option value="">Selecciona una opción</option>
-                <option>Administración y Procesos</option>
-                <option>Comercio Exterior y Adaptación</option>
-                <option>Modernización y Digitalización</option>
-                <option>Gestión de Proyectos</option>
-                <option>Emprendimiento y Validación</option>
-                <option>Capacitación In-Company</option>
-                <option>Otro</option>
-              </select>
+    <!-- Navegación -->
+    <nav class="glass-nav fixed w-full z-50 top-0 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-3">
+                    <span class="bg-gradient-to-br from-cic-primary to-cic-secondary text-white font-heading font-bold text-2xl px-4 py-2 rounded-xl shadow-lg">CIC</span>
+                    <span class="font-heading font-bold text-xl text-cic-primary hidden sm:block">Consultoría</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#inicio" class="text-cic-text hover:text-cic-secondary font-medium transition">Inicio</a>
+                    <a href="#servicios" class="text-cic-text hover:text-cic-secondary font-medium transition">Servicios</a>
+                    <a href="#capacitacion" class="text-cic-text hover:text-cic-secondary font-medium transition">Capacitación</a>
+                    <a href="#contacto" class="text-cic-text hover:text-cic-secondary font-medium transition">Contacto</a>
+                </div>
+                <a href="#booking" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition shadow-md hidden md:block">Agendar Cita</a>
             </div>
-            <div class="field"><label>Cuéntanos brevemente tu situación</label><textarea placeholder="Cuéntanos brevemente qué necesitas"></textarea></div>
-            <button class="btn-primary" style="width:100%;text-align:center;">Enviar mensaje</button>
-          </div>
-          <div class="info-side">
-            <div class="info-row"><div class="ico">📧</div><a href="mailto:admin@cicconsultora.com" style="color:var(--purple-deep);font-weight:600;">admin@cicconsultora.com</a></div>
-            <div class="info-row"><div class="ico">📱</div><a href="https://wa.me/522227756653?text=Hola%2C%20me%20interesa%20agendar%20un%20diagn%C3%B3stico%20empresarial%20gratuito." target="_blank" style="color:var(--purple-deep);font-weight:600;">+52 222 775 6653 (WhatsApp)</a></div>
-            <div class="info-row"><div class="ico">📍</div> México · En línea y presencial</div>
-            <div class="info-row"><div class="ico">📘</div><a href="https://facebook.com/CICConsultoria" target="_blank" style="color:var(--purple-deep);font-weight:600;">CIC Consultoría en Facebook</a></div>
-            <div class="info-row"><div class="ico">💼</div><a href="https://linkedin.com/company/cicconsultoria" target="_blank" style="color:var(--purple-deep);font-weight:600;">CIC Consultoría en LinkedIn</a></div>
-            <div class="art-box" style="aspect-ratio:4/3;margin-top:10px;">
-              <div class="ph"><span class="emoji">🦝</span>[Cici atendiendo]</div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section id="inicio" class="gradient-hero pt-32 pb-20 lg:pt-40 lg:pb-28 text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="lg:w-2/3">
+                <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/30">Transformamos tu negocio con estrategia y visión global</div>
+                <h1 class="font-heading text-4xl lg:text-6xl font-bold leading-tight mb-6">Tu negocio merece crecer con <span class="text-white">orden, control</span> y visión global.</h1>
+                <p class="text-lg lg:text-xl text-purple-100 mb-8 max-w-2xl leading-relaxed">Transformamos el caos operativo y administrativo en sistemas eficientes. Te ayudamos a estructurar tus finanzas, proteger tu negocio ante el SAT y expandir tus fronteras.</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#booking" class="bg-white text-cic-primary font-heading font-bold px-8 py-4 rounded-xl text-center hover:bg-purple-50 transition shadow-lg">Agenda tu diagnóstico sin costo</a>
+                    <a href="https://wa.me/522227756653?text=Hola,%20quiero%20más%20información%20sobre%20sus%20servicios." target="_blank" class="bg-white/10 backdrop-blur-sm border-2 border-white/50 text-white font-medium px-8 py-4 rounded-xl text-center hover:bg-white/20 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Hablar por WhatsApp
+                    </a>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-white/20 rounded-full blur-3xl"></div>
+    </section>
 
-      <!-- TAB: AGENDAR ASESORÍA -->
-      <div class="ctab-content" id="ctab-agendar">
-        <p style="color:var(--ink-soft);font-size:15px;margin-bottom:28px;max-width:540px;">Selecciona el tema que más se acerca a tu situación actual y agendamos una sesión de 30 minutos sin costo, en línea o presencial.</p>
-        <div class="progress">
-          <div class="step done"></div><div class="step"></div><div class="step"></div><div class="step"></div>
+    <!-- Servicios -->
+    <section id="servicios" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Soluciones de Alta Dirección</h2>
+                <p class="text-cic-textLight text-lg">Es lo que tu negocio necesita resolver hoy.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">📊</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Administración Eficiente</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Estructuración Financiera</li><li>• Manuales de Procesos</li><li>• Gestión Fiscal Preventiva</li></ul></div>
+                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">🌎</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Comercio Exterior</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Investigación de Mercados</li><li>• Cumplimiento Normativo</li><li>• Clasificación Arancelaria</li></ul></div>
+                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">💻</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Modernización Digital</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Canales Digitales</li><li>• CRM/ERP</li><li>• Infraestructura Corporativa</li></ul></div>
+                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">🗂️</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Gestión de Proyectos</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Ruta Crítica y KPIs</li><li>• Control de presupuestos</li><li>• Gestión de equipos</li></ul></div>
+                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover md:col-span-2 lg:col-span-2"><div class="text-3xl mb-4">🚀</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Emprendimiento y Validación</h3><div class="grid sm:grid-cols-3 gap-4 text-sm text-gray-700"><div>• Modelado de Negocios</div><div>• Análisis de mercado</div><div>• Plan de acción</div></div></div>
+            </div>
         </div>
-        <div class="agendar-card">
-          <p style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Paso 1 de 4 · ¿En qué te podemos ayudar?</p>
-          <div class="opt-row selected">📊 Administración y Procesos</div>
-          <div class="opt-row">🌎 Comercio Exterior y Adaptación</div>
-          <div class="opt-row">💻 Modernización y Digitalización</div>
-          <div class="opt-row">🗂️ Gestión de Proyectos</div>
-          <div class="opt-row">🚀 Emprendimiento y Validación</div>
-          <div class="opt-row">🤔 No estoy seguro, necesito orientación</div>
-          <button class="btn-primary" style="width:100%;text-align:center;margin-top:14px;">Continuar</button>
+    </section>
+
+    <!-- Capacitación DINÁMICA con Firebase -->
+    <section id="capacitacion" class="py-20 bg-gradient-to-br from-cic-primary via-cic-secondary to-cic-accent text-white relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+            <div class="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 right-10 w-48 h-48 bg-white rounded-full blur-3xl"></div>
         </div>
-        <div class="confirm-box">
-          <div class="emoji">🎉</div>
-          <h4>¡Listo, tu asesoría está agendada!</h4>
-          <p>Cici y Coco ya están preparando todo para tu sesión. Te enviamos los detalles a tu correo.</p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="font-heading text-3xl lg:text-4xl font-bold mb-4">Tu primer paso en el mundo real</h2>
+                <p class="text-purple-100 text-lg mb-8">Olvídate de los cursos eternos. Aquí aprendes lo esencial, a tu ritmo, con herramientas listas para usar.</p>
+                <div class="flex justify-center items-center gap-8 mt-8 mascot-fade">
+                    <div class="text-center">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-6 w-32 h-32 flex items-center justify-center mx-auto mb-3 border-4 border-white/50 shadow-xl"><span class="text-6xl">🦝</span></div>
+                        <p class="font-bold text-white text-lg">Cici</p>
+                        <p class="text-sm text-purple-200">Experta en Administración</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-6 w-32 h-32 flex items-center justify-center mx-auto mb-3 border-4 border-white/50 shadow-xl"><span class="text-6xl">🦝</span></div>
+                        <p class="font-bold text-white text-lg">Coco</p>
+                        <p class="text-sm text-purple-200">Especialista en Comercio Exterior</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cursos dinámicos desde Firebase -->
+            <div id="cursos-container" class="grid lg:grid-cols-2 gap-8 mb-12">
+                <div class="col-span-2 text-center py-8">
+                    <div class="loading-spinner mx-auto mb-3"></div>
+                    <p class="text-purple-200">Cargando cursos...</p>
+                </div>
+            </div>
+
+            <!-- Próximas fechas dinámicas -->
+            <div class="bg-white text-gray-800 p-8 rounded-2xl shadow-2xl border-4 border-cic-accent/30">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-3xl">🦝</span>
+                    <h3 class="font-heading text-2xl font-bold text-cic-primary">Próximas fechas con Cici y Coco</h3>
+                </div>
+                <div id="fechas-container" class="space-y-6">
+                    <p class="text-center text-gray-500 py-4">Cargando fechas...</p>
+                </div>
+                <a href="https://wa.me/522227756653?text=Hola,%20me%20interesa%20registrarme%20en%20los%20cursos." target="_blank" class="block w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white text-center font-bold py-3 rounded-xl hover:shadow-lg transition mt-6">Regístrate vía WhatsApp</a>
+            </div>
         </div>
-      </div>
-    </div>
-  </section>
-</div>
+    </section>
 
-<!-- ====== 404 (oculto del menú) ====== -->
-<div class="page" id="page-404">
-  <div style="min-height:60vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 24px;">
-    <div>
-      <div style="font-size:56px;margin-bottom:16px;">🦝🦝</div>
-      <h1 style="font-size:26px;margin-bottom:10px;">¡Uy! Cici y Coco se perdieron buscando esta página…</h1>
-      <p style="color:var(--ink-soft);font-size:15px;margin-bottom:24px;max-width:380px;margin-left:auto;margin-right:auto;">Parece que esta página no existe o se movió. Te ayudamos a volver al camino.</p>
-      <button class="btn-primary" onclick="showPage('home',document.querySelector('.tab'))">Volver al inicio</button>
+    <!-- Modal detalles curso -->
+    <div id="modal-curso-detalle" class="modal">
+        <div class="modal-content bg-white rounded-2xl max-w-3xl w-full mx-4 shadow-2xl overflow-hidden" id="modal-curso-detalle-content"></div>
     </div>
-  </div>
-</div>
 
-<!-- ====== FOOTER ====== -->
-<footer class="site-footer">
-  <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <img src="Logocicc.png" alt="CIC Consultoría" style="height:36px;margin-bottom:14px;display:block;">
-        <p>Tu aliado estratégico para administrar, organizar y hacer crecer tu negocio.</p>
-        <p style="margin-top:8px;font-style:italic;font-size:12.5px;">🐾 Con la supervisión de Cici y Coco.</p>
-      </div>
-      <div>
-        <h5>Servicios</h5>
-        <a href="#" onclick="showPage('servicios',document.querySelectorAll('.tab')[2]);return false;">Administración y Procesos</a>
-        <a href="#" onclick="showPage('servicios',document.querySelectorAll('.tab')[2]);return false;">Comercio Exterior</a>
-        <a href="#" onclick="showPage('servicios',document.querySelectorAll('.tab')[2]);return false;">Digitalización</a>
-        <a href="#" onclick="showPage('servicios',document.querySelectorAll('.tab')[2]);return false;">Gestión de Proyectos</a>
-        <a href="#" onclick="showPage('servicios',document.querySelectorAll('.tab')[2]);return false;">Emprendimiento</a>
-      </div>
-      <div>
-        <h5>Empresa</h5>
-        <a href="#" onclick="showPage('sobre',document.querySelectorAll('.tab')[1]);return false;">Sobre Nosotros</a>
-        <a href="#" onclick="showPage('cursos',document.querySelectorAll('.tab')[3]);return false;">Capacitación y Cursos</a>
-        <a href="#" onclick="showPage('recursos',document.querySelectorAll('.tab')[4]);return false;">Recursos y Blog</a>
-        <a href="#" onclick="showPage('contacto',document.querySelectorAll('.tab')[5]);return false;">Contacto y Asesoría</a>
-      </div>
-      <div>
-        <h5>Contacto</h5>
-        <a href="mailto:admin@cicconsultora.com">admin@cicconsultora.com</a>
-        <a href="https://wa.me/522227756653" target="_blank">+52 222 775 6653</a>
-        <a href="https://facebook.com/CICConsultoria" target="_blank">Facebook: CIC Consultoría</a>
-        <a href="https://linkedin.com/company/cicconsultoria" target="_blank">LinkedIn: CIC Consultoría</a>
-        <p style="margin-top:4px;">México · En línea y presencial</p>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 CIC Consultoría. Todos los derechos reservados.</span>
-      <span><a href="#" style="color:var(--ink-soft);">Aviso de Privacidad</a> · <a href="#" style="color:var(--ink-soft);">Términos y Condiciones</a></span>
-    </div>
-  </div>
-</footer>
-
-<!-- ====== MODAL DETALLES DE CURSO ====== -->
-<div class="modal-detalle-overlay" id="detalle-modal">
-  <div class="modal-detalle-box">
-    <div class="modal-detalle-header">
-      <button class="modal-detalle-close" onclick="closeDetalle()">✕</button>
-      <h3 id="detalle-titulo">Nombre del curso</h3>
-      <p class="slogan" id="detalle-slogan">Descripción del curso</p>
-    </div>
-    <div class="modal-detalle-body">
-      <span class="detalle-pill">🎓 Nivel: Principiante</span>
-      <p class="detalle-desc" id="detalle-desc">Descripción completa.</p>
-      <div class="detalle-meta">
-        <div class="detalle-meta-item"><div class="label">Duración</div><div class="value" id="detalle-dur">—</div></div>
-        <div class="detalle-meta-item"><div class="label">Modalidad</div><div class="value" id="detalle-mod">—</div></div>
-        <div class="detalle-meta-item"><div class="label">Sesiones</div><div class="value" id="detalle-ses">—</div></div>
-        <div class="detalle-meta-item"><div class="label">Certificado</div><div class="value" id="detalle-cert">—</div></div>
-      </div>
-      <div class="detalle-temario">
-        <h4>Temas que aprenderás</h4>
-        <ul id="detalle-temario-list"></ul>
-      </div>
-      <div class="detalle-precio">
-        <div>
-          <div class="precio-label">Precio por persona</div>
-          <div class="precio-val" id="detalle-precio">$0 MXN</div>
+    <!-- Booking -->
+    <section id="booking" class="py-20 gradient-purple-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Agenda tu cita directamente</h2>
+                <p class="text-cic-textLight text-lg">Integrado con Microsoft 365.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl p-8 border-4 border-cic-accent/30 text-center">
+                <p class="text-gray-600 mb-6">Aquí se integrará tu calendario de Microsoft Bookings</p>
+                <a href="https://outlook.office.com/bookings" target="_blank" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold px-8 py-3 rounded-xl hover:shadow-lg transition inline-block">Ir a Microsoft Bookings</a>
+            </div>
         </div>
-        <span style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--ink-soft);">Pago seguro en línea</span>
-      </div>
-      <div class="detalle-btns">
-        <button class="btn-primary" id="detalle-btn-reg" onclick="">Inscribirme ahora</button>
-        <a class="btn-wa" href="https://wa.me/522227756653?text=Hola%2C%20me%20interesa%20el%20curso%3A%20" id="detalle-btn-wa" target="_blank">💬 Preguntar por WhatsApp</a>
-      </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-6">Hablemos de tu negocio</h2>
+                    <p class="text-gray-600 text-lg mb-8">Agendamos una sesión de 30 minutos sin costo.</p>
+                    <div class="bg-gradient-to-br from-cic-light to-cic-lighter rounded-2xl p-6 mb-8 border-2 border-cic-accent/30">
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">🦝 Tus aliados estratégicos</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center"><div class="bg-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-2 shadow-md"><span class="text-4xl">🦝</span></div><p class="font-bold text-cic-primary text-sm">Cici</p><p class="text-xs text-gray-600">Administración</p></div>
+                            <div class="text-center"><div class="bg-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-2 shadow-md"><span class="text-4xl">🦝</span></div><p class="font-bold text-cic-primary text-sm">Coco</p><p class="text-xs text-gray-600">Comercio Exterior</p></div>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4"><div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white shadow-lg">📧</div><div><p class="text-sm text-gray-600">Correo</p><p class="font-bold text-cic-primary">admin@cicconsultoria.mx</p></div></div>
+                        <div class="flex items-center gap-4"><div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white shadow-lg">📱</div><div><p class="text-sm text-gray-600">WhatsApp</p><p class="font-bold text-cic-primary">+52 222 775 6653</p></div></div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-cic-lighter to-cic-light p-8 rounded-2xl shadow-xl border-4 border-cic-accent/30">
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📨 Envíanos un mensaje</h3>
+                    <form id="contactForm" class="space-y-4">
+                        <input type="text" id="nombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white" placeholder="Nombre completo">
+                        <input type="email" id="email" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white" placeholder="Correo electrónico">
+                        <select id="servicio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white">
+                            <option value="">Selecciona una opción</option>
+                            <option>Administración y Procesos</option><option>Comercio Exterior</option><option>Modernización</option><option>Gestión de Proyectos</option><option>Emprendimiento</option><option>Capacitación</option><option>Otro</option>
+                        </select>
+                        <textarea id="mensaje" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white" placeholder="Cuéntanos brevemente tu situación"></textarea>
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">Enviar a admin@cicconsultoria.mx</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3"><span class="bg-white text-cic-primary font-heading font-bold text-xl px-3 py-1.5 rounded-lg">CIC</span><span class="font-heading font-bold text-xl">Consultoría</span></div>
+                <div class="text-purple-200 text-sm text-center md:text-right"><p>© 2026 CIC Consultoría. Todos los derechos reservados.</p><p class="mt-1">🦝🦝 Diseñado con Cici y Coco</p></div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp flotante -->
+    <a href="https://wa.me/522227756653?text=Hola,%20me%20interesa%20agendar%20mi%20diagnóstico%20empresarial%20sin%20costo." target="_blank" class="whatsapp-float" aria-label="Contactar por WhatsApp">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+
+    <!-- ============================================ -->
+    <!-- PANEL DE ADMINISTRACIÓN CON FIREBASE -->
+    <!-- ============================================ -->
+    <div id="admin-panel" class="admin-panel fixed inset-0 bg-gray-900 z-[2000] overflow-y-auto">
+        <!-- Login con Firebase Auth -->
+        <div id="admin-login" class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+                <div class="text-center mb-6">
+                    <div class="inline-block bg-gradient-to-br from-cic-primary to-cic-secondary text-white font-heading font-bold text-3xl px-6 py-3 rounded-xl mb-4">CIC</div>
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary">Panel de Administración</h2>
+                    <p class="text-gray-600 text-sm mt-2">Acceso seguro con Firebase</p>
+                </div>
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                        <input type="email" id="loginEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="admin@cicconsultoria.mx">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="••••••••">
+                    </div>
+                    <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"></div>
+                    <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
+                        <span>Ingresar</span>
+                    </button>
+                    <button type="button" onclick="closeAdmin()" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition">Cancelar</button>
+                </form>
+                <p class="text-xs text-gray-500 text-center mt-4">🔒 Acceso protegido con Firebase Authentication</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Admin -->
+        <div id="admin-dashboard" class="hidden min-h-screen bg-gray-100">
+            <div class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white shadow-lg sticky top-0 z-10">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-white text-cic-primary font-heading font-bold text-xl px-3 py-1 rounded-lg">CIC</span>
+                        <span class="font-heading font-bold text-lg">Panel de Administración</span>
+                        <span id="adminEmail" class="bg-white/20 px-3 py-1 rounded-full text-xs"></span>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="exportarCursos()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">📥 Exportar</button>
+                        <label class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
+                            📤 Importar
+                            <input type="file" id="importFile" accept=".json" onchange="importarCursos(event)" class="hidden">
+                        </label>
+                        <button onclick="cerrarSesion()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition">Cerrar sesión</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap">
+                    <button onclick="showTab('crear')" id="tab-crear" class="px-6 py-3 font-bold text-cic-primary border-b-4 border-cic-primary bg-white rounded-t-lg">➕ Crear / Editar Curso</button>
+                    <button onclick="showTab('historial')" id="tab-historial" class="px-6 py-3 font-medium text-gray-600 hover:text-cic-primary">📋 Historial de Cursos</button>
+                </div>
+
+                <!-- TAB: Crear/Editar -->
+                <div id="panel-crear" class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6" id="form-titulo">Nuevo Curso</h2>
+                    <form id="cursoForm" class="space-y-6">
+                        <input type="hidden" id="cursoId">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Título del curso *</label>
+                                <input type="text" id="cursoTitulo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Instructor *</label>
+                                <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="Cici">🦝 Cici - Administración</option>
+                                    <option value="Coco">🦝 Coco - Comercio Exterior</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Nivel *</label>
+                                <select id="cursoNivel" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option>Principiante</option><option>Intermedio</option><option>Avanzado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Precio (MXN) *</label>
+                                <input type="number" id="cursoPrecio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Duración *</label>
+                                <input type="text" id="cursoDuracion" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="4 semanas · 8 horas">
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de inicio *</label>
+                                <input type="date" id="cursoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Horario *</label>
+                                <input type="text" id="cursoHorario" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Lun y Mié · 6:00 PM">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Lugares disponibles *</label>
+                                <input type="number" id="cursoLugares" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Descripción corta *</label>
+                            <textarea id="cursoDescripcion" required rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Descripción larga</label>
+                            <textarea id="cursoDescripcionLarga" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">¿Qué aprenderás? (una por línea)</label>
+                            <textarea id="cursoAprenderas" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Temario (Semana X: Título | Descripción, uno por línea)</label>
+                            <textarea id="cursoTemario" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Qué incluye (uno por línea)</label>
+                            <textarea id="cursoIncluye" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Estado inicial *</label>
+                            <select id="cursoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="Programado">📅 Programado</option>
+                                <option value="En curso">🟡 En curso</option>
+                                <option value="Finalizado">✅ Finalizado</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-4 pt-4 border-t">
+                            <button type="submit" id="submitBtn" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
+                                <span>💾 Guardar Curso</span>
+                            </button>
+                            <button type="button" onclick="limpiarFormulario()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- TAB: Historial -->
+                <div id="panel-historial" class="hidden">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+                            <h2 class="font-heading text-2xl font-bold text-cic-primary">📋 Historial de Cursos</h2>
+                            <div class="flex gap-2 text-sm flex-wrap">
+                                <span class="status-programado px-3 py-1 rounded-full font-medium">Programado</span>
+                                <span class="status-encurso px-3 py-1 rounded-full font-medium">En curso</span>
+                                <span class="status-finalizado px-3 py-1 rounded-full font-medium">Finalizado</span>
+                            </div>
+                        </div>
+                        <div id="historial-container" class="space-y-4"></div>
+                        <div id="historial-vacio" class="hidden text-center py-12 text-gray-500">
+                            <p class="text-6xl mb-4">📭</p>
+                            <p class="text-lg">No hay cursos registrados aún</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- ====== MODAL INSCRIPCIÓN ====== -->
-<div class="modal-overlay" id="register-modal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeRegister()">✕</button>
-    <div id="modal-form-state">
-      <div class="modal-summary">
-        <h4 id="modal-course-title">Curso seleccionado</h4>
-        <span id="modal-course-date">Fecha y horario</span>
-      </div>
-      <div class="modal-section-title">Datos del participante</div>
-      <div class="field"><label>Nombre completo</label><input id="reg-name" type="text" placeholder="Tu nombre completo"></div>
-      <div class="field"><label>Correo electrónico</label><input id="reg-email" type="email" placeholder="Tu correo electrónico"></div>
-      <div class="field"><label>WhatsApp / Teléfono</label><input id="reg-phone" type="text" placeholder="Tu número de contacto"></div>
-      <div class="modal-section-title">Método de pago</div>
-      <div class="field"><label>Número de tarjeta</label><input type="text" placeholder="•••• •••• •••• ••••"></div>
-      <div class="field-row">
-        <div class="field"><label>Vencimiento</label><input type="text" placeholder="MM/AA"></div>
-        <div class="field"><label>CVV</label><input type="text" placeholder="123"></div>
-      </div>
-      <div class="modal-total">
-        <span>Total a pagar</span>
-        <span class="amount" id="modal-course-price">$0 MXN</span>
-      </div>
-      <button class="btn-primary" style="width:100%;text-align:center;" onclick="confirmRegister()">Confirmar inscripción y pagar</button>
-      <p class="modal-legal">Al confirmar, aceptas nuestros <a href="#" style="color:var(--purple);">Términos y Condiciones</a> y <a href="#" style="color:var(--purple);">Aviso de Privacidad</a>. Pago procesado de forma segura.</p>
-    </div>
-    <div id="modal-success-state" class="success-state" style="display:none;">
-      <div class="emoji">🎉</div>
-      <h4>¡Inscripción confirmada!</h4>
-      <p id="modal-success-text">Te esperamos en el curso. Te enviamos los detalles a tu correo.</p>
-    </div>
-  </div>
-</div>
+    <!-- SCRIPTS PRINCIPALES -->
+    <script>
+        function renderCursosPublicos(cursos) {
+            const container = document.getElementById('cursos-container');
+            const fechasContainer = document.getElementById('fechas-container');
+            
+            if (!cursos || cursos.length === 0) {
+                container.innerHTML = '<p class="text-center text-purple-200 col-span-2 py-8">Próximamente nuevos cursos. ¡Mantente atento!</p>';
+                fechasContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No hay fechas programadas actualmente</p>';
+                return;
+            }
 
-<script>
-// ---- MENÚ MÓVIL ----
-function toggleMenu(){
-  const ham = document.getElementById('hamburger');
-  const menu = document.getElementById('mobile-menu');
-  ham.classList.toggle('open');
-  menu.classList.toggle('open');
-  document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
-}
-function closeMobileMenu(e){
-  if(e.target === document.getElementById('mobile-menu')) toggleMenu();
-}
-function mobileNav(id){
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
-  const ids = ['home','sobre','servicios','cursos','recursos','contacto'];
-  const idx = ids.indexOf(id);
-  if(idx >= 0){
-    document.querySelectorAll('.tab')[idx]?.classList.add('active');
-    document.querySelectorAll('.mobile-tab')[idx]?.classList.add('active');
-  }
-  toggleMenu();
-  window.scrollTo({top:0, behavior:'instant'});
-}
+            const cursosActivos = cursos.filter(c => c.estado === 'Programado');
+            
+            if (cursosActivos.length === 0) {
+                container.innerHTML = '<p class="text-center text-purple-200 col-span-2 py-8">Próximamente nuevos cursos. ¡Mantente atento!</p>';
+                fechasContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No hay fechas programadas actualmente</p>';
+                return;
+            }
 
-// ---- NAVEGACIÓN ----
-function showPage(id, btn){
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  window.scrollTo({top:0, behavior:'instant'});
-}
+            container.innerHTML = cursosActivos.map(curso => `
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border-2 border-white/30 hover:bg-white/20 transition">
+                    <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
+                        <span class="bg-white/30 text-white text-xs font-bold px-3 py-1 rounded-full">Nivel: ${curso.nivel}</span>
+                        <span class="text-purple-200 text-sm">Desde $${Number(curso.precio).toLocaleString()} MXN</span>
+                    </div>
+                    <h3 class="font-heading text-xl font-bold mb-2">${curso.titulo}</h3>
+                    <p class="text-purple-100 text-sm mb-4">${curso.descripcion}</p>
+                    <button onclick="abrirDetalleCurso('${curso.id}')" class="text-white font-medium hover:text-purple-200 transition text-sm flex items-center gap-1 underline">Ver más detalles →</button>
+                </div>
+            `).join('');
 
-// ---- TABS CONTACTO ----
-function showCtab(id, btn){
-  document.querySelectorAll('.ctab-content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
-  document.getElementById('ctab-' + id).classList.add('active');
-  btn.classList.add('active');
-}
+            const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            fechasContainer.innerHTML = cursosActivos.map(curso => {
+                const fecha = new Date(curso.fecha + 'T12:00:00');
+                const mes = meses[fecha.getMonth()];
+                const dia = fecha.getDate();
+                const emojiInstructor = curso.instructor === 'Cici' ? '🦝' : '🦝';
+                return `
+                    <div class="flex gap-4 border-b-2 border-purple-100 pb-4">
+                        <div class="bg-gradient-to-br from-cic-primary to-cic-secondary text-white font-bold rounded-xl w-16 h-16 flex flex-col items-center justify-center shrink-0 shadow-lg">
+                            <span class="text-xs uppercase">${mes}</span>
+                            <span class="text-2xl">${dia}</span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-cic-primary">${curso.titulo}</h4>
+                            <p class="text-sm text-gray-600">Curso en línea · ${curso.duracion} · ${curso.horario}</p>
+                            <p class="text-xs text-cic-secondary font-bold mt-1">${emojiInstructor} Impartido por ${curso.instructor}</p>
+                            <p class="text-xs text-green-600 font-medium mt-1">${curso.lugares} lugares disponibles</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-// ---- TICKER ECONÓMICO ----
-async function actualizarTicker(){
-  try{
-    const res = await fetch('https://open.er-api.com/v6/latest/USD');
-    const data = await res.json();
-    if(data && data.rates){
-      const mxn = data.rates.MXN;
-      const eur = data.rates.EUR;
-      const eurMxn = mxn / eur;
-      document.getElementById('usd-mxn').textContent = '$' + mxn.toFixed(2);
-      document.getElementById('eur-mxn').textContent = '$' + eurMxn.toFixed(2);
-      const ahora = new Date();
-      document.getElementById('ticker-time').textContent =
-        'Actualizado: ' + ahora.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) + ' hrs · Fuente: Open Exchange Rates';
-    }
-  } catch(e){
-    document.getElementById('ticker-time').textContent = 'Datos de tipo de cambio no disponibles en este momento.';
-  }
-}
-actualizarTicker();
-setInterval(actualizarTicker, 300000);
+        function abrirDetalleCurso(id) {
+            const cursos = window.cursosData || [];
+            const curso = cursos.find(c => c.id === id);
+            if (!curso) return;
 
-// ---- CATÁLOGO DE CURSOS ----
-const cursos = {
-  admin: {
-    titulo: 'Administración para no administradores',
-    slogan: 'Ordena tu negocio y toma mejores decisiones sin ser contador.',
-    desc: 'Diseñado para dueños de negocio y emprendedores que llevan sus finanzas "a ojo". Aprenderás a organizar tus ingresos, gastos y utilidades de forma práctica, usando herramientas simples que puedes aplicar desde el primer día.',
-    duracion: '2 semanas', modalidad: 'En línea / Presencial', sesiones: '4 sesiones', certificado: 'Sí incluido',
-    precio: '$750 MXN',
-    temario: [
-      'Diferencia entre ingresos, gastos y utilidad real',
-      'Cómo llevar un control de efectivo básico',
-      'Presupuesto mensual para tu negocio (con plantilla)',
-      'Indicadores básicos: ¿va bien o mal mi negocio?',
-      'Errores más comunes al administrar sin formación'
-    ],
-    regKey: 'Administración para no administradores',
-    regDate: '14 Jul · Lun y Mié, 6:00 PM',
-    regPrice: '750'
-  },
-  importa: {
-    titulo: 'Importa tu primer producto desde cero',
-    slogan: 'Trae productos del extranjero de forma legal, segura y rentable.',
-    desc: 'Guía paso a paso para emprendedores y pequeños negocios que quieren importar por primera vez sin perderse en trámites aduaneros. Aprenderás el proceso completo desde la selección del proveedor hasta la entrega en México.',
-    duracion: '3 semanas', modalidad: 'En línea / Presencial', sesiones: '3 sesiones', certificado: 'Sí incluido',
-    precio: '$690 MXN',
-    temario: [
-      '¿Qué puedo importar y qué documentos necesito?',
-      'Cómo encontrar proveedores internacionales confiables',
-      'Incoterms básicos: quién paga qué en el transporte',
-      'Aranceles e impuestos de importación (SAT/VUCEM)',
-      'Errores más comunes del importador primerizo'
-    ],
-    regKey: 'Importa tu primer producto desde cero',
-    regDate: '21 Jul · Sábados, 10:00 AM',
-    regPrice: '690'
-  },
-  finanzas: {
-    titulo: 'Finanzas personales para emprendedores',
-    slogan: 'Separa tu dinero personal del de tu negocio y construye hábitos financieros reales.',
-    desc: 'Uno de los errores más costosos de los emprendedores es mezclar sus finanzas personales con las del negocio. En este curso aprenderás a separarlas, establecer un "sueldo" para ti y proyectar el futuro financiero de tu empresa.',
-    duracion: '1 semana', modalidad: 'En línea / Presencial', sesiones: '2 sesiones', certificado: 'Sí incluido',
-    precio: '$590 MXN',
-    temario: [
-      'Por qué separar finanzas personales y del negocio',
-      'Cómo establecer tu sueldo como dueño',
-      'Fondo de emergencia empresarial: cuánto y cómo',
-      'Proyección financiera a 3 y 6 meses',
-      'Herramientas gratuitas para controlar tu dinero'
-    ],
-    regKey: 'Finanzas personales para emprendedores',
-    regDate: '04 Ago · Mar y Jue, 7:00 PM',
-    regPrice: '590'
-  }
-};
+            const modal = document.getElementById('modal-curso-detalle');
+            const content = document.getElementById('modal-curso-detalle-content');
+            
+            content.innerHTML = `
+                <div class="gradient-hero p-6 text-white relative">
+                    <button onclick="cerrarModalDetalle()" class="absolute top-4 right-4 text-white/80 hover:text-white text-3xl font-bold">&times;</button>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">Nivel: ${curso.nivel}</span>
+                    </div>
+                    <h2 class="font-heading text-3xl font-bold mb-2">${curso.titulo}</h2>
+                    <p class="text-purple-100">Impartido por ${curso.instructor}</p>
+                </div>
+                <div class="p-8">
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-cic-lighter p-4 rounded-xl"><p class="text-sm text-gray-600 mb-1">Duración</p><p class="font-bold text-cic-primary text-lg">${curso.duracion}</p></div>
+                        <div class="bg-cic-lighter p-4 rounded-xl"><p class="text-sm text-gray-600 mb-1">Inversión</p><p class="font-bold text-cic-primary text-lg">$${Number(curso.precio).toLocaleString()} MXN</p></div>
+                    </div>
+                    ${curso.descripcionLarga ? `<div class="mb-6"><h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Descripción</h3><p class="text-gray-700">${curso.descripcionLarga}</p></div>` : ''}
+                    ${curso.aprenderas && curso.aprenderas.length > 0 ? `
+                        <div class="mb-6">
+                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">¿Qué aprenderás?</h3>
+                            <ul class="space-y-2 text-gray-700">
+                                ${curso.aprenderas.map(a => `<li class="flex items-start gap-2"><span class="text-cic-primary mt-1">✓</span> ${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    ${curso.temario && curso.temario.length > 0 ? `
+                        <div class="mb-6">
+                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Temario</h3>
+                            <div class="space-y-3">
+                                ${curso.temario.map(t => `<div class="bg-cic-lighter p-4 rounded-xl"><p class="font-bold text-cic-primary">${t.semana}: ${t.titulo}</p><p class="text-sm text-gray-600">${t.desc}</p></div>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${curso.incluye && curso.incluye.length > 0 ? `
+                        <div class="mb-6">
+                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Incluye</h3>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                ${curso.incluye.map(i => `<div class="flex items-center gap-2"><span class="text-cic-primary">✓</span> ${i}</div>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="flex gap-4">
+                        <a href="https://wa.me/522227756653?text=Hola,%20quiero%20inscribirme%20al%20curso:%20${encodeURIComponent(curso.titulo)}" target="_blank" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white text-center font-bold py-3 rounded-xl hover:shadow-lg transition">Inscribirme ahora</a>
+                        <button onclick="cerrarModalDetalle()" class="px-6 py-3 border-2 border-cic-primary text-cic-primary font-bold rounded-xl hover:bg-cic-light transition">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-function openDetalle(key){
-  const c = cursos[key];
-  document.getElementById('detalle-titulo').textContent = c.titulo;
-  document.getElementById('detalle-slogan').textContent = c.slogan;
-  document.getElementById('detalle-desc').textContent = c.desc;
-  document.getElementById('detalle-dur').textContent = c.duracion;
-  document.getElementById('detalle-mod').textContent = c.modalidad;
-  document.getElementById('detalle-ses').textContent = c.sesiones;
-  document.getElementById('detalle-cert').textContent = c.certificado;
-  document.getElementById('detalle-precio').textContent = c.precio;
-  const lista = document.getElementById('detalle-temario-list');
-  lista.innerHTML = c.temario.map(t => `<li>${t}</li>`).join('');
-  document.getElementById('detalle-btn-reg').onclick = function(){
-    closeDetalle();
-    openRegister(c.regKey, c.regDate, c.regPrice);
-  };
-  const waLink = document.getElementById('detalle-btn-wa');
-  waLink.href = `https://wa.me/522227756653?text=Hola%2C%20me%20interesa%20el%20curso%3A%20${encodeURIComponent(c.titulo)}`;
-  document.getElementById('detalle-modal').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-function closeDetalle(){
-  document.getElementById('detalle-modal').classList.remove('show');
-  document.body.style.overflow = '';
-}
+        function cerrarModalDetalle() {
+            document.getElementById('modal-curso-detalle').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
 
-// ---- MODAL INSCRIPCIÓN ----
-let currentCourse = {};
-function openRegister(title, date, price){
-  currentCourse = {title, date, price};
-  document.getElementById('modal-course-title').textContent = title;
-  document.getElementById('modal-course-date').textContent = date;
-  document.getElementById('modal-course-price').textContent = '$' + price + ' MXN';
-  document.getElementById('modal-form-state').style.display = 'block';
-  document.getElementById('modal-success-state').style.display = 'none';
-  document.getElementById('register-modal').classList.add('show');
-}
-function closeRegister(){
-  document.getElementById('register-modal').classList.remove('show');
-}
-async function confirmRegister(){
-  const name = document.getElementById('reg-name').value || '(sin nombre)';
-  const email = document.getElementById('reg-email').value || '(sin correo)';
-  const phone = document.getElementById('reg-phone').value || '(sin teléfono)';
-  const record = {
-    curso: currentCourse.title, fecha: currentCourse.date,
-    precio: currentCourse.price, nombre: name, correo: email,
-    telefono: phone, timestamp: new Date().toISOString()
-  };
-  try{
-    await window.storage.set('inscripcion:' + Date.now(), JSON.stringify(record), true);
-  } catch(err){ console.log('Storage no disponible en producción:', err); }
-  document.getElementById('modal-form-state').style.display = 'none';
-  document.getElementById('modal-success-state').style.display = 'block';
-  document.getElementById('modal-success-text').textContent =
-    'Quedaste inscrito en "' + currentCourse.title + '". Te enviamos los detalles a ' + email + '.';
-}
+        function openAdmin() {
+            document.getElementById('admin-panel').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-// ---- OPCIONES AGENDAR (interactividad básica) ----
-document.querySelectorAll('.opt-row').forEach(row => {
-  row.addEventListener('click', function(){
-    document.querySelectorAll('.opt-row').forEach(r => r.classList.remove('selected'));
-    this.classList.add('selected');
-  });
-});
-</script>
+        function closeAdmin() {
+            document.getElementById('admin-panel').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                openAdmin();
+            }
+            if (e.key === 'Escape' && document.getElementById('admin-panel').classList.contains('active')) {
+                closeAdmin();
+            }
+        });
+
+        function checkHashAdmin() {
+            if (window.location.hash === '#admin') openAdmin();
+        }
+        window.addEventListener('hashchange', checkHashAdmin);
+        window.addEventListener('load', checkHashAdmin);
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            
+            errorDiv.classList.add('hidden');
+            btn.innerHTML = '<div class="loading-spinner"></div> Ingresando...';
+            btn.disabled = true;
+
+            try {
+                await window.firebaseSignIn(window.firebaseAuth, email, password);
+            } catch (error) {
+                let msg = 'Error al ingresar';
+                if (error.code === 'auth/user-not-found') msg = 'No existe una cuenta con ese correo';
+                if (error.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
+                if (error.code === 'auth/invalid-email') msg = 'Correo no válido';
+                if (error.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde';
+                errorDiv.textContent = '❌ ' + msg;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = '<span>Ingresar</span>';
+                btn.disabled = false;
+            }
+        });
+
+        function cerrarSesion() {
+            window.firebaseSignOut(window.firebaseAuth).then(() => {
+                document.getElementById('admin-login').classList.remove('hidden');
+                document.getElementById('admin-dashboard').classList.add('hidden');
+                document.getElementById('loginForm').reset();
+                document.getElementById('loginError').classList.add('hidden');
+            });
+        }
+
+        function showTab(tab) {
+            document.getElementById('panel-crear').classList.toggle('hidden', tab !== 'crear');
+            document.getElementById('panel-historial').classList.toggle('hidden', tab !== 'historial');
+            document.getElementById('tab-crear').className = tab === 'crear' ? 'px-6 py-3 font-bold text-cic-primary border-b-4 border-cic-primary bg-white rounded-t-lg' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
+            document.getElementById('tab-historial').className = tab === 'historial' ? 'px-6 py-3 font-bold text-cic-primary border-b-4 border-cic-primary bg-white rounded-t-lg' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
+        }
+
+        document.getElementById('cursoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('cursoId').value;
+                const curso = {
+                    titulo: document.getElementById('cursoTitulo').value,
+                    instructor: document.getElementById('cursoInstructor').value,
+                    nivel: document.getElementById('cursoNivel').value,
+                    precio: parseInt(document.getElementById('cursoPrecio').value),
+                    duracion: document.getElementById('cursoDuracion').value,
+                    fecha: document.getElementById('cursoFecha').value,
+                    horario: document.getElementById('cursoHorario').value,
+                    lugares: parseInt(document.getElementById('cursoLugares').value),
+                    descripcion: document.getElementById('cursoDescripcion').value,
+                    descripcionLarga: document.getElementById('cursoDescripcionLarga').value,
+                    aprenderas: document.getElementById('cursoAprenderas').value.split('\n').filter(l => l.trim()),
+                    temario: document.getElementById('cursoTemario').value.split('\n').filter(l => l.trim()).map(l => {
+                        const match = l.match(/^(Semana\s*\d+):\s*([^|]+)\|?\s*(.*)$/i);
+                        if (match) return {semana: match[1].trim(), titulo: match[2].trim(), desc: match[3].trim()};
+                        return {semana: 'Módulo', titulo: l, desc: ''};
+                    }),
+                    incluye: document.getElementById('cursoIncluye').value.split('\n').filter(l => l.trim()),
+                    estado: document.getElementById('cursoEstado').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "cursos", id), curso);
+                    alert('✅ Curso actualizado exitosamente');
+                } else {
+                    curso.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cursos"), curso);
+                    alert('✅ Curso creado exitosamente');
+                }
+
+                limpiarFormulario();
+                showTab('historial');
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '<span>💾 Guardar Curso</span>';
+                btn.disabled = false;
+            }
+        });
+
+        function limpiarFormulario() {
+            document.getElementById('cursoForm').reset();
+            document.getElementById('cursoId').value = '';
+            document.getElementById('form-titulo').textContent = 'Nuevo Curso';
+        }
+
+        function editarCurso(id) {
+            const cursos = window.cursosData || [];
+            const curso = cursos.find(c => c.id === id);
+            if (!curso) return;
+
+            document.getElementById('cursoId').value = curso.id;
+            document.getElementById('cursoTitulo').value = curso.titulo;
+            document.getElementById('cursoInstructor').value = curso.instructor;
+            document.getElementById('cursoNivel').value = curso.nivel;
+            document.getElementById('cursoPrecio').value = curso.precio;
+            document.getElementById('cursoDuracion').value = curso.duracion;
+            document.getElementById('cursoFecha').value = curso.fecha;
+            document.getElementById('cursoHorario').value = curso.horario;
+            document.getElementById('cursoLugares').value = curso.lugares;
+            document.getElementById('cursoDescripcion').value = curso.descripcion;
+            document.getElementById('cursoDescripcionLarga').value = curso.descripcionLarga || '';
+            document.getElementById('cursoAprenderas').value = (curso.aprenderas || []).join('\n');
+            document.getElementById('cursoTemario').value = (curso.temario || []).map(t => `${t.semana}: ${t.titulo} | ${t.desc}`).join('\n');
+            document.getElementById('cursoIncluye').value = (curso.incluye || []).join('\n');
+            document.getElementById('cursoEstado').value = curso.estado;
+            
+            document.getElementById('form-titulo').textContent = 'Editar: ' + curso.titulo;
+            showTab('crear');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        async function cambiarEstado(id, nuevoEstado) {
+            try {
+                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "cursos", id), { estado: nuevoEstado });
+                alert(`✅ Estado actualizado a: ${nuevoEstado}`);
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function eliminarCurso(id) {
+            if (!confirm('¿Estás seguro de eliminar este curso? Esta acción no se puede deshacer.')) return;
+            try {
+                await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "cursos", id));
+                alert('🗑️ Curso eliminado');
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function renderHistorial(cursos) {
+            const container = document.getElementById('historial-container');
+            const vacio = document.getElementById('historial-vacio');
+            
+            if (!cursos || cursos.length === 0) {
+                container.innerHTML = '';
+                vacio.classList.remove('hidden');
+                return;
+            }
+            vacio.classList.add('hidden');
+
+            container.innerHTML = cursos.map(curso => {
+                const estadoClass = curso.estado === 'Programado' ? 'status-programado' : curso.estado === 'En curso' ? 'status-encurso' : 'status-finalizado';
+                const fecha = new Date(curso.fecha + 'T12:00:00').toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
+                
+                return `
+                    <div class="border-2 border-purple-100 rounded-xl p-6 hover:shadow-md transition">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                                    <h3 class="font-heading text-lg font-bold text-cic-primary">${curso.titulo}</h3>
+                                    <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${curso.estado}</span>
+                                </div>
+                                <p class="text-sm text-gray-600">🦝 ${curso.instructor} · ${curso.nivel} · $${Number(curso.precio).toLocaleString()} MXN</p>
+                                <p class="text-sm text-gray-600">📅 ${fecha} · ${curso.horario} · ${curso.lugares} lugares</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <select onchange="cambiarEstado('${curso.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm font-medium focus:border-cic-secondary outline-none">
+                                    <option value="Programado" ${curso.estado==='Programado'?'selected':''}>📅 Programado</option>
+                                    <option value="En curso" ${curso.estado==='En curso'?'selected':''}>🟡 En curso</option>
+                                    <option value="Finalizado" ${curso.estado==='Finalizado'?'selected':''}>✅ Finalizado</option>
+                                </select>
+                                <button onclick="editarCurso('${curso.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-cic-secondary transition">✏️ Editar</button>
+                                <button onclick="eliminarCurso('${curso.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition">🗑️ Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function exportarCursos() {
+            const cursos = window.cursosData || [];
+            const dataStr = JSON.stringify(cursos, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cic_cursos_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function importarCursos(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const cursos = JSON.parse(e.target.result);
+                    if (Array.isArray(cursos) && confirm(`¿Importar ${cursos.length} cursos? Esto agregará los cursos a Firebase.`)) {
+                        for (const curso of cursos) {
+                            const { id, ...data } = curso;
+                            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cursos"), data);
+                        }
+                        alert('📤 Cursos importados exitosamente');
+                    }
+                } catch (err) {
+                    alert('❌ Error al leer el archivo: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const servicio = document.getElementById('servicio').value;
+            const mensaje = document.getElementById('mensaje').value;
+            const asunto = `Solicitud de Diagnóstico - ${nombre}`;
+            const cuerpo = `Hola CIC Consultoría!\n\nNombre: ${nombre}\nCorreo: ${email}\nServicio: ${servicio}\nMensaje: ${mensaje}`;
+            window.location.href = `mailto:admin@cicconsultoria.mx?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+            this.reset();
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal-curso-detalle');
+            if (event.target === modal) cerrarModalDetalle();
+        };
+    </script>
 </body>
 </html>
