@@ -1,1 +1,0 @@
-document.querySelectorAll('a').forEach(a=>a.style.cursor='pointer');
