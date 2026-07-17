@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - CIC Consultoría</title>
+    <title>CIC Consultoría | Consultoría Estratégica para Empresas en Crecimiento</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC6perkQ9d4LaC4DwABXozl0HI87gFJrdA",
@@ -24,485 +24,386 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.firebaseSignIn = signInWithEmailAndPassword;
-        window.firebaseSignOut = signOut;
-        window.firebaseOnAuth = onAuthStateChanged;
-        window.firebaseCollection = collection;
-        window.firebaseAddDoc = addDoc;
-        window.firebaseUpdateDoc = updateDoc;
-        window.firebaseDeleteDoc = deleteDoc;
-        window.firebaseDoc = doc;
-        window.firebaseOnSnapshot = onSnapshot;
-        window.firebaseQuery = query;
-        window.firebaseOrderBy = orderBy;
-        window.firebaseTimestamp = Timestamp;
-
-        // Escuchar todas las colecciones
-        const collections = ['cursos', 'blogs', 'inscripciones', 'pagos', 'gastos'];
-        collections.forEach(col => {
-            const ref = collection(db, col);
-            const q = query(ref, orderBy("fecha" in col ? "fecha" : "createdAt", "desc"));
-            onSnapshot(q, (snapshot) => {
-                window[col + 'Data'] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (col === 'cursos' && typeof window.renderHistorialCursos === 'function') window.renderHistorialCursos();
-                if (col === 'blogs' && typeof window.renderHistorialBlogs === 'function') window.renderHistorialBlogs();
-                if (col === 'pagos' && typeof window.renderPagos === 'function') window.renderPagos();
-                if (col === 'gastos' && typeof window.renderGastos === 'function') window.renderGastos();
-                if (typeof window.updateKPIs === 'function') window.updateKPIs();
-            });
+        // Escuchar cursos
+        const cursosRef = collection(db, "cursos");
+        const qCursos = query(cursosRef, orderBy("fecha", "asc"));
+        onSnapshot(qCursos, (snapshot) => {
+            window.cursosData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (typeof window.renderCursos === 'function') window.renderCursos();
         });
 
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user;
-            if (user) {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('admin-section').classList.remove('hidden');
-                document.getElementById('admin-email').textContent = user.email;
-            }
+        // Escuchar blogs
+        const blogsRef = collection(db, "blogs");
+        const qBlogs = query(blogsRef, orderBy("fechaPublicacion", "desc"));
+        onSnapshot(qBlogs, (snapshot) => {
+            window.blogsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (typeof window.renderBlogs === 'function') window.renderBlogs();
         });
     </script>
 
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { cic: { primary: '#5E1B96', secondary: '#7B3FA8', accent: '#9B5FD9' } }, fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        cic: { primary: '#5E1B96', secondary: '#7B3FA8', accent: '#9B5FD9', light: '#F3E5F5', lighter: '#FAF5FC' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] }
+                }
+            }
         }
     </script>
     <style>
-        body { background: #f3f4f6; }
-        .gradient-header { background: linear-gradient(135deg, #5E1B96 0%, #7B3FA8 100%); }
-        .tab-active { border-bottom: 3px solid #5E1B96; color: #5E1B96; font-weight: 600; }
-        .kpi-card { background: linear-gradient(135deg, #5E1B96 0%, #7B3FA8 100%); }
+        body { color: #4A148C; }
+        .gradient-hero { background: linear-gradient(135deg, #5E1B96 0%, #9B5FD9 50%, #7B3FA8 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(94, 27, 150, 0.15); }
+        .glass-nav { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-bottom: 2px solid rgba(94, 27, 150, 0.1); }
+        .gradient-purple-light { background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); }
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); z-index: 100; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        .indicator-card { background: linear-gradient(135deg, #5E1B96 0%, #7B3FA8 100%); }
     </style>
 </head>
-<body>
+<body class="bg-cic-lighter font-sans">
 
-    <!-- Login -->
-    <div id="login-section" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-            <div class="text-center mb-6">
-                <img src="logo-cic.png" alt="CIC" class="h-16 mx-auto mb-4">
-                <h2 class="font-heading text-2xl font-bold text-cic-primary">Panel de Administración</h2>
-            </div>
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="loginEmail" placeholder="Correo electrónico" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                <input type="password" id="loginPassword" placeholder="Contraseña" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition">Ingresar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Admin Dashboard -->
-    <div id="admin-section" class="hidden min-h-screen">
-        <!-- Header -->
-        <div class="gradient-header text-white shadow-lg sticky top-0 z-10">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- Navegación -->
+    <nav class="glass-nav fixed w-full z-50 top-0 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
                 <div class="flex items-center gap-3">
-                    <img src="logo-cic-blanco.png" alt="CIC" class="h-10">
-                    <span class="font-heading font-bold text-lg">Panel de Administración</span>
-                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs" id="admin-email"></span>
+                    <img src="logo-cic.png" alt="CIC Consultoría" class="h-12 w-auto">
                 </div>
-                <button onclick="window.firebaseSignOut(window.firebaseAuth)" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar sesión
-                </button>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#inicio" class="text-cic-primary hover:text-cic-secondary font-medium transition">Inicio</a>
+                    <a href="#servicios" class="text-cic-primary hover:text-cic-secondary font-medium transition">Servicios</a>
+                    <a href="#indicadores" class="text-cic-primary hover:text-cic-secondary font-medium transition">Indicadores</a>
+                    <a href="#capacitacion" class="text-cic-primary hover:text-cic-secondary font-medium transition">Capacitación</a>
+                    <a href="#blogs" class="text-cic-primary hover:text-cic-secondary font-medium transition">Blog</a>
+                    <a href="#contacto" class="text-cic-primary hover:text-cic-secondary font-medium transition">Contacto</a>
+                </div>
+                <a href="#contacto" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition">Agendar Cita</a>
             </div>
         </div>
+    </nav>
 
-        <div class="max-w-7xl mx-auto px-4 py-8">
-            <!-- Tabs principales -->
-            <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap">
-                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-active px-6 py-3 font-medium">📊 Dashboard</button>
-                <button onclick="showTab('cursos')" id="tab-cursos" class="px-6 py-3 font-medium text-gray-600">📚 Cursos</button>
-                <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600">📝 Blogs</button>
-                <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600"> Gestión Administrativa</button>
+    <!-- Hero -->
+    <section id="inicio" class="gradient-hero pt-32 pb-20 lg:pt-40 lg:pb-28 text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="lg:w-2/3">
+                <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/30">Transformamos tu negocio con estrategia y visión global</div>
+                <h1 class="font-heading text-4xl lg:text-6xl font-bold leading-tight mb-6">Tu negocio merece crecer con <span class="text-white">orden, control</span> y visión global.</h1>
+                <p class="text-lg lg:text-xl text-purple-100 mb-8 max-w-2xl">Transformamos el caos operativo y administrativo en sistemas eficientes.</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#contacto" class="bg-white text-cic-primary font-heading font-bold px-8 py-4 rounded-xl text-center hover:bg-purple-50 transition shadow-lg">Agenda tu diagnóstico sin costo</a>
+                    <a href="https://wa.me/522227756653" target="_blank" class="bg-white/10 backdrop-blur-sm border-2 border-white/50 text-white font-medium px-8 py-4 rounded-xl text-center hover:bg-white/20 transition">
+                        <i class="fab fa-whatsapp mr-2"></i> Hablar por WhatsApp
+                    </a>
+                </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Dashboard -->
-            <div id="panel-dashboard" class="space-y-6">
-                <div class="grid md:grid-cols-4 gap-6">
-                    <div class="kpi-card text-white rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <i class="fas fa-users text-3xl"></i>
-                            <span class="text-purple-200 text-sm">Inscripciones</span>
-                        </div>
-                        <p class="text-4xl font-bold" id="kpi-inscripciones">0</p>
+    <!-- Indicadores Económicos -->
+    <section id="indicadores" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="font-heading text-3xl font-bold text-cic-primary text-center mb-12">Indicadores Económicos</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="indicator-card text-white rounded-xl p-4 text-center">
+                    <i class="fas fa-dollar-sign text-2xl mb-2"></i>
+                    <p class="text-xs text-purple-200">USD</p>
+                    <p class="text-xl font-bold" id="tc-usd">$0.00</p>
+                </div>
+                <div class="indicator-card text-white rounded-xl p-4 text-center">
+                    <i class="fas fa-euro-sign text-2xl mb-2"></i>
+                    <p class="text-xs text-purple-200">EUR</p>
+                    <p class="text-xl font-bold" id="tc-eur">$0.00</p>
+                </div>
+                <div class="indicator-card text-white rounded-xl p-4 text-center">
+                    <i class="fas fa-chart-line text-2xl mb-2"></i>
+                    <p class="text-xs text-purple-200">Bolsa (IPC)</p>
+                    <p class="text-xl font-bold" id="bolsa">0</p>
+                </div>
+                <div class="indicator-card text-white rounded-xl p-4 text-center">
+                    <i class="fas fa-money-bill-wave text-2xl mb-2"></i>
+                    <p class="text-xs text-purple-200">Salario Mínimo</p>
+                    <p class="text-lg font-bold" id="salario">$0.00</p>
+                </div>
+                <div class="indicator-card text-white rounded-xl p-4 text-center">
+                    <i class="fas fa-coins text-2xl mb-2"></i>
+                    <p class="text-xs text-purple-200">UDIS</p>
+                    <p class="text-xl font-bold" id="udis">$0.0000</p>
+                </div>
+                <div class="indicator-card text-white rounded-xl p-4 text-center">
+                    <i class="fas fa-calculator text-2xl mb-2"></i>
+                    <p class="text-xs text-purple-200">UMA</p>
+                    <p class="text-xl font-bold" id="uma">$0.00</p>
+                </div>
+            </div>
+            <p class="text-center text-gray-500 text-sm mt-4">Actualizado: <span id="fecha-actualizacion"></span></p>
+        </div>
+    </section>
+
+    <!-- Servicios -->
+    <section id="servicios" class="py-20 bg-cic-lighter">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Soluciones de Alta Dirección</h2>
+                <p class="text-gray-600 text-lg">Es lo que tu negocio necesita resolver hoy.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover">
+                    <div class="text-3xl mb-4">📊</div>
+                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Administración Eficiente</h3>
+                    <ul class="text-sm text-gray-700 space-y-1"><li>• Estructuración Financiera</li><li>• Manuales de Procesos</li><li>• Gestión Fiscal Preventiva</li></ul>
+                </div>
+                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover">
+                    <div class="text-3xl mb-4">🌎</div>
+                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Comercio Exterior</h3>
+                    <ul class="text-sm text-gray-700 space-y-1"><li>• Investigación de Mercados</li><li>• Cumplimiento Normativo</li><li>• Clasificación Arancelaria</li></ul>
+                </div>
+                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover">
+                    <div class="text-3xl mb-4">💻</div>
+                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Modernización Digital</h3>
+                    <ul class="text-sm text-gray-700 space-y-1"><li>• Canales Digitales</li><li>• CRM/ERP</li><li>• Infraestructura Corporativa</li></ul>
+                </div>
+                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover">
+                    <div class="text-3xl mb-4"></div>
+                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Gestión de Proyectos</h3>
+                    <ul class="text-sm text-gray-700 space-y-1"><li>• Ruta Crítica y KPIs</li><li>• Control de presupuestos</li><li>• Gestión de equipos</li></ul>
+                </div>
+                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover md:col-span-2 lg:col-span-2">
+                    <div class="text-3xl mb-4">🚀</div>
+                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Emprendimiento y Validación</h3>
+                    <div class="grid sm:grid-cols-3 gap-4 text-sm text-gray-700"><div>• Modelado de Negocios</div><div>• Análisis de mercado</div><div>• Plan de acción</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Capacitación -->
+    <section id="capacitacion" class="py-20 bg-gradient-to-br from-cic-primary via-cic-secondary to-cic-accent text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="font-heading text-3xl lg:text-4xl font-bold mb-4">Tu primer paso en el mundo real</h2>
+                <p class="text-purple-100 text-lg mb-8">Aprende lo esencial, a tu ritmo, con herramientas listas para usar.</p>
+                <div class="flex justify-center items-center gap-8">
+                    <div class="text-center">
+                        <img src="cici.png" alt="Cici" class="w-32 h-32 mx-auto mb-3 rounded-full border-4 border-white/50">
+                        <p class="font-bold text-white text-lg">Cici</p>
+                        <p class="text-sm text-purple-200">Experta en Administración</p>
                     </div>
-                    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <i class="fas fa-dollar-sign text-3xl"></i>
-                            <span class="text-green-200 text-sm">Ingresos</span>
-                        </div>
-                        <p class="text-4xl font-bold" id="kpi-ingresos">$0</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <i class="fas fa-credit-card text-3xl"></i>
-                            <span class="text-red-200 text-sm">Gastos</span>
-                        </div>
-                        <p class="text-4xl font-bold" id="kpi-gastos">$0</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <i class="fas fa-chart-line text-3xl"></i>
-                            <span class="text-blue-200 text-sm">Balance</span>
-                        </div>
-                        <p class="text-4xl font-bold" id="kpi-balance">$0</p>
+                    <div class="text-center">
+                        <img src="coco.png" alt="Coco" class="w-32 h-32 mx-auto mb-3 rounded-full border-4 border-white/50">
+                        <p class="font-bold text-white text-lg">Coco</p>
+                        <p class="text-sm text-purple-200">Especialista en Comercio Exterior</p>
                     </div>
                 </div>
             </div>
+            <div id="cursos-container" class="grid lg:grid-cols-2 gap-8">
+                <div class="col-span-2 text-center py-8 text-purple-200">Cargando cursos...</div>
+            </div>
+        </div>
+    </section>
 
-            <!-- Cursos -->
-            <div id="panel-cursos" class="hidden">
-                <div class="flex gap-2 mb-6">
-                    <button onclick="showCursosSubtab('crear')" id="cursos-subtab-crear" class="tab-active px-6 py-3 font-medium">➕ Crear Curso</button>
-                    <button onclick="showCursosSubtab('lista')" id="cursos-subtab-lista" class="px-6 py-3 font-medium text-gray-600">📋 Lista de Cursos</button>
+    <!-- Blogs -->
+    <section id="blogs" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Blog & Actualizaciones</h2>
+                <p class="text-gray-600 text-lg">Mantente informado sobre tendencias, noticias y consejos para tu negocio.</p>
+            </div>
+            <div id="blogs-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="col-span-3 text-center py-8 text-gray-500">Cargando artículos...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="py-20 bg-cic-lighter">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div>
+                    <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-6">Hablemos de tu negocio</h2>
+                    <p class="text-gray-600 text-lg mb-8">Agendamos una sesión de 30 minutos sin costo.</p>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Correo</p>
+                                <p class="font-bold text-cic-primary">admin@cicconsultora.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">WhatsApp</p>
+                                <p class="font-bold text-cic-primary">+52 222 775 6653</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <p class="text-gray-700 font-bold mb-4">Síguenos en redes sociales:</p>
+                        <div class="flex gap-4">
+                            <a href="https://www.facebook.com/share/18yMgc5nyg/?mibextid=wwXIfr" target="_blank" class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition">
+                                <i class="fab fa-facebook-f text-xl"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/company/cic-consultor%C3%ADa/" target="_blank" class="w-12 h-12 bg-blue-700 rounded-full flex items-center justify-center text-white hover:bg-blue-800 transition">
+                                <i class="fab fa-linkedin-in text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <p class="text-gray-700 font-bold mb-4">O escanea nuestro QR:</p>
+                        <img src="qr-whatsapp.png" alt="WhatsApp QR" class="w-48 h-48 rounded-xl shadow-lg">
+                    </div>
                 </div>
-                
-                <div id="cursos-crear" class="bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Crear/Editar Curso</h2>
-                    <form id="cursoForm" class="space-y-6">
-                        <input type="hidden" id="cursoId">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <input type="text" id="cursoTitulo" placeholder="Título del curso" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option value="Cici">🦝 Cici</option>
-                                <option value="Coco"> Coco</option>
-                            </select>
-                        </div>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <input type="number" id="cursoPrecio" placeholder="Precio (MXN)" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <input type="date" id="cursoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <input type="text" id="cursoHorario" placeholder="Horario" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        </div>
-                        <textarea id="cursoDescripcion" placeholder="Descripción" required rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        <select id="cursoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <option value="Programado">📅 Programado</option>
-                            <option value="En curso">🟡 En curso</option>
-                            <option value="Finalizado">✅ Finalizado</option>
+                <div class="bg-white p-8 rounded-2xl shadow-xl">
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📨 Envíanos un mensaje</h3>
+                    <form class="space-y-4">
+                        <input type="text" placeholder="Nombre completo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <input type="email" placeholder="Correo electrónico" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <select required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="">Selecciona una opción</option>
+                            <option>Administración y Procesos</option>
+                            <option>Comercio Exterior</option>
+                            <option>Modernización</option>
+                            <option>Capacitación</option>
+                            <option>Otro</option>
                         </select>
-                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Curso</button>
+                        <textarea rows="3" placeholder="Cuéntanos brevemente tu situación" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">Enviar mensaje</button>
                     </form>
-                </div>
-
-                <div id="cursos-lista" class="hidden bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Cursos Registrados</h2>
-                    <div id="cursos-container" class="space-y-4"></div>
-                </div>
-            </div>
-
-            <!-- Blogs -->
-            <div id="panel-blogs" class="hidden">
-                <div class="flex gap-2 mb-6">
-                    <button onclick="showBlogsSubtab('crear')" id="blogs-subtab-crear" class="tab-active px-6 py-3 font-medium">➕ Crear Blog</button>
-                    <button onclick="showBlogsSubtab('lista')" id="blogs-subtab-lista" class="px-6 py-3 font-medium text-gray-600">📋 Lista de Blogs</button>
-                </div>
-                
-                <div id="blogs-crear" class="bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Crear/Editar Artículo</h2>
-                    <form id="blogForm" class="space-y-6">
-                        <input type="hidden" id="blogId">
-                        <input type="text" id="blogTitulo" placeholder="Título del artículo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <input type="text" id="blogCategoria" placeholder="Categoría" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <textarea id="blogResumen" placeholder="Resumen" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        <textarea id="blogContenido" placeholder="Contenido completo" required rows="8" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        <input type="url" id="blogImagen" placeholder="URL de imagen (opcional)" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Publicar Artículo</button>
-                    </form>
-                </div>
-
-                <div id="blogs-lista" class="hidden bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Artículos Publicados</h2>
-                    <div id="blogs-container" class="space-y-4"></div>
-                </div>
-            </div>
-
-            <!-- Gestión Administrativa -->
-            <div id="panel-admin" class="hidden">
-                <div class="flex gap-2 mb-6">
-                    <button onclick="showAdminSubtab('pagos')" id="admin-subtab-pagos" class="tab-active px-6 py-3 font-medium">💵 Pagos</button>
-                    <button onclick="showAdminSubtab('gastos')" id="admin-subtab-gastos" class="px-6 py-3 font-medium text-gray-600">💸 Gastos</button>
-                </div>
-                
-                <div id="admin-pagos" class="space-y-6">
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Registrar Pago</h2>
-                        <form id="pagoForm" class="space-y-6">
-                            <input type="text" id="pagoCliente" placeholder="Nombre del cliente" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <input type="number" id="pagoMonto" placeholder="Monto (MXN)" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <input type="text" id="pagoConcepto" placeholder="Concepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <input type="date" id="pagoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Registrar Pago</button>
-                        </form>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">Historial de Pagos</h3>
-                        <div id="pagos-container" class="space-y-4"></div>
-                    </div>
-                </div>
-
-                <div id="admin-gastos" class="hidden space-y-6">
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Registrar Gasto</h2>
-                        <form id="gastoForm" class="space-y-6">
-                            <input type="text" id="gastoConcepto" placeholder="Concepto del gasto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <input type="number" id="gastoMonto" placeholder="Monto (MXN)" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <select id="gastoCategoria" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option>Infraestructura</option>
-                                <option>Marketing</option>
-                                <option>Servicios</option>
-                                <option>Oficina</option>
-                                <option>Impuestos</option>
-                                <option>Otros</option>
-                            </select>
-                            <input type="date" id="gastoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            <button type="submit" class="w-full bg-red-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Registrar Gasto</button>
-                        </form>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">Historial de Gastos</h3>
-                        <div id="gastos-container" class="space-y-4"></div>
-                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <img src="logo-cic-blanco.png" alt="CIC Consultoría" class="h-12 w-auto">
+                <div class="text-purple-200 text-sm text-center">
+                    <p>© 2026 CIC Consultoría. Todos los derechos reservados.</p>
+                    <p class="mt-1">🦝 Diseñado con Cici y Coco</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="https://www.facebook.com/share/18yMgc5nyg/?mibextid=wwXIfr" target="_blank" class="text-white hover:text-purple-200 transition">
+                        <i class="fab fa-facebook text-2xl"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/company/cic-consultor%C3%ADa/" target="_blank" class="text-white hover:text-purple-200 transition">
+                        <i class="fab fa-linkedin text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/522227756653" target="_blank" class="whatsapp-float">
+        <i class="fab fa-whatsapp text-3xl"></i>
+    </a>
 
     <script>
-        // Tabs
-        function showTab(tab) {
-            ['dashboard', 'cursos', 'blogs', 'admin'].forEach(t => {
-                document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
-                document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-            });
-            if (tab === 'dashboard') updateKPIs();
-        }
-
-        function showCursosSubtab(tab) {
-            document.getElementById('cursos-crear').classList.toggle('hidden', tab !== 'crear');
-            document.getElementById('cursos-lista').classList.toggle('hidden', tab !== 'lista');
-            document.getElementById('cursos-subtab-crear').className = tab === 'crear' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-            document.getElementById('cursos-subtab-lista').className = tab === 'lista' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-        }
-
-        function showBlogsSubtab(tab) {
-            document.getElementById('blogs-crear').classList.toggle('hidden', tab !== 'crear');
-            document.getElementById('blogs-lista').classList.toggle('hidden', tab !== 'lista');
-            document.getElementById('blogs-subtab-crear').className = tab === 'crear' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-            document.getElementById('blogs-subtab-lista').className = tab === 'lista' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-        }
-
-        function showAdminSubtab(tab) {
-            document.getElementById('admin-pagos').classList.toggle('hidden', tab !== 'pagos');
-            document.getElementById('admin-gastos').classList.toggle('hidden', tab !== 'gastos');
-            document.getElementById('admin-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-            document.getElementById('admin-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-        }
-
-        // Login
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            try {
-                await window.firebaseSignIn(window.firebaseAuth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        });
-
-        // Cursos
-        document.getElementById('cursoForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('cursoId').value;
-            const data = {
-                titulo: document.getElementById('cursoTitulo').value,
-                instructor: document.getElementById('cursoInstructor').value,
-                precio: parseFloat(document.getElementById('cursoPrecio').value),
-                fecha: document.getElementById('cursoFecha').value,
-                horario: document.getElementById('cursoHorario').value,
-                descripcion: document.getElementById('cursoDescripcion').value,
-                estado: document.getElementById('cursoEstado').value,
-                updatedAt: new Date().toISOString()
-            };
-            
-            try {
-                if (id) {
-                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "cursos", id), data);
-                } else {
-                    data.createdAt = new Date().toISOString();
-                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cursos"), data);
-                }
-                alert('✅ Curso guardado');
-                this.reset();
-                document.getElementById('cursoId').value = '';
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        });
-
-        function renderHistorialCursos() {
+        // Renderizar cursos
+        function renderCursos() {
             const container = document.getElementById('cursos-container');
             const cursos = window.cursosData || [];
-            container.innerHTML = cursos.map(c => `
-                <div class="border-2 border-purple-100 rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-cic-primary">${c.titulo}</h3>
-                            <p class="text-sm text-gray-600">${c.instructor} · $${c.precio} · ${c.fecha}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="editarCurso('${c.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm">✏️</button>
-                            <button onclick="eliminarCurso('${c.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">🗑️</button>
-                        </div>
+            const activos = cursos.filter(c => c.estado === 'Programado');
+            
+            if (activos.length === 0) {
+                container.innerHTML = '<p class="text-center text-purple-200 col-span-2">Próximamente nuevos cursos</p>';
+                return;
+            }
+            
+            container.innerHTML = activos.map(curso => `
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border-2 border-white/30">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="bg-white/30 text-white text-xs font-bold px-3 py-1 rounded-full">${curso.nivel}</span>
+                        <span class="text-purple-200">$${Number(curso.precio).toLocaleString()} MXN</span>
                     </div>
+                    <h3 class="font-heading text-xl font-bold mb-2">${curso.titulo}</h3>
+                    <p class="text-purple-100 text-sm mb-4">${curso.descripcion}</p>
+                    <a href="https://wa.me/522227756653?text=Me%20interesa%20el%20curso:%20${encodeURIComponent(curso.titulo)}" target="_blank" class="inline-block bg-white text-cic-primary font-bold px-4 py-2 rounded-lg hover:bg-purple-50 transition">Inscribirme</a>
                 </div>
             `).join('');
         }
 
-        async function editarCurso(id) {
-            const curso = window.cursosData.find(c => c.id === id);
-            if (curso) {
-                document.getElementById('cursoId').value = curso.id;
-                document.getElementById('cursoTitulo').value = curso.titulo;
-                document.getElementById('cursoInstructor').value = curso.instructor;
-                document.getElementById('cursoPrecio').value = curso.precio;
-                document.getElementById('cursoFecha').value = curso.fecha;
-                document.getElementById('cursoHorario').value = curso.horario;
-                document.getElementById('cursoDescripcion').value = curso.descripcion;
-                document.getElementById('cursoEstado').value = curso.estado;
-                showCursosSubtab('crear');
-            }
-        }
-
-        async function eliminarCurso(id) {
-            if (confirm('¿Eliminar curso?')) {
-                await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "cursos", id));
-            }
-        }
-
-        // Blogs
-        document.getElementById('blogForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('blogId').value;
-            const data = {
-                titulo: document.getElementById('blogTitulo').value,
-                categoria: document.getElementById('blogCategoria').value,
-                resumen: document.getElementById('blogResumen').value,
-                contenido: document.getElementById('blogContenido').value,
-                imagen: document.getElementById('blogImagen').value,
-                fechaPublicacion: new Date().toISOString()
-            };
-            
-            try {
-                if (id) {
-                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "blogs", id), data);
-                } else {
-                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "blogs"), data);
-                }
-                alert('✅ Artículo publicado');
-                this.reset();
-                document.getElementById('blogId').value = '';
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        });
-
-        function renderHistorialBlogs() {
+        // Renderizar blogs
+        function renderBlogs() {
             const container = document.getElementById('blogs-container');
             const blogs = window.blogsData || [];
-            container.innerHTML = blogs.map(b => `
-                <div class="border-2 border-purple-100 rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-cic-primary">${b.titulo}</h3>
-                            <p class="text-sm text-gray-600">${b.categoria} · ${new Date(b.fechaPublicacion).toLocaleDateString()}</p>
+            
+            if (blogs.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 col-span-3">Próximamente nuevos artículos</p>';
+                return;
+            }
+            
+            container.innerHTML = blogs.map(blog => `
+                <article class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                    ${blog.imagen ? `<img src="${blog.imagen}" alt="${blog.titulo}" class="w-full h-48 object-cover">` : '<div class="w-full h-48 bg-cic-primary flex items-center justify-center"><i class="fas fa-newspaper text-6xl text-white/30"></i></div>'}
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-cic-light text-cic-primary text-xs font-bold px-3 py-1 rounded-full">${blog.categoria || 'General'}</span>
+                            <span class="text-gray-500 text-xs">${new Date(blog.fechaPublicacion).toLocaleDateString('es-MX')}</span>
                         </div>
-                        <button onclick="eliminarBlog('${b.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">️</button>
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-2">${blog.titulo}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${blog.resumen || blog.contenido?.substring(0, 120) + '...'}</p>
+                        <button onclick="verBlog('${blog.id}')" class="text-cic-primary font-bold hover:text-cic-secondary transition">Leer más →</button>
                     </div>
-                </div>
+                </article>
             `).join('');
         }
 
-        async function eliminarBlog(id) {
-            if (confirm('¿Eliminar artículo?')) {
-                await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "blogs", id));
+        function verBlog(id) {
+            const blog = window.blogsData.find(b => b.id === id);
+            if (blog) {
+                alert(blog.contenido || 'Contenido completo del blog');
             }
         }
 
-        // Pagos y Gastos
-        document.getElementById('pagoForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "pagos"), {
-                cliente: document.getElementById('pagoCliente').value,
-                monto: parseFloat(document.getElementById('pagoMonto').value),
-                concepto: document.getElementById('pagoConcepto').value,
-                fecha: document.getElementById('pagoFecha').value,
-                createdAt: window.firebaseTimestamp.now()
-            });
-            alert('✅ Pago registrado');
-            this.reset();
-            document.getElementById('pagoFecha').value = new Date().toISOString().split('T')[0];
+        // Cargar indicadores económicos
+        async function cargarIndicadores() {
+            try {
+                // Tipo de cambio (simulado - en producción usar API de Banxico)
+                const tcUSD = (17.50 + Math.random() * 0.5).toFixed(2);
+                const tcEUR = (19.20 + Math.random() * 0.5).toFixed(2);
+                
+                // Bolsa (simulado - IPC)
+                const bolsa = Math.floor(50000 + Math.random() * 5000);
+                
+                // Salario mínimo 2024
+                const salario = 248.93;
+                
+                // UDIS (simulado)
+                const udis = (7.5 + Math.random() * 0.1).toFixed(4);
+                
+                // UMA 2024
+                const uma = 108.41;
+                
+                document.getElementById('tc-usd').textContent = '$' + tcUSD;
+                document.getElementById('tc-eur').textContent = '$' + tcEUR;
+                document.getElementById('bolsa').textContent = bolsa.toLocaleString();
+                document.getElementById('salario').textContent = '$' + salario.toFixed(2);
+                document.getElementById('udis').textContent = '$' + udis;
+                document.getElementById('uma').textContent = '$' + uma.toFixed(2);
+                document.getElementById('fecha-actualizacion').textContent = new Date().toLocaleString('es-MX');
+            } catch (error) {
+                console.error('Error cargando indicadores:', error);
+            }
+        }
+
+        // Cargar al iniciar
+        window.addEventListener('load', () => {
+            cargarIndicadores();
         });
-
-        document.getElementById('gastoForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "gastos"), {
-                concepto: document.getElementById('gastoConcepto').value,
-                monto: parseFloat(document.getElementById('gastoMonto').value),
-                categoria: document.getElementById('gastoCategoria').value,
-                fecha: document.getElementById('gastoFecha').value,
-                createdAt: window.firebaseTimestamp.now()
-            });
-            alert('✅ Gasto registrado');
-            this.reset();
-            document.getElementById('gastoFecha').value = new Date().toISOString().split('T')[0];
-        });
-
-        function renderPagos() {
-            const container = document.getElementById('pagos-container');
-            const pagos = window.pagosData || [];
-            container.innerHTML = pagos.map(p => `
-                <div class="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                    <div class="flex justify-between">
-                        <div>
-                            <p class="font-bold text-green-800">${p.cliente}</p>
-                            <p class="text-sm text-green-700">${p.concepto}</p>
-                        </div>
-                        <span class="text-green-600 font-bold">$${p.monto.toLocaleString()}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderGastos() {
-            const container = document.getElementById('gastos-container');
-            const gastos = window.gastosData || [];
-            container.innerHTML = gastos.map(g => `
-                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-                    <div class="flex justify-between">
-                        <div>
-                            <p class="font-bold text-red-800">${g.concepto}</p>
-                            <p class="text-sm text-red-700">${g.categoria}</p>
-                        </div>
-                        <span class="text-red-600 font-bold">$${g.monto.toLocaleString()}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // KPIs
-        function updateKPIs() {
-            const inscripciones = window.inscripcionesData || [];
-            const pagos = window.pagosData || [];
-            const gastos = window.gastosData || [];
-            
-            document.getElementById('kpi-inscripciones').textContent = inscripciones.length;
-            document.getElementById('kpi-ingresos').textContent = '$' + pagos.reduce((s, p) => s + p.monto, 0).toLocaleString();
-            document.getElementById('kpi-gastos').textContent = '$' + gastos.reduce((s, g) => s + g.monto, 0).toLocaleString();
-            document.getElementById('kpi-balance').textContent = '$' + (pagos.reduce((s, p) => s + p.monto, 0) - gastos.reduce((s, g) => s + g.monto, 0)).toLocaleString();
-        }
     </script>
 </body>
 </html>
