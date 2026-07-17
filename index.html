@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CIC Consultoría | Consultoría Estratégica para Empresas en Crecimiento</title>
+    <title>Admin - CIC Consultoría</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- 🔥 FIREBASE SDK (versión modular v10.12.2) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Tu configuración exacta de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC6perkQ9d4LaC4DwABXozl0HI87gFJrdA",
             authDomain: "cic-consultoria---admin.firebaseapp.com",
@@ -25,13 +23,10 @@
             measurementId: "G-5443VZJ6V0"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Exponer funciones al scope global para usarlas desde el HTML
         window.firebaseAuth = auth;
         window.firebaseDb = db;
         window.firebaseSignIn = signInWithEmailAndPassword;
@@ -45,789 +40,469 @@
         window.firebaseOnSnapshot = onSnapshot;
         window.firebaseQuery = query;
         window.firebaseOrderBy = orderBy;
+        window.firebaseTimestamp = Timestamp;
 
-        // Escuchar cambios en tiempo real en la colección "cursos"
-        const cursosRef = collection(db, "cursos");
-        const q = query(cursosRef, orderBy("fecha", "asc"));
-        
-        onSnapshot(q, (snapshot) => {
-            const cursos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            window.cursosData = cursos;
-            if (typeof window.renderCursosPublicos === 'function') window.renderCursosPublicos(cursos);
-            if (typeof window.renderHistorial === 'function') window.renderHistorial(cursos);
-        }, (error) => {
-            console.error("Error al cargar cursos:", error);
+        // Escuchar todas las colecciones
+        const collections = ['cursos', 'blogs', 'inscripciones', 'pagos', 'gastos'];
+        collections.forEach(col => {
+            const ref = collection(db, col);
+            const q = query(ref, orderBy("fecha" in col ? "fecha" : "createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                window[col + 'Data'] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (col === 'cursos' && typeof window.renderHistorialCursos === 'function') window.renderHistorialCursos();
+                if (col === 'blogs' && typeof window.renderHistorialBlogs === 'function') window.renderHistorialBlogs();
+                if (col === 'pagos' && typeof window.renderPagos === 'function') window.renderPagos();
+                if (col === 'gastos' && typeof window.renderGastos === 'function') window.renderGastos();
+                if (typeof window.updateKPIs === 'function') window.updateKPIs();
+            });
         });
 
-        // Escuchar estado de autenticación del admin
         onAuthStateChanged(auth, (user) => {
             window.currentUser = user;
-            if (user && document.getElementById('admin-panel').classList.contains('active')) {
-                document.getElementById('admin-login').classList.add('hidden');
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                document.getElementById('adminEmail').textContent = user.email;
-                if (typeof window.renderHistorial === 'function') window.renderHistorial(window.cursosData || []);
+            if (user) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('admin-section').classList.remove('hidden');
+                document.getElementById('admin-email').textContent = user.email;
             }
         });
-
-        console.log("✅ Firebase inicializado correctamente con Analytics");
     </script>
 
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cic: {
-                            primary: '#5E1B96', secondary: '#7B3FA8', accent: '#9B5FD9',
-                            light: '#F3E5F5', lighter: '#FAF5FC', text: '#4A148C', textLight: '#7C4D9F',
-                        }
-                    },
-                    fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] }
-                }
-            }
+            theme: { extend: { colors: { cic: { primary: '#5E1B96', secondary: '#7B3FA8', accent: '#9B5FD9' } }, fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Poppins', 'sans-serif'] } } }
         }
     </script>
     <style>
-        body { color: #4A148C; }
-        .gradient-hero { background: linear-gradient(135deg, #5E1B96 0%, #9B5FD9 50%, #7B3FA8 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(94, 27, 150, 0.15); }
-        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); z-index: 100; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; transition: all 0.3s ease; text-decoration: none; }
-        .whatsapp-float:hover { transform: scale(1.1); }
-        .glass-nav { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-bottom: 2px solid rgba(94, 27, 150, 0.1); }
-        .mascot-fade { animation: fadeInUp 0.8s ease-out; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .gradient-purple-light { background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 20, 140, 0.7); z-index: 1000; overflow-y: auto; backdrop-filter: blur(4px); }
-        .modal.active { display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-content { animation: slideUp 0.4s ease; max-height: 90vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .admin-panel { display: none; }
-        .admin-panel.active { display: block; }
-        .status-programado { background: #DBEAFE; color: #1E40AF; }
-        .status-encurso { background: #FEF3C7; color: #92400E; }
-        .status-finalizado { background: #D1FAE5; color: #065F46; }
-        .loading-spinner { border: 3px solid #F3E5F5; border-top: 3px solid #5E1B96; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background: #f3f4f6; }
+        .gradient-header { background: linear-gradient(135deg, #5E1B96 0%, #7B3FA8 100%); }
+        .tab-active { border-bottom: 3px solid #5E1B96; color: #5E1B96; font-weight: 600; }
+        .kpi-card { background: linear-gradient(135deg, #5E1B96 0%, #7B3FA8 100%); }
     </style>
 </head>
-<body class="bg-cic-lighter font-sans antialiased">
+<body>
 
-    <!-- Navegación -->
-    <nav class="glass-nav fixed w-full z-50 top-0 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <div class="flex items-center gap-3">
-                    <span class="bg-gradient-to-br from-cic-primary to-cic-secondary text-white font-heading font-bold text-2xl px-4 py-2 rounded-xl shadow-lg">CIC</span>
-                    <span class="font-heading font-bold text-xl text-cic-primary hidden sm:block">Consultoría</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#inicio" class="text-cic-text hover:text-cic-secondary font-medium transition">Inicio</a>
-                    <a href="#servicios" class="text-cic-text hover:text-cic-secondary font-medium transition">Servicios</a>
-                    <a href="#capacitacion" class="text-cic-text hover:text-cic-secondary font-medium transition">Capacitación</a>
-                    <a href="#contacto" class="text-cic-text hover:text-cic-secondary font-medium transition">Contacto</a>
-                </div>
-                <a href="#booking" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition shadow-md hidden md:block">Agendar Cita</a>
+    <!-- Login -->
+    <div id="login-section" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <div class="text-center mb-6">
+                <img src="logo-cic.png" alt="CIC" class="h-16 mx-auto mb-4">
+                <h2 class="font-heading text-2xl font-bold text-cic-primary">Panel de Administración</h2>
             </div>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Correo electrónico" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                <input type="password" id="loginPassword" placeholder="Contraseña" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition">Ingresar</button>
+            </form>
         </div>
-    </nav>
-
-    <!-- Hero -->
-    <section id="inicio" class="gradient-hero pt-32 pb-20 lg:pt-40 lg:pb-28 text-white relative overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="lg:w-2/3">
-                <div class="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/30">Transformamos tu negocio con estrategia y visión global</div>
-                <h1 class="font-heading text-4xl lg:text-6xl font-bold leading-tight mb-6">Tu negocio merece crecer con <span class="text-white">orden, control</span> y visión global.</h1>
-                <p class="text-lg lg:text-xl text-purple-100 mb-8 max-w-2xl leading-relaxed">Transformamos el caos operativo y administrativo en sistemas eficientes. Te ayudamos a estructurar tus finanzas, proteger tu negocio ante el SAT y expandir tus fronteras.</p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="#booking" class="bg-white text-cic-primary font-heading font-bold px-8 py-4 rounded-xl text-center hover:bg-purple-50 transition shadow-lg">Agenda tu diagnóstico sin costo</a>
-                    <a href="https://wa.me/522227756653?text=Hola,%20quiero%20más%20información%20sobre%20sus%20servicios." target="_blank" class="bg-white/10 backdrop-blur-sm border-2 border-white/50 text-white font-medium px-8 py-4 rounded-xl text-center hover:bg-white/20 transition flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        Hablar por WhatsApp
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-white/20 rounded-full blur-3xl"></div>
-    </section>
-
-    <!-- Servicios -->
-    <section id="servicios" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Soluciones de Alta Dirección</h2>
-                <p class="text-cic-textLight text-lg">Es lo que tu negocio necesita resolver hoy.</p>
-            </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">📊</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Administración Eficiente</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Estructuración Financiera</li><li>• Manuales de Procesos</li><li>• Gestión Fiscal Preventiva</li></ul></div>
-                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">🌎</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Comercio Exterior</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Investigación de Mercados</li><li>• Cumplimiento Normativo</li><li>• Clasificación Arancelaria</li></ul></div>
-                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">💻</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Modernización Digital</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Canales Digitales</li><li>• CRM/ERP</li><li>• Infraestructura Corporativa</li></ul></div>
-                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover"><div class="text-3xl mb-4">🗂️</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Gestión de Proyectos</h3><ul class="text-sm text-gray-700 space-y-1"><li>• Ruta Crítica y KPIs</li><li>• Control de presupuestos</li><li>• Gestión de equipos</li></ul></div>
-                <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover md:col-span-2 lg:col-span-2"><div class="text-3xl mb-4">🚀</div><h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Emprendimiento y Validación</h3><div class="grid sm:grid-cols-3 gap-4 text-sm text-gray-700"><div>• Modelado de Negocios</div><div>• Análisis de mercado</div><div>• Plan de acción</div></div></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Capacitación DINÁMICA con Firebase -->
-    <section id="capacitacion" class="py-20 bg-gradient-to-br from-cic-primary via-cic-secondary to-cic-accent text-white relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-full opacity-10">
-            <div class="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
-            <div class="absolute bottom-10 right-10 w-48 h-48 bg-white rounded-full blur-3xl"></div>
-        </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="font-heading text-3xl lg:text-4xl font-bold mb-4">Tu primer paso en el mundo real</h2>
-                <p class="text-purple-100 text-lg mb-8">Olvídate de los cursos eternos. Aquí aprendes lo esencial, a tu ritmo, con herramientas listas para usar.</p>
-                <div class="flex justify-center items-center gap-8 mt-8 mascot-fade">
-                    <div class="text-center">
-                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-6 w-32 h-32 flex items-center justify-center mx-auto mb-3 border-4 border-white/50 shadow-xl"><span class="text-6xl">🦝</span></div>
-                        <p class="font-bold text-white text-lg">Cici</p>
-                        <p class="text-sm text-purple-200">Experta en Administración</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="bg-white/20 backdrop-blur-sm rounded-full p-6 w-32 h-32 flex items-center justify-center mx-auto mb-3 border-4 border-white/50 shadow-xl"><span class="text-6xl">🦝</span></div>
-                        <p class="font-bold text-white text-lg">Coco</p>
-                        <p class="text-sm text-purple-200">Especialista en Comercio Exterior</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cursos dinámicos desde Firebase -->
-            <div id="cursos-container" class="grid lg:grid-cols-2 gap-8 mb-12">
-                <div class="col-span-2 text-center py-8">
-                    <div class="loading-spinner mx-auto mb-3"></div>
-                    <p class="text-purple-200">Cargando cursos...</p>
-                </div>
-            </div>
-
-            <!-- Próximas fechas dinámicas -->
-            <div class="bg-white text-gray-800 p-8 rounded-2xl shadow-2xl border-4 border-cic-accent/30">
-                <div class="flex items-center gap-3 mb-6">
-                    <span class="text-3xl">🦝</span>
-                    <h3 class="font-heading text-2xl font-bold text-cic-primary">Próximas fechas con Cici y Coco</h3>
-                </div>
-                <div id="fechas-container" class="space-y-6">
-                    <p class="text-center text-gray-500 py-4">Cargando fechas...</p>
-                </div>
-                <a href="https://wa.me/522227756653?text=Hola,%20me%20interesa%20registrarme%20en%20los%20cursos." target="_blank" class="block w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white text-center font-bold py-3 rounded-xl hover:shadow-lg transition mt-6">Regístrate vía WhatsApp</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Modal detalles curso -->
-    <div id="modal-curso-detalle" class="modal">
-        <div class="modal-content bg-white rounded-2xl max-w-3xl w-full mx-4 shadow-2xl overflow-hidden" id="modal-curso-detalle-content"></div>
     </div>
 
-    <!-- Booking -->
-    <section id="booking" class="py-20 gradient-purple-light">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-12">
-                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Agenda tu cita directamente</h2>
-                <p class="text-cic-textLight text-lg">Integrado con Microsoft 365.</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-xl p-8 border-4 border-cic-accent/30 text-center">
-                <p class="text-gray-600 mb-6">Aquí se integrará tu calendario de Microsoft Bookings</p>
-                <a href="https://outlook.office.com/bookings" target="_blank" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold px-8 py-3 rounded-xl hover:shadow-lg transition inline-block">Ir a Microsoft Bookings</a>
+    <!-- Admin Dashboard -->
+    <div id="admin-section" class="hidden min-h-screen">
+        <!-- Header -->
+        <div class="gradient-header text-white shadow-lg sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="logo-cic-blanco.png" alt="CIC" class="h-10">
+                    <span class="font-heading font-bold text-lg">Panel de Administración</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs" id="admin-email"></span>
+                </div>
+                <button onclick="window.firebaseSignOut(window.firebaseAuth)" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar sesión
+                </button>
             </div>
         </div>
-    </section>
 
-    <!-- Contacto -->
-    <section id="contacto" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-12 items-start">
-                <div>
-                    <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-6">Hablemos de tu negocio</h2>
-                    <p class="text-gray-600 text-lg mb-8">Agendamos una sesión de 30 minutos sin costo.</p>
-                    <div class="bg-gradient-to-br from-cic-light to-cic-lighter rounded-2xl p-6 mb-8 border-2 border-cic-accent/30">
-                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">🦝 Tus aliados estratégicos</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="text-center"><div class="bg-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-2 shadow-md"><span class="text-4xl">🦝</span></div><p class="font-bold text-cic-primary text-sm">Cici</p><p class="text-xs text-gray-600">Administración</p></div>
-                            <div class="text-center"><div class="bg-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-2 shadow-md"><span class="text-4xl">🦝</span></div><p class="font-bold text-cic-primary text-sm">Coco</p><p class="text-xs text-gray-600">Comercio Exterior</p></div>
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- Tabs principales -->
+            <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap">
+                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-active px-6 py-3 font-medium">📊 Dashboard</button>
+                <button onclick="showTab('cursos')" id="tab-cursos" class="px-6 py-3 font-medium text-gray-600">📚 Cursos</button>
+                <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600">📝 Blogs</button>
+                <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600"> Gestión Administrativa</button>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="panel-dashboard" class="space-y-6">
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="kpi-card text-white rounded-2xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-users text-3xl"></i>
+                            <span class="text-purple-200 text-sm">Inscripciones</span>
                         </div>
+                        <p class="text-4xl font-bold" id="kpi-inscripciones">0</p>
                     </div>
-                    <div class="space-y-6">
-                        <div class="flex items-center gap-4"><div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white shadow-lg">📧</div><div><p class="text-sm text-gray-600">Correo</p><p class="font-bold text-cic-primary">admin@cicconsultoria.mx</p></div></div>
-                        <div class="flex items-center gap-4"><div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white shadow-lg">📱</div><div><p class="text-sm text-gray-600">WhatsApp</p><p class="font-bold text-cic-primary">+52 222 775 6653</p></div></div>
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-dollar-sign text-3xl"></i>
+                            <span class="text-green-200 text-sm">Ingresos</span>
+                        </div>
+                        <p class="text-4xl font-bold" id="kpi-ingresos">$0</p>
                     </div>
-                </div>
-                <div class="bg-gradient-to-br from-cic-lighter to-cic-light p-8 rounded-2xl shadow-xl border-4 border-cic-accent/30">
-                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📨 Envíanos un mensaje</h3>
-                    <form id="contactForm" class="space-y-4">
-                        <input type="text" id="nombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white" placeholder="Nombre completo">
-                        <input type="email" id="email" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white" placeholder="Correo electrónico">
-                        <select id="servicio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white">
-                            <option value="">Selecciona una opción</option>
-                            <option>Administración y Procesos</option><option>Comercio Exterior</option><option>Modernización</option><option>Gestión de Proyectos</option><option>Emprendimiento</option><option>Capacitación</option><option>Otro</option>
-                        </select>
-                        <textarea id="mensaje" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none bg-white" placeholder="Cuéntanos brevemente tu situación"></textarea>
-                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">Enviar a admin@cicconsultoria.mx</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="flex items-center gap-3"><span class="bg-white text-cic-primary font-heading font-bold text-xl px-3 py-1.5 rounded-lg">CIC</span><span class="font-heading font-bold text-xl">Consultoría</span></div>
-                <div class="text-purple-200 text-sm text-center md:text-right"><p>© 2026 CIC Consultoría. Todos los derechos reservados.</p><p class="mt-1">🦝🦝 Diseñado con Cici y Coco</p></div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- WhatsApp flotante -->
-    <a href="https://wa.me/522227756653?text=Hola,%20me%20interesa%20agendar%20mi%20diagnóstico%20empresarial%20sin%20costo." target="_blank" class="whatsapp-float" aria-label="Contactar por WhatsApp">
-        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    </a>
-
-    <!-- ============================================ -->
-    <!-- PANEL DE ADMINISTRACIÓN CON FIREBASE -->
-    <!-- ============================================ -->
-    <div id="admin-panel" class="admin-panel fixed inset-0 bg-gray-900 z-[2000] overflow-y-auto">
-        <!-- Login con Firebase Auth -->
-        <div id="admin-login" class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-                <div class="text-center mb-6">
-                    <div class="inline-block bg-gradient-to-br from-cic-primary to-cic-secondary text-white font-heading font-bold text-3xl px-6 py-3 rounded-xl mb-4">CIC</div>
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary">Panel de Administración</h2>
-                    <p class="text-gray-600 text-sm mt-2">Acceso seguro con Firebase</p>
-                </div>
-                <form id="loginForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-                        <input type="email" id="loginEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="admin@cicconsultoria.mx">
+                    <div class="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-2xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-credit-card text-3xl"></i>
+                            <span class="text-red-200 text-sm">Gastos</span>
+                        </div>
+                        <p class="text-4xl font-bold" id="kpi-gastos">$0</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="••••••••">
-                    </div>
-                    <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"></div>
-                    <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
-                        <span>Ingresar</span>
-                    </button>
-                    <button type="button" onclick="closeAdmin()" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition">Cancelar</button>
-                </form>
-                <p class="text-xs text-gray-500 text-center mt-4">🔒 Acceso protegido con Firebase Authentication</p>
-            </div>
-        </div>
-
-        <!-- Dashboard Admin -->
-        <div id="admin-dashboard" class="hidden min-h-screen bg-gray-100">
-            <div class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white shadow-lg sticky top-0 z-10">
-                <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-3">
-                    <div class="flex items-center gap-3">
-                        <span class="bg-white text-cic-primary font-heading font-bold text-xl px-3 py-1 rounded-lg">CIC</span>
-                        <span class="font-heading font-bold text-lg">Panel de Administración</span>
-                        <span id="adminEmail" class="bg-white/20 px-3 py-1 rounded-full text-xs"></span>
-                    </div>
-                    <div class="flex gap-2 flex-wrap">
-                        <button onclick="exportarCursos()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">📥 Exportar</button>
-                        <label class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
-                            📤 Importar
-                            <input type="file" id="importFile" accept=".json" onchange="importarCursos(event)" class="hidden">
-                        </label>
-                        <button onclick="cerrarSesion()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition">Cerrar sesión</button>
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                            <span class="text-blue-200 text-sm">Balance</span>
+                        </div>
+                        <p class="text-4xl font-bold" id="kpi-balance">$0</p>
                     </div>
                 </div>
             </div>
 
-            <div class="max-w-7xl mx-auto px-4 py-8">
-                <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap">
-                    <button onclick="showTab('crear')" id="tab-crear" class="px-6 py-3 font-bold text-cic-primary border-b-4 border-cic-primary bg-white rounded-t-lg">➕ Crear / Editar Curso</button>
-                    <button onclick="showTab('historial')" id="tab-historial" class="px-6 py-3 font-medium text-gray-600 hover:text-cic-primary">📋 Historial de Cursos</button>
+            <!-- Cursos -->
+            <div id="panel-cursos" class="hidden">
+                <div class="flex gap-2 mb-6">
+                    <button onclick="showCursosSubtab('crear')" id="cursos-subtab-crear" class="tab-active px-6 py-3 font-medium">➕ Crear Curso</button>
+                    <button onclick="showCursosSubtab('lista')" id="cursos-subtab-lista" class="px-6 py-3 font-medium text-gray-600">📋 Lista de Cursos</button>
                 </div>
-
-                <!-- TAB: Crear/Editar -->
-                <div id="panel-crear" class="bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6" id="form-titulo">Nuevo Curso</h2>
+                
+                <div id="cursos-crear" class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Crear/Editar Curso</h2>
                     <form id="cursoForm" class="space-y-6">
                         <input type="hidden" id="cursoId">
                         <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Título del curso *</label>
-                                <input type="text" id="cursoTitulo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Instructor *</label>
-                                <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                    <option value="Cici">🦝 Cici - Administración</option>
-                                    <option value="Coco">🦝 Coco - Comercio Exterior</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Nivel *</label>
-                                <select id="cursoNivel" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                    <option>Principiante</option><option>Intermedio</option><option>Avanzado</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Precio (MXN) *</label>
-                                <input type="number" id="cursoPrecio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Duración *</label>
-                                <input type="text" id="cursoDuracion" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="4 semanas · 8 horas">
-                            </div>
-                        </div>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de inicio *</label>
-                                <input type="date" id="cursoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Horario *</label>
-                                <input type="text" id="cursoHorario" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Lun y Mié · 6:00 PM">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Lugares disponibles *</label>
-                                <input type="number" id="cursoLugares" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Descripción corta *</label>
-                            <textarea id="cursoDescripcion" required rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Descripción larga</label>
-                            <textarea id="cursoDescripcionLarga" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">¿Qué aprenderás? (una por línea)</label>
-                            <textarea id="cursoAprenderas" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Temario (Semana X: Título | Descripción, uno por línea)</label>
-                            <textarea id="cursoTemario" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Qué incluye (uno por línea)</label>
-                            <textarea id="cursoIncluye" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Estado inicial *</label>
-                            <select id="cursoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option value="Programado">📅 Programado</option>
-                                <option value="En curso">🟡 En curso</option>
-                                <option value="Finalizado">✅ Finalizado</option>
+                            <input type="text" id="cursoTitulo" placeholder="Título del curso" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="Cici">🦝 Cici</option>
+                                <option value="Coco"> Coco</option>
                             </select>
                         </div>
-                        <div class="flex gap-4 pt-4 border-t">
-                            <button type="submit" id="submitBtn" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
-                                <span>💾 Guardar Curso</span>
-                            </button>
-                            <button type="button" onclick="limpiarFormulario()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <input type="number" id="cursoPrecio" placeholder="Precio (MXN)" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <input type="date" id="cursoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <input type="text" id="cursoHorario" placeholder="Horario" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                         </div>
+                        <textarea id="cursoDescripcion" placeholder="Descripción" required rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        <select id="cursoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="Programado">📅 Programado</option>
+                            <option value="En curso">🟡 En curso</option>
+                            <option value="Finalizado">✅ Finalizado</option>
+                        </select>
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Curso</button>
                     </form>
                 </div>
 
-                <!-- TAB: Historial -->
-                <div id="panel-historial" class="hidden">
+                <div id="cursos-lista" class="hidden bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Cursos Registrados</h2>
+                    <div id="cursos-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Blogs -->
+            <div id="panel-blogs" class="hidden">
+                <div class="flex gap-2 mb-6">
+                    <button onclick="showBlogsSubtab('crear')" id="blogs-subtab-crear" class="tab-active px-6 py-3 font-medium">➕ Crear Blog</button>
+                    <button onclick="showBlogsSubtab('lista')" id="blogs-subtab-lista" class="px-6 py-3 font-medium text-gray-600">📋 Lista de Blogs</button>
+                </div>
+                
+                <div id="blogs-crear" class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Crear/Editar Artículo</h2>
+                    <form id="blogForm" class="space-y-6">
+                        <input type="hidden" id="blogId">
+                        <input type="text" id="blogTitulo" placeholder="Título del artículo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <input type="text" id="blogCategoria" placeholder="Categoría" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <textarea id="blogResumen" placeholder="Resumen" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        <textarea id="blogContenido" placeholder="Contenido completo" required rows="8" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        <input type="url" id="blogImagen" placeholder="URL de imagen (opcional)" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Publicar Artículo</button>
+                    </form>
+                </div>
+
+                <div id="blogs-lista" class="hidden bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Artículos Publicados</h2>
+                    <div id="blogs-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Gestión Administrativa -->
+            <div id="panel-admin" class="hidden">
+                <div class="flex gap-2 mb-6">
+                    <button onclick="showAdminSubtab('pagos')" id="admin-subtab-pagos" class="tab-active px-6 py-3 font-medium">💵 Pagos</button>
+                    <button onclick="showAdminSubtab('gastos')" id="admin-subtab-gastos" class="px-6 py-3 font-medium text-gray-600">💸 Gastos</button>
+                </div>
+                
+                <div id="admin-pagos" class="space-y-6">
                     <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-                            <h2 class="font-heading text-2xl font-bold text-cic-primary">📋 Historial de Cursos</h2>
-                            <div class="flex gap-2 text-sm flex-wrap">
-                                <span class="status-programado px-3 py-1 rounded-full font-medium">Programado</span>
-                                <span class="status-encurso px-3 py-1 rounded-full font-medium">En curso</span>
-                                <span class="status-finalizado px-3 py-1 rounded-full font-medium">Finalizado</span>
-                            </div>
-                        </div>
-                        <div id="historial-container" class="space-y-4"></div>
-                        <div id="historial-vacio" class="hidden text-center py-12 text-gray-500">
-                            <p class="text-6xl mb-4">📭</p>
-                            <p class="text-lg">No hay cursos registrados aún</p>
-                        </div>
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Registrar Pago</h2>
+                        <form id="pagoForm" class="space-y-6">
+                            <input type="text" id="pagoCliente" placeholder="Nombre del cliente" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <input type="number" id="pagoMonto" placeholder="Monto (MXN)" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <input type="text" id="pagoConcepto" placeholder="Concepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <input type="date" id="pagoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Registrar Pago</button>
+                        </form>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">Historial de Pagos</h3>
+                        <div id="pagos-container" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <div id="admin-gastos" class="hidden space-y-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Registrar Gasto</h2>
+                        <form id="gastoForm" class="space-y-6">
+                            <input type="text" id="gastoConcepto" placeholder="Concepto del gasto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <input type="number" id="gastoMonto" placeholder="Monto (MXN)" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <select id="gastoCategoria" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option>Infraestructura</option>
+                                <option>Marketing</option>
+                                <option>Servicios</option>
+                                <option>Oficina</option>
+                                <option>Impuestos</option>
+                                <option>Otros</option>
+                            </select>
+                            <input type="date" id="gastoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <button type="submit" class="w-full bg-red-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Registrar Gasto</button>
+                        </form>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">Historial de Gastos</h3>
+                        <div id="gastos-container" class="space-y-4"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPTS PRINCIPALES -->
     <script>
-        function renderCursosPublicos(cursos) {
-            const container = document.getElementById('cursos-container');
-            const fechasContainer = document.getElementById('fechas-container');
-            
-            if (!cursos || cursos.length === 0) {
-                container.innerHTML = '<p class="text-center text-purple-200 col-span-2 py-8">Próximamente nuevos cursos. ¡Mantente atento!</p>';
-                fechasContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No hay fechas programadas actualmente</p>';
-                return;
-            }
-
-            const cursosActivos = cursos.filter(c => c.estado === 'Programado');
-            
-            if (cursosActivos.length === 0) {
-                container.innerHTML = '<p class="text-center text-purple-200 col-span-2 py-8">Próximamente nuevos cursos. ¡Mantente atento!</p>';
-                fechasContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No hay fechas programadas actualmente</p>';
-                return;
-            }
-
-            container.innerHTML = cursosActivos.map(curso => `
-                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border-2 border-white/30 hover:bg-white/20 transition">
-                    <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
-                        <span class="bg-white/30 text-white text-xs font-bold px-3 py-1 rounded-full">Nivel: ${curso.nivel}</span>
-                        <span class="text-purple-200 text-sm">Desde $${Number(curso.precio).toLocaleString()} MXN</span>
-                    </div>
-                    <h3 class="font-heading text-xl font-bold mb-2">${curso.titulo}</h3>
-                    <p class="text-purple-100 text-sm mb-4">${curso.descripcion}</p>
-                    <button onclick="abrirDetalleCurso('${curso.id}')" class="text-white font-medium hover:text-purple-200 transition text-sm flex items-center gap-1 underline">Ver más detalles →</button>
-                </div>
-            `).join('');
-
-            const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-            fechasContainer.innerHTML = cursosActivos.map(curso => {
-                const fecha = new Date(curso.fecha + 'T12:00:00');
-                const mes = meses[fecha.getMonth()];
-                const dia = fecha.getDate();
-                const emojiInstructor = curso.instructor === 'Cici' ? '🦝' : '🦝';
-                return `
-                    <div class="flex gap-4 border-b-2 border-purple-100 pb-4">
-                        <div class="bg-gradient-to-br from-cic-primary to-cic-secondary text-white font-bold rounded-xl w-16 h-16 flex flex-col items-center justify-center shrink-0 shadow-lg">
-                            <span class="text-xs uppercase">${mes}</span>
-                            <span class="text-2xl">${dia}</span>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-cic-primary">${curso.titulo}</h4>
-                            <p class="text-sm text-gray-600">Curso en línea · ${curso.duracion} · ${curso.horario}</p>
-                            <p class="text-xs text-cic-secondary font-bold mt-1">${emojiInstructor} Impartido por ${curso.instructor}</p>
-                            <p class="text-xs text-green-600 font-medium mt-1">${curso.lugares} lugares disponibles</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        // Tabs
+        function showTab(tab) {
+            ['dashboard', 'cursos', 'blogs', 'admin'].forEach(t => {
+                document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
+                document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            });
+            if (tab === 'dashboard') updateKPIs();
         }
 
-        function abrirDetalleCurso(id) {
-            const cursos = window.cursosData || [];
-            const curso = cursos.find(c => c.id === id);
-            if (!curso) return;
-
-            const modal = document.getElementById('modal-curso-detalle');
-            const content = document.getElementById('modal-curso-detalle-content');
-            
-            content.innerHTML = `
-                <div class="gradient-hero p-6 text-white relative">
-                    <button onclick="cerrarModalDetalle()" class="absolute top-4 right-4 text-white/80 hover:text-white text-3xl font-bold">&times;</button>
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">Nivel: ${curso.nivel}</span>
-                    </div>
-                    <h2 class="font-heading text-3xl font-bold mb-2">${curso.titulo}</h2>
-                    <p class="text-purple-100">Impartido por ${curso.instructor}</p>
-                </div>
-                <div class="p-8">
-                    <div class="grid md:grid-cols-2 gap-6 mb-6">
-                        <div class="bg-cic-lighter p-4 rounded-xl"><p class="text-sm text-gray-600 mb-1">Duración</p><p class="font-bold text-cic-primary text-lg">${curso.duracion}</p></div>
-                        <div class="bg-cic-lighter p-4 rounded-xl"><p class="text-sm text-gray-600 mb-1">Inversión</p><p class="font-bold text-cic-primary text-lg">$${Number(curso.precio).toLocaleString()} MXN</p></div>
-                    </div>
-                    ${curso.descripcionLarga ? `<div class="mb-6"><h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Descripción</h3><p class="text-gray-700">${curso.descripcionLarga}</p></div>` : ''}
-                    ${curso.aprenderas && curso.aprenderas.length > 0 ? `
-                        <div class="mb-6">
-                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">¿Qué aprenderás?</h3>
-                            <ul class="space-y-2 text-gray-700">
-                                ${curso.aprenderas.map(a => `<li class="flex items-start gap-2"><span class="text-cic-primary mt-1">✓</span> ${a}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    ${curso.temario && curso.temario.length > 0 ? `
-                        <div class="mb-6">
-                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Temario</h3>
-                            <div class="space-y-3">
-                                ${curso.temario.map(t => `<div class="bg-cic-lighter p-4 rounded-xl"><p class="font-bold text-cic-primary">${t.semana}: ${t.titulo}</p><p class="text-sm text-gray-600">${t.desc}</p></div>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    ${curso.incluye && curso.incluye.length > 0 ? `
-                        <div class="mb-6">
-                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Incluye</h3>
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                ${curso.incluye.map(i => `<div class="flex items-center gap-2"><span class="text-cic-primary">✓</span> ${i}</div>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    <div class="flex gap-4">
-                        <a href="https://wa.me/522227756653?text=Hola,%20quiero%20inscribirme%20al%20curso:%20${encodeURIComponent(curso.titulo)}" target="_blank" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white text-center font-bold py-3 rounded-xl hover:shadow-lg transition">Inscribirme ahora</a>
-                        <button onclick="cerrarModalDetalle()" class="px-6 py-3 border-2 border-cic-primary text-cic-primary font-bold rounded-xl hover:bg-cic-light transition">Cerrar</button>
-                    </div>
-                </div>
-            `;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+        function showCursosSubtab(tab) {
+            document.getElementById('cursos-crear').classList.toggle('hidden', tab !== 'crear');
+            document.getElementById('cursos-lista').classList.toggle('hidden', tab !== 'lista');
+            document.getElementById('cursos-subtab-crear').className = tab === 'crear' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            document.getElementById('cursos-subtab-lista').className = tab === 'lista' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
         }
 
-        function cerrarModalDetalle() {
-            document.getElementById('modal-curso-detalle').classList.remove('active');
-            document.body.style.overflow = 'auto';
+        function showBlogsSubtab(tab) {
+            document.getElementById('blogs-crear').classList.toggle('hidden', tab !== 'crear');
+            document.getElementById('blogs-lista').classList.toggle('hidden', tab !== 'lista');
+            document.getElementById('blogs-subtab-crear').className = tab === 'crear' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            document.getElementById('blogs-subtab-lista').className = tab === 'lista' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
         }
 
-        function openAdmin() {
-            document.getElementById('admin-panel').classList.add('active');
-            document.body.style.overflow = 'hidden';
+        function showAdminSubtab(tab) {
+            document.getElementById('admin-pagos').classList.toggle('hidden', tab !== 'pagos');
+            document.getElementById('admin-gastos').classList.toggle('hidden', tab !== 'gastos');
+            document.getElementById('admin-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            document.getElementById('admin-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
         }
 
-        function closeAdmin() {
-            document.getElementById('admin-panel').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                openAdmin();
-            }
-            if (e.key === 'Escape' && document.getElementById('admin-panel').classList.contains('active')) {
-                closeAdmin();
-            }
-        });
-
-        function checkHashAdmin() {
-            if (window.location.hash === '#admin') openAdmin();
-        }
-        window.addEventListener('hashchange', checkHashAdmin);
-        window.addEventListener('load', checkHashAdmin);
-
+        // Login
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const errorDiv = document.getElementById('loginError');
-            const btn = document.getElementById('loginBtn');
-            
-            errorDiv.classList.add('hidden');
-            btn.innerHTML = '<div class="loading-spinner"></div> Ingresando...';
-            btn.disabled = true;
-
             try {
-                await window.firebaseSignIn(window.firebaseAuth, email, password);
+                await window.firebaseSignIn(window.firebaseAuth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
             } catch (error) {
-                let msg = 'Error al ingresar';
-                if (error.code === 'auth/user-not-found') msg = 'No existe una cuenta con ese correo';
-                if (error.code === 'auth/wrong-password') msg = 'Contraseña incorrecta';
-                if (error.code === 'auth/invalid-email') msg = 'Correo no válido';
-                if (error.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde';
-                errorDiv.textContent = '❌ ' + msg;
-                errorDiv.classList.remove('hidden');
-            } finally {
-                btn.innerHTML = '<span>Ingresar</span>';
-                btn.disabled = false;
+                alert('Error: ' + error.message);
             }
         });
 
-        function cerrarSesion() {
-            window.firebaseSignOut(window.firebaseAuth).then(() => {
-                document.getElementById('admin-login').classList.remove('hidden');
-                document.getElementById('admin-dashboard').classList.add('hidden');
-                document.getElementById('loginForm').reset();
-                document.getElementById('loginError').classList.add('hidden');
-            });
-        }
-
-        function showTab(tab) {
-            document.getElementById('panel-crear').classList.toggle('hidden', tab !== 'crear');
-            document.getElementById('panel-historial').classList.toggle('hidden', tab !== 'historial');
-            document.getElementById('tab-crear').className = tab === 'crear' ? 'px-6 py-3 font-bold text-cic-primary border-b-4 border-cic-primary bg-white rounded-t-lg' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
-            document.getElementById('tab-historial').className = tab === 'historial' ? 'px-6 py-3 font-bold text-cic-primary border-b-4 border-cic-primary bg-white rounded-t-lg' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
-        }
-
+        // Cursos
         document.getElementById('cursoForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
-            btn.disabled = true;
-
+            const id = document.getElementById('cursoId').value;
+            const data = {
+                titulo: document.getElementById('cursoTitulo').value,
+                instructor: document.getElementById('cursoInstructor').value,
+                precio: parseFloat(document.getElementById('cursoPrecio').value),
+                fecha: document.getElementById('cursoFecha').value,
+                horario: document.getElementById('cursoHorario').value,
+                descripcion: document.getElementById('cursoDescripcion').value,
+                estado: document.getElementById('cursoEstado').value,
+                updatedAt: new Date().toISOString()
+            };
+            
             try {
-                const id = document.getElementById('cursoId').value;
-                const curso = {
-                    titulo: document.getElementById('cursoTitulo').value,
-                    instructor: document.getElementById('cursoInstructor').value,
-                    nivel: document.getElementById('cursoNivel').value,
-                    precio: parseInt(document.getElementById('cursoPrecio').value),
-                    duracion: document.getElementById('cursoDuracion').value,
-                    fecha: document.getElementById('cursoFecha').value,
-                    horario: document.getElementById('cursoHorario').value,
-                    lugares: parseInt(document.getElementById('cursoLugares').value),
-                    descripcion: document.getElementById('cursoDescripcion').value,
-                    descripcionLarga: document.getElementById('cursoDescripcionLarga').value,
-                    aprenderas: document.getElementById('cursoAprenderas').value.split('\n').filter(l => l.trim()),
-                    temario: document.getElementById('cursoTemario').value.split('\n').filter(l => l.trim()).map(l => {
-                        const match = l.match(/^(Semana\s*\d+):\s*([^|]+)\|?\s*(.*)$/i);
-                        if (match) return {semana: match[1].trim(), titulo: match[2].trim(), desc: match[3].trim()};
-                        return {semana: 'Módulo', titulo: l, desc: ''};
-                    }),
-                    incluye: document.getElementById('cursoIncluye').value.split('\n').filter(l => l.trim()),
-                    estado: document.getElementById('cursoEstado').value,
-                    updatedAt: new Date().toISOString()
-                };
-
                 if (id) {
-                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "cursos", id), curso);
-                    alert('✅ Curso actualizado exitosamente');
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "cursos", id), data);
                 } else {
-                    curso.createdAt = new Date().toISOString();
-                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cursos"), curso);
-                    alert('✅ Curso creado exitosamente');
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cursos"), data);
                 }
-
-                limpiarFormulario();
-                showTab('historial');
+                alert('✅ Curso guardado');
+                this.reset();
+                document.getElementById('cursoId').value = '';
             } catch (error) {
                 alert('❌ Error: ' + error.message);
-            } finally {
-                btn.innerHTML = '<span>💾 Guardar Curso</span>';
-                btn.disabled = false;
             }
         });
 
-        function limpiarFormulario() {
-            document.getElementById('cursoForm').reset();
-            document.getElementById('cursoId').value = '';
-            document.getElementById('form-titulo').textContent = 'Nuevo Curso';
-        }
-
-        function editarCurso(id) {
+        function renderHistorialCursos() {
+            const container = document.getElementById('cursos-container');
             const cursos = window.cursosData || [];
-            const curso = cursos.find(c => c.id === id);
-            if (!curso) return;
-
-            document.getElementById('cursoId').value = curso.id;
-            document.getElementById('cursoTitulo').value = curso.titulo;
-            document.getElementById('cursoInstructor').value = curso.instructor;
-            document.getElementById('cursoNivel').value = curso.nivel;
-            document.getElementById('cursoPrecio').value = curso.precio;
-            document.getElementById('cursoDuracion').value = curso.duracion;
-            document.getElementById('cursoFecha').value = curso.fecha;
-            document.getElementById('cursoHorario').value = curso.horario;
-            document.getElementById('cursoLugares').value = curso.lugares;
-            document.getElementById('cursoDescripcion').value = curso.descripcion;
-            document.getElementById('cursoDescripcionLarga').value = curso.descripcionLarga || '';
-            document.getElementById('cursoAprenderas').value = (curso.aprenderas || []).join('\n');
-            document.getElementById('cursoTemario').value = (curso.temario || []).map(t => `${t.semana}: ${t.titulo} | ${t.desc}`).join('\n');
-            document.getElementById('cursoIncluye').value = (curso.incluye || []).join('\n');
-            document.getElementById('cursoEstado').value = curso.estado;
-            
-            document.getElementById('form-titulo').textContent = 'Editar: ' + curso.titulo;
-            showTab('crear');
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            container.innerHTML = cursos.map(c => `
+                <div class="border-2 border-purple-100 rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-cic-primary">${c.titulo}</h3>
+                            <p class="text-sm text-gray-600">${c.instructor} · $${c.precio} · ${c.fecha}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editarCurso('${c.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm">✏️</button>
+                            <button onclick="eliminarCurso('${c.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function cambiarEstado(id, nuevoEstado) {
-            try {
-                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "cursos", id), { estado: nuevoEstado });
-                alert(`✅ Estado actualizado a: ${nuevoEstado}`);
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
+        async function editarCurso(id) {
+            const curso = window.cursosData.find(c => c.id === id);
+            if (curso) {
+                document.getElementById('cursoId').value = curso.id;
+                document.getElementById('cursoTitulo').value = curso.titulo;
+                document.getElementById('cursoInstructor').value = curso.instructor;
+                document.getElementById('cursoPrecio').value = curso.precio;
+                document.getElementById('cursoFecha').value = curso.fecha;
+                document.getElementById('cursoHorario').value = curso.horario;
+                document.getElementById('cursoDescripcion').value = curso.descripcion;
+                document.getElementById('cursoEstado').value = curso.estado;
+                showCursosSubtab('crear');
             }
         }
 
         async function eliminarCurso(id) {
-            if (!confirm('¿Estás seguro de eliminar este curso? Esta acción no se puede deshacer.')) return;
-            try {
+            if (confirm('¿Eliminar curso?')) {
                 await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "cursos", id));
-                alert('🗑️ Curso eliminado');
+            }
+        }
+
+        // Blogs
+        document.getElementById('blogForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('blogId').value;
+            const data = {
+                titulo: document.getElementById('blogTitulo').value,
+                categoria: document.getElementById('blogCategoria').value,
+                resumen: document.getElementById('blogResumen').value,
+                contenido: document.getElementById('blogContenido').value,
+                imagen: document.getElementById('blogImagen').value,
+                fechaPublicacion: new Date().toISOString()
+            };
+            
+            try {
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "blogs", id), data);
+                } else {
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "blogs"), data);
+                }
+                alert('✅ Artículo publicado');
+                this.reset();
+                document.getElementById('blogId').value = '';
             } catch (error) {
                 alert('❌ Error: ' + error.message);
             }
-        }
-
-        function renderHistorial(cursos) {
-            const container = document.getElementById('historial-container');
-            const vacio = document.getElementById('historial-vacio');
-            
-            if (!cursos || cursos.length === 0) {
-                container.innerHTML = '';
-                vacio.classList.remove('hidden');
-                return;
-            }
-            vacio.classList.add('hidden');
-
-            container.innerHTML = cursos.map(curso => {
-                const estadoClass = curso.estado === 'Programado' ? 'status-programado' : curso.estado === 'En curso' ? 'status-encurso' : 'status-finalizado';
-                const fecha = new Date(curso.fecha + 'T12:00:00').toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
-                
-                return `
-                    <div class="border-2 border-purple-100 rounded-xl p-6 hover:shadow-md transition">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2 flex-wrap">
-                                    <h3 class="font-heading text-lg font-bold text-cic-primary">${curso.titulo}</h3>
-                                    <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${curso.estado}</span>
-                                </div>
-                                <p class="text-sm text-gray-600">🦝 ${curso.instructor} · ${curso.nivel} · $${Number(curso.precio).toLocaleString()} MXN</p>
-                                <p class="text-sm text-gray-600">📅 ${fecha} · ${curso.horario} · ${curso.lugares} lugares</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <select onchange="cambiarEstado('${curso.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm font-medium focus:border-cic-secondary outline-none">
-                                    <option value="Programado" ${curso.estado==='Programado'?'selected':''}>📅 Programado</option>
-                                    <option value="En curso" ${curso.estado==='En curso'?'selected':''}>🟡 En curso</option>
-                                    <option value="Finalizado" ${curso.estado==='Finalizado'?'selected':''}>✅ Finalizado</option>
-                                </select>
-                                <button onclick="editarCurso('${curso.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-cic-secondary transition">✏️ Editar</button>
-                                <button onclick="eliminarCurso('${curso.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition">🗑️ Eliminar</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function exportarCursos() {
-            const cursos = window.cursosData || [];
-            const dataStr = JSON.stringify(cursos, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `cic_cursos_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        async function importarCursos(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const cursos = JSON.parse(e.target.result);
-                    if (Array.isArray(cursos) && confirm(`¿Importar ${cursos.length} cursos? Esto agregará los cursos a Firebase.`)) {
-                        for (const curso of cursos) {
-                            const { id, ...data } = curso;
-                            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cursos"), data);
-                        }
-                        alert('📤 Cursos importados exitosamente');
-                    }
-                } catch (err) {
-                    alert('❌ Error al leer el archivo: ' + err.message);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const nombre = document.getElementById('nombre').value;
-            const email = document.getElementById('email').value;
-            const servicio = document.getElementById('servicio').value;
-            const mensaje = document.getElementById('mensaje').value;
-            const asunto = `Solicitud de Diagnóstico - ${nombre}`;
-            const cuerpo = `Hola CIC Consultoría!\n\nNombre: ${nombre}\nCorreo: ${email}\nServicio: ${servicio}\nMensaje: ${mensaje}`;
-            window.location.href = `mailto:admin@cicconsultoria.mx?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-            this.reset();
         });
 
-        window.onclick = function(event) {
-            const modal = document.getElementById('modal-curso-detalle');
-            if (event.target === modal) cerrarModalDetalle();
-        };
+        function renderHistorialBlogs() {
+            const container = document.getElementById('blogs-container');
+            const blogs = window.blogsData || [];
+            container.innerHTML = blogs.map(b => `
+                <div class="border-2 border-purple-100 rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-cic-primary">${b.titulo}</h3>
+                            <p class="text-sm text-gray-600">${b.categoria} · ${new Date(b.fechaPublicacion).toLocaleDateString()}</p>
+                        </div>
+                        <button onclick="eliminarBlog('${b.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function eliminarBlog(id) {
+            if (confirm('¿Eliminar artículo?')) {
+                await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "blogs", id));
+            }
+        }
+
+        // Pagos y Gastos
+        document.getElementById('pagoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "pagos"), {
+                cliente: document.getElementById('pagoCliente').value,
+                monto: parseFloat(document.getElementById('pagoMonto').value),
+                concepto: document.getElementById('pagoConcepto').value,
+                fecha: document.getElementById('pagoFecha').value,
+                createdAt: window.firebaseTimestamp.now()
+            });
+            alert('✅ Pago registrado');
+            this.reset();
+            document.getElementById('pagoFecha').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('gastoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "gastos"), {
+                concepto: document.getElementById('gastoConcepto').value,
+                monto: parseFloat(document.getElementById('gastoMonto').value),
+                categoria: document.getElementById('gastoCategoria').value,
+                fecha: document.getElementById('gastoFecha').value,
+                createdAt: window.firebaseTimestamp.now()
+            });
+            alert('✅ Gasto registrado');
+            this.reset();
+            document.getElementById('gastoFecha').value = new Date().toISOString().split('T')[0];
+        });
+
+        function renderPagos() {
+            const container = document.getElementById('pagos-container');
+            const pagos = window.pagosData || [];
+            container.innerHTML = pagos.map(p => `
+                <div class="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="font-bold text-green-800">${p.cliente}</p>
+                            <p class="text-sm text-green-700">${p.concepto}</p>
+                        </div>
+                        <span class="text-green-600 font-bold">$${p.monto.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGastos() {
+            const container = document.getElementById('gastos-container');
+            const gastos = window.gastosData || [];
+            container.innerHTML = gastos.map(g => `
+                <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                    <div class="flex justify-between">
+                        <div>
+                            <p class="font-bold text-red-800">${g.concepto}</p>
+                            <p class="text-sm text-red-700">${g.categoria}</p>
+                        </div>
+                        <span class="text-red-600 font-bold">$${g.monto.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // KPIs
+        function updateKPIs() {
+            const inscripciones = window.inscripcionesData || [];
+            const pagos = window.pagosData || [];
+            const gastos = window.gastosData || [];
+            
+            document.getElementById('kpi-inscripciones').textContent = inscripciones.length;
+            document.getElementById('kpi-ingresos').textContent = '$' + pagos.reduce((s, p) => s + p.monto, 0).toLocaleString();
+            document.getElementById('kpi-gastos').textContent = '$' + gastos.reduce((s, g) => s + g.monto, 0).toLocaleString();
+            document.getElementById('kpi-balance').textContent = '$' + (pagos.reduce((s, p) => s + p.monto, 0) - gastos.reduce((s, g) => s + g.monto, 0)).toLocaleString();
+        }
     </script>
 </body>
 </html>
