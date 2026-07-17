@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -26,7 +25,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Escuchar cursos
         const cursosRef = collection(db, "cursos");
         const qCursos = query(cursosRef, orderBy("fecha", "asc"));
         onSnapshot(qCursos, (snapshot) => {
@@ -34,7 +32,6 @@
             if (typeof window.renderCursos === 'function') window.renderCursos();
         });
 
-        // Escuchar blogs
         const blogsRef = collection(db, "blogs");
         const qBlogs = query(blogsRef, orderBy("fechaPublicacion", "desc"));
         onSnapshot(qBlogs, (snapshot) => {
@@ -69,12 +66,11 @@
 </head>
 <body class="bg-cic-lighter font-sans">
 
-    <!-- Navegación -->
     <nav class="glass-nav fixed w-full z-50 top-0 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex items-center gap-3">
-                    <img src="logo-cic.png" alt="CIC Consultoría" class="h-12 w-auto">
+                    <img src="Logocicc.png" alt="CIC Consultoría" class="h-12 w-auto">
                 </div>
                 <div class="hidden md:flex space-x-8">
                     <a href="#inicio" class="text-cic-primary hover:text-cic-secondary font-medium transition">Inicio</a>
@@ -89,7 +85,6 @@
         </div>
     </nav>
 
-    <!-- Hero -->
     <section id="inicio" class="gradient-hero pt-32 pb-20 lg:pt-40 lg:pb-28 text-white relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="lg:w-2/3">
@@ -106,7 +101,6 @@
         </div>
     </section>
 
-    <!-- Indicadores Económicos -->
     <section id="indicadores" class="py-16 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="font-heading text-3xl font-bold text-cic-primary text-center mb-12">Indicadores Económicos</h2>
@@ -146,7 +140,6 @@
         </div>
     </section>
 
-    <!-- Servicios -->
     <section id="servicios" class="py-20 bg-cic-lighter">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
@@ -169,21 +162,10 @@
                     <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Modernización Digital</h3>
                     <ul class="text-sm text-gray-700 space-y-1"><li>• Canales Digitales</li><li>• CRM/ERP</li><li>• Infraestructura Corporativa</li></ul>
                 </div>
-                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover">
-                    <div class="text-3xl mb-4"></div>
-                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Gestión de Proyectos</h3>
-                    <ul class="text-sm text-gray-700 space-y-1"><li>• Ruta Crítica y KPIs</li><li>• Control de presupuestos</li><li>• Gestión de equipos</li></ul>
-                </div>
-                <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover md:col-span-2 lg:col-span-2">
-                    <div class="text-3xl mb-4">🚀</div>
-                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Emprendimiento y Validación</h3>
-                    <div class="grid sm:grid-cols-3 gap-4 text-sm text-gray-700"><div>• Modelado de Negocios</div><div>• Análisis de mercado</div><div>• Plan de acción</div></div>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Capacitación -->
     <section id="capacitacion" class="py-20 bg-gradient-to-br from-cic-primary via-cic-secondary to-cic-accent text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
@@ -191,12 +173,12 @@
                 <p class="text-purple-100 text-lg mb-8">Aprende lo esencial, a tu ritmo, con herramientas listas para usar.</p>
                 <div class="flex justify-center items-center gap-8">
                     <div class="text-center">
-                        <img src="cici.png" alt="Cici" class="w-32 h-32 mx-auto mb-3 rounded-full border-4 border-white/50">
+                        <img src="CICI.png" alt="Cici" class="w-32 h-32 mx-auto mb-3 rounded-full border-4 border-white/50">
                         <p class="font-bold text-white text-lg">Cici</p>
                         <p class="text-sm text-purple-200">Experta en Administración</p>
                     </div>
                     <div class="text-center">
-                        <img src="coco.png" alt="Coco" class="w-32 h-32 mx-auto mb-3 rounded-full border-4 border-white/50">
+                        <img src="COCO.png" alt="Coco" class="w-32 h-32 mx-auto mb-3 rounded-full border-4 border-white/50">
                         <p class="font-bold text-white text-lg">Coco</p>
                         <p class="text-sm text-purple-200">Especialista en Comercio Exterior</p>
                     </div>
@@ -208,7 +190,6 @@
         </div>
     </section>
 
-    <!-- Blogs -->
     <section id="blogs" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
@@ -221,7 +202,6 @@
         </div>
     </section>
 
-    <!-- Contacto -->
     <section id="contacto" class="py-20 bg-cic-lighter">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-12">
@@ -261,11 +241,11 @@
                     </div>
                     <div class="mt-8">
                         <p class="text-gray-700 font-bold mb-4">O escanea nuestro QR:</p>
-                        <img src="qr-whatsapp.png" alt="WhatsApp QR" class="w-48 h-48 rounded-xl shadow-lg">
+                        <img src="qr-code Whats.png" alt="WhatsApp QR" class="w-48 h-48 rounded-xl shadow-lg">
                     </div>
                 </div>
                 <div class="bg-white p-8 rounded-2xl shadow-xl">
-                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📨 Envíanos un mensaje</h3>
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-6"> Envíanos un mensaje</h3>
                     <form class="space-y-4">
                         <input type="text" placeholder="Nombre completo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                         <input type="email" placeholder="Correo electrónico" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
@@ -285,14 +265,13 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <img src="logo-cic-blanco.png" alt="CIC Consultoría" class="h-12 w-auto">
+                <img src="Logocicc.png" alt="CIC Consultoría" class="h-12 w-auto">
                 <div class="text-purple-200 text-sm text-center">
                     <p>© 2026 CIC Consultoría. Todos los derechos reservados.</p>
-                    <p class="mt-1">🦝 Diseñado con Cici y Coco</p>
+                    <p class="mt-1"> Diseñado con Cici y Coco</p>
                 </div>
                 <div class="flex gap-4">
                     <a href="https://www.facebook.com/share/18yMgc5nyg/?mibextid=wwXIfr" target="_blank" class="text-white hover:text-purple-200 transition">
@@ -306,13 +285,11 @@
         </div>
     </footer>
 
-    <!-- WhatsApp Float -->
     <a href="https://wa.me/522227756653" target="_blank" class="whatsapp-float">
         <i class="fab fa-whatsapp text-3xl"></i>
     </a>
 
     <script>
-        // Renderizar cursos
         function renderCursos() {
             const container = document.getElementById('cursos-container');
             const cursos = window.cursosData || [];
@@ -336,7 +313,6 @@
             `).join('');
         }
 
-        // Renderizar blogs
         function renderBlogs() {
             const container = document.getElementById('blogs-container');
             const blogs = window.blogsData || [];
@@ -369,23 +345,13 @@
             }
         }
 
-        // Cargar indicadores económicos
         async function cargarIndicadores() {
             try {
-                // Tipo de cambio (simulado - en producción usar API de Banxico)
                 const tcUSD = (17.50 + Math.random() * 0.5).toFixed(2);
                 const tcEUR = (19.20 + Math.random() * 0.5).toFixed(2);
-                
-                // Bolsa (simulado - IPC)
                 const bolsa = Math.floor(50000 + Math.random() * 5000);
-                
-                // Salario mínimo 2024
                 const salario = 248.93;
-                
-                // UDIS (simulado)
                 const udis = (7.5 + Math.random() * 0.1).toFixed(4);
-                
-                // UMA 2024
                 const uma = 108.41;
                 
                 document.getElementById('tc-usd').textContent = '$' + tcUSD;
@@ -400,7 +366,6 @@
             }
         }
 
-        // Cargar al iniciar
         window.addEventListener('load', () => {
             cargarIndicadores();
         });
