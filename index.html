@@ -305,67 +305,59 @@
     </section>
 
     <!-- Formulario de Reserva -->
-    <section id="booking" class="py-20 gradient-purple-light">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-12">
-                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Reserva tu Asesoría</h2>
-                <p class="text-gray-600 text-lg">Completa el formulario y nos pondremos en contacto contigo para confirmar tu cita.</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl shadow-xl p-8 border-4 border-cic-accent/30 max-w-3xl mx-auto">
-                <form id="bookingForm" class="space-y-6">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold text-cic-primary mb-2">Nombre completo *</label>
-                            <input type="text" id="bookingNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Tu nombre">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-cic-primary mb-2">Correo electrónico *</label>
-                            <input type="email" id="bookingEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="tu@email.com">
-                        </div>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold text-cic-primary mb-2">Teléfono *</label>
-                            <input type="tel" id="bookingTelefono" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="222 123 4567">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-cic-primary mb-2">Tipo de asesoría *</label>
-                            <select id="bookingTipo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option value="">Selecciona una opción</option>
-                                <option value="Diagnóstico empresarial gratuito">Diagnóstico empresarial gratuito (30 min)</option>
-                                <option value="Asesoría en administración">Asesoría en administración (1 hora)</option>
-                                <option value="Consultoría en comercio exterior">Consultoría en comercio exterior (1 hora)</option>
-                                <option value="Otra consulta">Otra consulta</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-bold text-cic-primary mb-2">Fecha y hora preferida</label>
-                        <input type="text" id="bookingFecha" placeholder="Ej: Lunes 28 de julio, 10:00 AM" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <p class="text-xs text-gray-500 mt-1">* Te confirmaremos si está disponible</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-bold text-cic-primary mb-2">Cuéntanos sobre tu proyecto o necesidad</label>
-                        <textarea id="bookingMensaje" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Describe brevemente qué necesitas..."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
-                        <i class="fas fa-paper-plane"></i>
-                        Solicitar cita
-                    </button>
-                    
-                    <p class="text-xs text-gray-500 text-center">
-                        Te responderemos en menos de 24 horas a tu correo electrónico
-                    </p>
-                </form>
-            </div>
+   <form action="https://formspree.io/f/https://formspree.io/f/mqerbnrz" method="POST" class="space-y-6">
+    <div class="grid md:grid-cols-2 gap-6">
+        <div>
+            <label class="block text-sm font-bold text-cic-primary mb-2">Nombre completo *</label>
+            <input type="text" name="nombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Tu nombre">
         </div>
-    </section>
-
+        <div>
+            <label class="block text-sm font-bold text-cic-primary mb-2">Correo electrónico *</label>
+            <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="tu@email.com">
+        </div>
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+        <div>
+            <label class="block text-sm font-bold text-cic-primary mb-2">Teléfono *</label>
+            <input type="tel" name="telefono" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="222 123 4567">
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-cic-primary mb-2">Tipo de asesoría *</label>
+            <select name="tipo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                <option value="">Selecciona una opción</option>
+                <option value="Diagnóstico empresarial gratuito">Diagnóstico empresarial gratuito (30 min)</option>
+                <option value="Asesoría en administración">Asesoría en administración (1 hora)</option>
+                <option value="Consultoría en comercio exterior">Consultoría en comercio exterior (1 hora)</option>
+                <option value="Otra consulta">Otra consulta</option>
+            </select>
+        </div>
+    </div>
+    
+    <div>
+        <label class="block text-sm font-bold text-cic-primary mb-2">Fecha y hora preferida</label>
+        <input type="text" name="fecha_preferida" placeholder="Ej: Lunes 28 de julio, 10:00 AM" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+        <p class="text-xs text-gray-500 mt-1">* Te confirmaremos si está disponible</p>
+    </div>
+    
+    <div>
+        <label class="block text-sm font-bold text-cic-primary mb-2">Cuéntanos sobre tu proyecto o necesidad</label>
+        <textarea name="mensaje" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Describe brevemente qué necesitas..."></textarea>
+    </div>
+    
+    <!-- Campo oculto para redirección después de enviar -->
+    <input type="hidden" name="_next" value="https://cicconsultoria.mx/#booking">
+    <input type="hidden" name="_subject" value="Nueva solicitud de asesoría - CIC Consultoría">
+    
+    <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
+        <i class="fas fa-paper-plane"></i>
+        Solicitar cita
+    </button>
+    
+    <p class="text-xs text-gray-500 text-center">
+        Te responderemos en menos de 24 horas a tu correo electrónico
+    </p>
+</form>
     <!-- Blogs -->
     <section id="blogs" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
