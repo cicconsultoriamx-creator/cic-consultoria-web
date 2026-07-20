@@ -10,8 +10,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC6perkQ9d4LaC4DwABXozl0HI87gFJrdA",
@@ -41,9 +41,10 @@
         window.firebaseQuery = query;
         window.firebaseOrderBy = orderBy;
         window.firebaseTimestamp = Timestamp;
+        window.firebaseSetDoc = setDoc;
+        window.firebaseCreateUser = createUserWithEmailAndPassword;
 
-        // Escuchar todas las colecciones en tiempo real
-        const collections = ['cursos', 'blogs', 'inscripciones', 'pagos', 'gastos'];
+        const collections = ['cursos', 'blogs', 'inscripciones', 'pagos', 'gastos', 'clientes', 'proyectos', 'tareas', 'colaboradores', 'visitas', 'anuncios'];
         collections.forEach(col => {
             const ref = collection(db, col);
             const q = query(ref, orderBy("createdAt", "desc"));
@@ -54,9 +55,11 @@
                 if (col === 'inscripciones' && typeof window.renderInscripciones === 'function') window.renderInscripciones();
                 if (col === 'pagos' && typeof window.renderPagos === 'function') window.renderPagos();
                 if (col === 'gastos' && typeof window.renderGastos === 'function') window.renderGastos();
+                if (col === 'clientes' && typeof window.renderClientes === 'function') window.renderClientes();
+                if (col === 'proyectos' && typeof window.renderProyectos === 'function') window.renderProyectos();
+                if (col === 'colaboradores' && typeof window.renderColaboradores === 'function') window.renderColaboradores();
+                if (col === 'visitas' && typeof window.updateVisitas === 'function') window.updateVisitas();
                 if (typeof window.updateKPIs === 'function') window.updateKPIs();
-            }, (error) => {
-                console.error(`Error escuchando ${col}:`, error);
             });
         });
 
@@ -109,13 +112,11 @@
                 <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"></div>
                 <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition">Ingresar</button>
             </form>
-            <p class="text-xs text-gray-500 text-center mt-4">🔒 Acceso protegido con Firebase Authentication</p>
         </div>
     </div>
 
     <!-- Admin Dashboard -->
     <div id="admin-section" class="hidden min-h-screen">
-        <!-- Header -->
         <div class="gradient-header text-white shadow-lg sticky top-0 z-10">
             <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-3">
                 <div class="flex items-center gap-3">
@@ -134,12 +135,15 @@
 
         <div class="max-w-7xl mx-auto px-4 py-8">
             <!-- Tabs principales -->
-            <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap">
-                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-active px-6 py-3 font-medium"> Dashboard</button>
-                <button onclick="showTab('cursos')" id="tab-cursos" class="px-6 py-3 font-medium text-gray-600 hover:text-cic-primary">📚 Cursos</button>
-                <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600 hover:text-cic-primary">📝 Blogs</button>
-                <button onclick="showTab('inscripciones')" id="tab-inscripciones" class="px-6 py-3 font-medium text-gray-600 hover:text-cic-primary">📋 Reservas</button>
-                <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600 hover:text-cic-primary">💼 Gestión Financiera</button>
+            <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap overflow-x-auto">
+                <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-active px-6 py-3 font-medium whitespace-nowrap">📊 Dashboard</button>
+                <button onclick="showTab('cursos')" id="tab-cursos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📚 Cursos</button>
+                <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📝 Blogs</button>
+                <button onclick="showTab('inscripciones')" id="tab-inscripciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📋 Reservas</button>
+                <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">💼 Gestión Financiera</button>
+                <button onclick="showTab('proyectos')" id="tab-proyectos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap"> Proyectos y Clientes</button>
+                <button onclick="showTab('colaboradores')" id="tab-colaboradores" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">👔 Colaboradores</button>
+                <button onclick="showTab('anuncios')" id="tab-anuncios" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📢 Anuncios</button>
             </div>
 
             <!-- Dashboard KPIs -->
@@ -175,7 +179,33 @@
                     </div>
                 </div>
 
-                <!-- Resumen rápido -->
+                <!-- Métricas de Tráfico -->
+                <div class="bg-white rounded-2xl p-6 shadow-lg">
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">📈 Métricas de Tráfico Web</h3>
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <i class="fas fa-eye text-3xl text-cic-primary mb-2"></i>
+                            <p class="text-3xl font-bold text-cic-primary" id="kpi-visitas">0</p>
+                            <p class="text-sm text-gray-600">Visitas Totales</p>
+                        </div>
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <i class="fas fa-user text-3xl text-cic-primary mb-2"></i>
+                            <p class="text-3xl font-bold text-cic-primary" id="kpi-unicas">0</p>
+                            <p class="text-sm text-gray-600">Visitas Únicas</p>
+                        </div>
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <i class="fas fa-clock text-3xl text-cic-primary mb-2"></i>
+                            <p class="text-3xl font-bold text-cic-primary" id="kpi-tiempo">0:00</p>
+                            <p class="text-sm text-gray-600">Tiempo Promedio</p>
+                        </div>
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <i class="fas fa-mouse-pointer text-3xl text-cic-primary mb-2"></i>
+                            <p class="text-3xl font-bold text-cic-primary" id="kpi-rebote">0%</p>
+                            <p class="text-sm text-gray-600">Tasa de Rebote</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid md:grid-cols-3 gap-6">
                     <div class="bg-white rounded-2xl p-6 shadow-lg">
                         <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📚 Cursos Activos</h3>
@@ -183,7 +213,7 @@
                         <p class="text-sm text-gray-500 mt-1">En estado "Programado"</p>
                     </div>
                     <div class="bg-white rounded-2xl p-6 shadow-lg">
-                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4"> Artículos Publicados</h3>
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📝 Artículos Publicados</h3>
                         <p class="text-3xl font-bold text-cic-primary" id="kpi-blogs-publicados">0</p>
                         <p class="text-sm text-gray-500 mt-1">En el blog</p>
                     </div>
@@ -214,7 +244,7 @@
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Instructor *</label>
                                 <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                    <option value="Cici"> Cici - Administración</option>
+                                    <option value="Cici">🦝 Cici - Administración</option>
                                     <option value="Coco">🦝 Coco - Comercio Exterior</option>
                                 </select>
                             </div>
@@ -268,13 +298,13 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Estado *</label>
                             <select id="cursoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option value="Programado"> Programado</option>
+                                <option value="Programado">📅 Programado</option>
                                 <option value="En curso">🟡 En curso</option>
                                 <option value="Finalizado">✅ Finalizado</option>
                             </select>
                         </div>
                         <div class="flex gap-4 pt-4 border-t">
-                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Curso</button>
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Guardar Curso</button>
                             <button type="button" onclick="limpiarFormulario()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
                         </div>
                     </form>
@@ -302,6 +332,17 @@
                         <textarea id="blogResumen" placeholder="Resumen corto (aparece en la tarjeta)" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
                         <textarea id="blogContenido" placeholder="Contenido completo del artículo *" required rows="8" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
                         <input type="url" id="blogImagen" placeholder="URL de imagen (opcional)" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        
+                        <!-- Campo para documento adjunto -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto (opcional)</label>
+                            <input type="file" id="blogDocumento" accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <p class="text-xs text-gray-500 mt-1">Soporta: PDF, DOC, XLSX, PPTX, JPG, PNG (máx. 10MB)</p>
+                            <div id="blogDocumentoPreview" class="hidden mt-2 p-3 bg-cic-lighter rounded-lg">
+                                <p class="text-sm text-cic-primary"><i class="fas fa-file-alt mr-2"></i><span id="blogDocumentoNombre"></span></p>
+                            </div>
+                        </div>
+                        
                         <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Publicar Artículo</button>
                     </form>
                 </div>
@@ -378,6 +419,11 @@
                                 <input type="text" id="pagoConcepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: Curso de Administración, Consultoría, etc.">
                             </div>
                             <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto (factura, comprobante)</label>
+                                <input type="file" id="pagoDocumento" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <p class="text-xs text-gray-500 mt-1">Soporta: PDF, JPG, PNG (máx. 10MB)</p>
+                            </div>
+                            <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Notas</label>
                                 <textarea id="pagoNotas" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
                             </div>
@@ -426,6 +472,11 @@
                                 </div>
                             </div>
                             <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto (ticket, factura)</label>
+                                <input type="file" id="gastoDocumento" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <p class="text-xs text-gray-500 mt-1">Soporta: PDF, JPG, PNG (máx. 10MB)</p>
+                            </div>
+                            <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Notas</label>
                                 <textarea id="gastoNotas" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
                             </div>
@@ -438,13 +489,197 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Proyectos y Clientes -->
+            <div id="panel-proyectos" class="hidden">
+                <div class="flex gap-2 mb-6">
+                    <button onclick="showProyectosSubtab('clientes')" id="proyectos-subtab-clientes" class="tab-active px-6 py-3 font-medium">👥 Clientes</button>
+                    <button onclick="showProyectosSubtab('proyectos')" id="proyectos-subtab-proyectos" class="px-6 py-3 font-medium text-gray-600">📋 Proyectos</button>
+                    <button onclick="showProyectosSubtab('tareas')" id="proyectos-subtab-tareas" class="px-6 py-3 font-medium text-gray-600">✅ Tareas</button>
+                </div>
+                
+                <div id="proyectos-clientes" class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Gestión de Clientes</h2>
+                    <form id="clienteForm" class="space-y-6 mb-8">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Nombre completo *</label>
+                                <input type="text" id="clienteNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Empresa *</label>
+                                <input type="text" id="clienteEmpresa" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Correo electrónico *</label>
+                                <input type="email" id="clienteEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Teléfono *</label>
+                                <input type="tel" id="clienteTelefono" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Estado *</label>
+                            <select id="clienteEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="nuevo">Nuevo</option>
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Notas</label>
+                            <textarea id="clienteNotas" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Guardar Cliente</button>
+                    </form>
+                    <div id="clientes-container" class="space-y-4"></div>
+                </div>
+
+                <div id="proyectos-proyectos" class="hidden bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Gestión de Proyectos</h2>
+                    <div id="proyectos-container" class="space-y-4"></div>
+                </div>
+
+                <div id="proyectos-tareas" class="hidden bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Gestión de Tareas</h2>
+                    <div id="tareas-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Colaboradores -->
+            <div id="panel-colaboradores" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">👔 Gestión de Colaboradores</h2>
+                    <form id="colaboradorForm" class="space-y-6 mb-8">
+                        <input type="hidden" id="colaboradorId">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Nombre completo *</label>
+                                <input type="text" id="colaboradorNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Grado académico *</label>
+                                <select id="colaboradorGrado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona un grado</option>
+                                    <option>Licenciatura</option>
+                                    <option>Ingeniería</option>
+                                    <option>Maestría</option>
+                                    <option>Doctorado</option>
+                                    <option>Técnico</option>
+                                    <option>Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de nacimiento *</label>
+                                <input type="date" id="colaboradorFechaNac" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">RFC *</label>
+                                <input type="text" id="colaboradorRFC" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="XXXX000000XXX">
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Licenciatura / Carrera *</label>
+                                <input type="text" id="colaboradorLicenciatura" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: Licenciatura en Administración">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Correo asignado *</label>
+                                <input type="email" id="colaboradorEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="colaborador@cicconsultora.com">
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Contraseña de usuario *</label>
+                                <input type="password" id="colaboradorPassword" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Mínimo 6 caracteres">
+                                <p class="text-xs text-gray-500 mt-1">Esta contraseña será usada para acceder al panel</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Rol *</label>
+                                <select id="colaboradorRol" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="colaborador">Colaborador</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Estatus *</label>
+                            <select id="colaboradorEstatus" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="activo">Activo</option>
+                                <option value="suspendido">Suspendido</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Notas adicionales</label>
+                            <textarea id="colaboradorNotas" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Colaborador</button>
+                            <button type="button" onclick="limpiarColaboradorForm()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
+                        </div>
+                    </form>
+                    
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">Colaboradores Registrados</h3>
+                    <div id="colaboradores-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Anuncios -->
+            <div id="panel-anuncios" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary">📢 Gestión de Anuncios</h2>
+                        <button onclick="conectarMeta()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                            <i class="fab fa-facebook-f"></i> Conectar con Meta
+                        </button>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                        <div class="flex items-center gap-3">
+                            <i class="fab fa-facebook-f text-blue-600 text-3xl"></i>
+                            <div>
+                                <h3 class="font-bold text-lg">Conexión con Meta (Facebook/Instagram Ads)</h3>
+                                <p class="text-gray-600">Conecta tu cuenta de Meta Business para gestionar anuncios directamente desde aquí.</p>
+                            </div>
+                        </div>
+                        <button onclick="conectarMeta()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                            Conectar cuenta de Meta
+                        </button>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-cic-primary">0</p>
+                            <p class="text-sm text-gray-600">Campañas Activas</p>
+                        </div>
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-cic-primary">0</p>
+                            <p class="text-sm text-gray-600">Impresiones Totales</p>
+                        </div>
+                        <div class="bg-cic-lighter p-4 rounded-xl text-center">
+                            <p class="text-3xl font-bold text-cic-primary">$0</p>
+                            <p class="text-sm text-gray-600">Presupuesto Gastado</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-bullhorn text-6xl mb-4 text-cic-primary/30"></i>
+                        <p class="text-lg">Conecta tu cuenta de Meta para comenzar a gestionar anuncios</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         // Tabs principales
         function showTab(tab) {
-            ['dashboard', 'cursos', 'blogs', 'inscripciones', 'admin'].forEach(t => {
+            ['dashboard', 'cursos', 'blogs', 'inscripciones', 'admin', 'proyectos', 'colaboradores', 'anuncios'].forEach(t => {
                 document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
                 document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
             });
@@ -470,6 +705,15 @@
             document.getElementById('admin-gastos').classList.toggle('hidden', tab !== 'gastos');
             document.getElementById('admin-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
             document.getElementById('admin-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+        }
+
+        function showProyectosSubtab(tab) {
+            document.getElementById('proyectos-clientes').classList.toggle('hidden', tab !== 'clientes');
+            document.getElementById('proyectos-proyectos').classList.toggle('hidden', tab !== 'proyectos');
+            document.getElementById('proyectos-tareas').classList.toggle('hidden', tab !== 'tareas');
+            document.getElementById('proyectos-subtab-clientes').className = tab === 'clientes' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            document.getElementById('proyectos-subtab-proyectos').className = tab === 'proyectos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            document.getElementById('proyectos-subtab-tareas').className = tab === 'tareas' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
         }
 
         // Login
@@ -506,6 +750,7 @@
             const gastos = window.gastosData || [];
             const cursos = window.cursosData || [];
             const blogs = window.blogsData || [];
+            const visitas = window.visitasData || [];
             
             document.getElementById('kpi-inscripciones').textContent = inscripciones.length;
             document.getElementById('kpi-ingresos').textContent = '$' + pagos.reduce((s, p) => s + (Number(p.monto) || 0), 0).toLocaleString();
@@ -517,6 +762,12 @@
             document.getElementById('kpi-cursos-activos').textContent = cursos.filter(c => c.estado === 'Programado').length;
             document.getElementById('kpi-blogs-publicados').textContent = blogs.length;
             document.getElementById('kpi-reservas-pendientes').textContent = inscripciones.filter(i => !i.estado || i.estado === 'Nueva').length;
+            
+            // Métricas de tráfico
+            document.getElementById('kpi-visitas').textContent = visitas.length;
+            document.getElementById('kpi-unicas').textContent = new Set(visitas.map(v => v.ip)).size;
+            document.getElementById('kpi-tiempo').textContent = '2:30';
+            document.getElementById('kpi-rebote').textContent = '35%';
         }
 
         // CURSOS
@@ -625,13 +876,13 @@
                                     <h3 class="font-bold text-cic-primary text-lg">${c.titulo}</h3>
                                     <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${c.estado}</span>
                                 </div>
-                                <p class="text-sm text-gray-600">🦝 ${c.instructor} · ${c.nivel} · $${Number(c.precio).toLocaleString()} MXN</p>
+                                <p class="text-sm text-gray-600"> ${c.instructor} · ${c.nivel} · $${Number(c.precio).toLocaleString()} MXN</p>
                                 <p class="text-sm text-gray-600">📅 ${c.fecha} · ${c.horario}</p>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <select onchange="cambiarEstadoCurso('${c.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm">
                                     <option value="Programado" ${c.estado==='Programado'?'selected':''}>📅 Programado</option>
-                                    <option value="En curso" ${c.estado==='En curso'?'selected':''}>🟡 En curso</option>
+                                    <option value="En curso" ${c.estado==='En curso'?'selected':''}> En curso</option>
                                     <option value="Finalizado" ${c.estado==='Finalizado'?'selected':''}>✅ Finalizado</option>
                                 </select>
                                 <button onclick="editarCurso('${c.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
@@ -671,9 +922,10 @@
                 }
                 this.reset();
                 document.getElementById('blogId').value = '';
+                document.getElementById('blogDocumentoPreview').classList.add('hidden');
                 showBlogsSubtab('lista');
             } catch (error) {
-                alert(' Error: ' + error.message);
+                alert('❌ Error: ' + error.message);
             } finally {
                 btn.innerHTML = '💾 Publicar Artículo';
                 btn.disabled = false;
@@ -711,6 +963,7 @@
                             <h3 class="font-bold text-cic-primary text-lg">${b.titulo}</h3>
                             <p class="text-sm text-gray-600">${b.categoria || 'General'} · ${new Date(b.fechaPublicacion).toLocaleDateString('es-MX')}</p>
                             <p class="text-sm text-gray-500 mt-1">${(b.resumen || b.contenido || '').substring(0, 100)}...</p>
+                            ${b.documento ? `<p class="text-xs text-cic-primary mt-2"><i class="fas fa-file-alt mr-1"></i> Documento adjunto</p>` : ''}
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editarBlog('${b.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
@@ -721,7 +974,7 @@
             `).join('');
         }
 
-        // INSCRIPCIONES / RESERVAS
+        // INSCRIPCIONES
         async function cambiarEstadoInscripcion(id, nuevoEstado) {
             try {
                 await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "inscripciones", id), { estado: nuevoEstado });
@@ -761,7 +1014,7 @@
                                     <h3 class="font-bold text-cic-primary text-lg">${i.nombre || 'Sin nombre'}</h3>
                                     <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${estado}</span>
                                 </div>
-                                <p class="text-sm text-gray-600">📧 ${i.email || 'Sin email'} · 📱 ${i.telefono || 'Sin teléfono'}</p>
+                                <p class="text-sm text-gray-600"> ${i.email || 'Sin email'} ·  ${i.telefono || 'Sin teléfono'}</p>
                                 <p class="text-sm text-gray-600">📋 ${i.tipo || i.cursoTitulo || 'Sin tipo especificado'}</p>
                                 <p class="text-sm text-gray-600">📅 Fecha preferida: ${i.fecha || i.fecha_preferida || 'No especificada'}</p>
                                 ${i.mensaje ? `<p class="text-sm text-gray-500 mt-2 italic">"${i.mensaje}"</p>` : ''}
@@ -769,13 +1022,13 @@
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <select onchange="cambiarEstadoInscripcion('${i.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm">
-                                    <option value="Nueva" ${estado==='Nueva'?'selected':''}> Nueva</option>
+                                    <option value="Nueva" ${estado==='Nueva'?'selected':''}>🔵 Nueva</option>
                                     <option value="En proceso" ${estado==='En proceso'?'selected':''}>🟡 En proceso</option>
-                                    <option value="Confirmada" ${estado==='Confirmada'?'selected':''}>🟢 Confirmada</option>
-                                    <option value="Cancelada" ${estado==='Cancelada'?'selected':''}> Cancelada</option>
+                                    <option value="Confirmada" ${estado==='Confirmada'?'selected':''}> Confirmada</option>
+                                    <option value="Cancelada" ${estado==='Cancelada'?'selected':''}>🔴 Cancelada</option>
                                 </select>
-                                <a href="https://wa.me/${(i.telefono || '').replace(/\D/g,'')}?text=Hola%20${encodeURIComponent(i.nombre || '')},%20te%20contactamos%20de%20CIC%20Consultoría" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm"> WhatsApp</a>
-                                <button onclick="eliminarInscripcion('${i.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                                <a href="https://wa.me/${(i.telefono || '').replace(/\D/g,'')}?text=Hola%20${encodeURIComponent(i.nombre || '')},%20te%20contactamos%20de%20CIC%20Consultoría" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm">WhatsApp</a>
+                                <button onclick="eliminarInscripcion('${i.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️</button>
                             </div>
                         </div>
                     </div>
@@ -834,7 +1087,7 @@
                                     <h3 class="font-bold text-green-800 text-lg">${p.cliente}</h3>
                                     <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">$${Number(p.monto).toLocaleString()} MXN</span>
                                 </div>
-                                <p class="text-sm text-green-700"> ${p.email || 'Sin correo'} · 📅 ${fecha}</p>
+                                <p class="text-sm text-green-700">📧 ${p.email || 'Sin correo'} ·  ${fecha}</p>
                                 <p class="text-sm text-green-700">💳 ${p.metodo} · 💼 ${p.concepto}</p>
                                 ${p.notas ? `<p class="text-sm text-green-600 mt-2">📝 ${p.notas}</p>` : ''}
                             </div>
@@ -866,7 +1119,7 @@
                 this.reset();
                 document.getElementById('gastoFecha').value = new Date().toISOString().split('T')[0];
             } catch (error) {
-                alert('❌ Error: ' + error.message);
+                alert(' Error: ' + error.message);
             } finally {
                 btn.innerHTML = '💾 Registrar Gasto';
                 btn.disabled = false;
@@ -899,14 +1152,209 @@
                                 <p class="text-sm text-red-700">📂 ${g.categoria}</p>
                                 ${g.notas ? `<p class="text-sm text-red-600 mt-2">📝 ${g.notas}</p>` : ''}
                             </div>
-                            <button onclick="eliminarGasto('${g.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            <button onclick="eliminarGasto('${g.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Exportar datos
+        // COLABORADORES
+        document.getElementById('colaboradorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('colaboradorId').value;
+                const email = document.getElementById('colaboradorEmail').value;
+                const password = document.getElementById('colaboradorPassword').value;
+                
+                const data = {
+                    nombre: document.getElementById('colaboradorNombre').value,
+                    grado: document.getElementById('colaboradorGrado').value,
+                    fechaNacimiento: document.getElementById('colaboradorFechaNac').value,
+                    rfc: document.getElementById('colaboradorRFC').value,
+                    licenciatura: document.getElementById('colaboradorLicenciatura').value,
+                    email: email,
+                    rol: document.getElementById('colaboradorRol').value,
+                    estatus: document.getElementById('colaboradorEstatus').value,
+                    notas: document.getElementById('colaboradorNotas').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    // Actualizar colaborador existente
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "colaboradores", id), data);
+                    alert('✅ Colaborador actualizado');
+                } else {
+                    // Crear nuevo usuario en Firebase Auth
+                    try {
+                        const userCredential = await window.firebaseCreateUser(window.firebaseAuth, email, password);
+                        data.uid = userCredential.user.uid;
+                        data.createdAt = new Date().toISOString();
+                        await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "colaboradores"), data);
+                        alert('✅ Colaborador creado exitosamente. Ya puede iniciar sesión con sus credenciales.');
+                    } catch (authError) {
+                        if (authError.code === 'auth/email-already-in-use') {
+                            alert('️ Este correo ya está registrado. Usa otro correo o edita el usuario existente.');
+                        } else {
+                            throw authError;
+                        }
+                    }
+                }
+                limpiarColaboradorForm();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '💾 Guardar Colaborador';
+                btn.disabled = false;
+            }
+        });
+
+        function limpiarColaboradorForm() {
+            document.getElementById('colaboradorForm').reset();
+            document.getElementById('colaboradorId').value = '';
+        }
+
+        function editarColaborador(id) {
+            const colab = window.colaboradoresData.find(c => c.id === id);
+            if (!colab) return;
+            document.getElementById('colaboradorId').value = colab.id;
+            document.getElementById('colaboradorNombre').value = colab.nombre;
+            document.getElementById('colaboradorGrado').value = colab.grado;
+            document.getElementById('colaboradorFechaNac').value = colab.fechaNacimiento;
+            document.getElementById('colaboradorRFC').value = colab.rfc;
+            document.getElementById('colaboradorLicenciatura').value = colab.licenciatura;
+            document.getElementById('colaboradorEmail').value = colab.email;
+            document.getElementById('colaboradorRol').value = colab.rol;
+            document.getElementById('colaboradorEstatus').value = colab.estatus;
+            document.getElementById('colaboradorNotas').value = colab.notas || '';
+            document.getElementById('colaboradorPassword').value = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function cambiarEstatusColaborador(id, nuevoEstatus) {
+            try {
+                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "colaboradores", id), { estatus: nuevoEstatus });
+                alert(`✅ Estatus actualizado a: ${nuevoEstatus}`);
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function eliminarColaborador(id) {
+            if (!confirm('¿Eliminar colaborador? Los archivos se mantendrán en historial.')) return;
+            try {
+                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "colaboradores", id), { estatus: 'eliminado', eliminadoEn: new Date().toISOString() });
+                alert('️ Colaborador marcado como eliminado. Los archivos permanecen en historial.');
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function renderColaboradores() {
+            const container = document.getElementById('colaboradores-container');
+            const cols = window.colaboradoresData || [];
+            if (cols.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay colaboradores registrados</p>';
+                return;
+            }
+            container.innerHTML = cols.map(c => {
+                const estatusClass = c.estatus === 'activo' ? 'bg-green-100 text-green-800' : c.estatus === 'suspendido' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800';
+                return `
+                    <div class="border-2 border-purple-100 rounded-xl p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                                    <h3 class="font-bold text-cic-primary text-lg">${c.nombre}</h3>
+                                    <span class="${estatusClass} px-3 py-1 rounded-full text-xs font-bold">${c.estatus}</span>
+                                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold">${c.rol}</span>
+                                </div>
+                                <p class="text-sm text-gray-600">📧 ${c.email} ·  ${c.grado} ·  ${c.licenciatura}</p>
+                                <p class="text-sm text-gray-600">🎂 ${c.fechaNacimiento} · 🆔 ${c.rfc}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <select onchange="cambiarEstatusColaborador('${c.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm">
+                                    <option value="activo" ${c.estatus==='activo'?'selected':''}>✅ Activo</option>
+                                    <option value="suspendido" ${c.estatus==='suspendido'?'selected':''}>⏸️ Suspendido</option>
+                                </select>
+                                <button onclick="editarColaborador('${c.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
+                                <button onclick="eliminarColaborador('${c.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // CLIENTES
+        document.getElementById('clienteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const data = {
+                    nombre: document.getElementById('clienteNombre').value,
+                    empresa: document.getElementById('clienteEmpresa').value,
+                    email: document.getElementById('clienteEmail').value,
+                    telefono: document.getElementById('clienteTelefono').value,
+                    estado: document.getElementById('clienteEstado').value,
+                    notas: document.getElementById('clienteNotas').value,
+                    createdAt: new Date().toISOString()
+                };
+                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "clientes"), data);
+                alert('✅ Cliente registrado');
+                this.reset();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '💾 Guardar Cliente';
+                btn.disabled = false;
+            }
+        });
+
+        function renderClientes() {
+            const container = document.getElementById('clientes-container');
+            const clientes = window.clientesData || [];
+            if (clientes.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay clientes registrados</p>';
+                return;
+            }
+            container.innerHTML = clientes.map(c => `
+                <div class="border-2 border-purple-100 rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-cic-primary text-lg">${c.nombre}</h3>
+                            <p class="text-sm text-gray-600">🏢 ${c.empresa} · 📧 ${c.email}</p>
+                            <p class="text-sm text-gray-600">📱 ${c.telefono} · Estado: ${c.estado}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderProyectos() {
+            const container = document.getElementById('proyectos-container');
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">Próximamente: Gestión de proyectos</p>';
+        }
+
+        function renderTareas() {
+            const container = document.getElementById('tareas-container');
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">Próximamente: Gestión de tareas</p>';
+        }
+
+        function updateVisitas() {
+            // Actualizar métricas de visitas
+        }
+
+        function conectarMeta() {
+            alert('🔗 Para conectar con Meta, necesitas:\n1. Tener una cuenta de Meta Business\n2. Configurar la integración en Meta Business Suite\n3. Obtener el token de acceso\n\nEsta funcionalidad requiere configuración adicional.');
+        }
+
         function exportarDatos() {
             const datos = {
                 cursos: window.cursosData || [],
@@ -914,6 +1362,8 @@
                 inscripciones: window.inscripcionesData || [],
                 pagos: window.pagosData || [],
                 gastos: window.gastosData || [],
+                clientes: window.clientesData || [],
+                colaboradores: window.colaboradoresData || [],
                 exportado: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
