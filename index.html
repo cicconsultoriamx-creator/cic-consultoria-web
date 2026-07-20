@@ -226,39 +226,100 @@
     </section>
 
     <!-- Microsoft Bookings -->
+<!-- Microsoft Bookings - Reemplazar con Formulario de Registro -->
 <section id="booking" class="py-20 gradient-purple-light">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto mb-12">
             <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Reserva tu Asesoría</h2>
-            <p class="text-gray-600 text-lg">Selecciona el horario que mejor te convenga y nos conectamos. Integrado con Microsoft 365.</p>
+            <p class="text-gray-600 text-lg">Completa el formulario y nos pondremos en contacto contigo para confirmar tu cita.</p>
         </div>
         
-        <!-- Calendario de Bookings Integrado -->
-        <div class="bg-white rounded-2xl shadow-xl p-8 border-4 border-cic-accent/30">
-            <iframe 
-                src="https://outlook.office.com/book/CICConsultora@cicconsultora.com/?ismsaljsauthenabled" 
-                width="100%" 
-                height="800" 
-                frameborder="0"
-                style="border-radius: 12px;"
-                title="Calendario de Reservas - CIC Consultoría"
-            ></iframe>
+        <div class="bg-white rounded-2xl shadow-xl p-8 border-4 border-cic-accent/30 max-w-3xl mx-auto">
+            <form id="bookingForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-cic-primary mb-2">Nombre completo *</label>
+                        <input type="text" id="bookingNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Tu nombre">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-cic-primary mb-2">Correo electrónico *</label>
+                        <input type="email" id="bookingEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="tu@email.com">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-cic-primary mb-2">Teléfono *</label>
+                        <input type="tel" id="bookingTelefono" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="222 123 4567">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-cic-primary mb-2">Tipo de asesoría *</label>
+                        <select id="bookingTipo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="">Selecciona una opción</option>
+                            <option value="Diagnóstico empresarial gratuito">Diagnóstico empresarial gratuito (30 min)</option>
+                            <option value="Asesoría en administración">Asesoría en administración (1 hora)</option>
+                            <option value="Consultoría en comercio exterior">Consultoría en comercio exterior (1 hora)</option>
+                            <option value="Otra consulta">Otra consulta</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-cic-primary mb-2">Fecha y hora preferida</label>
+                    <input type="text" id="bookingFecha" placeholder="Ej: Lunes 28 de julio, 10:00 AM" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                    <p class="text-xs text-gray-500 mt-1">* Te confirmaremos si está disponible</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-cic-primary mb-2">Cuéntanos sobre tu proyecto o necesidad</label>
+                    <textarea id="bookingMensaje" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Describe brevemente qué necesitas..."></textarea>
+                </div>
+                
+                <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i>
+                    Solicitar cita
+                </button>
+                
+                <p class="text-xs text-gray-500 text-center">
+                    Te responderemos en menos de 24 horas a tu correo electrónico
+                </p>
+            </form>
         </div>
     </div>
 </section>
-    <!-- Blogs -->
-    <section id="blogs" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-4">Blog & Actualizaciones</h2>
-                <p class="text-gray-600 text-lg">Mantente informado sobre tendencias, noticias y consejos para tu negocio.</p>
-            </div>
-            <div id="blogs-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="col-span-3 text-center py-8 text-gray-500">Cargando artículos...</div>
-            </div>
-        </div>
-    </section>
 
+<!-- Script para el formulario -->
+<script>
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const nombre = document.getElementById('bookingNombre').value;
+    const email = document.getElementById('bookingEmail').value;
+    const telefono = document.getElementById('bookingTelefono').value;
+    const tipo = document.getElementById('bookingTipo').value;
+    const fecha = document.getElementById('bookingFecha').value;
+    const mensaje = document.getElementById('bookingMensaje').value;
+    
+    const asunto = `Solicitud de cita: ${tipo} - ${nombre}`;
+    const cuerpo = `Nueva solicitud de asesoría\n\n` +
+                   `Datos del cliente:\n` +
+                   `Nombre: ${nombre}\n` +
+                   `Email: ${email}\n` +
+                   `Teléfono: ${telefono}\n` +
+                   `Tipo de asesoría: ${tipo}\n` +
+                   `Fecha/hora preferida: ${fecha || 'No especificada'}\n\n` +
+                   `Mensaje:\n${mensaje || 'Sin mensaje adicional'}`;
+    
+    // Abrir cliente de correo
+    window.location.href = `mailto:admin@cicconsultora.com?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    
+    // Limpiar formulario
+    this.reset();
+    
+    // Mostrar confirmación
+    alert('✅ Gracias por tu solicitud. Se abrirá tu cliente de correo para enviar la información. Te contactaremos en menos de 24 horas.');
+});
+</script>
     <!-- Contacto -->
     <section id="contacto" class="py-20 bg-cic-lighter">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
