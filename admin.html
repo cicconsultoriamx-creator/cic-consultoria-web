@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -44,7 +45,7 @@
         window.firebaseSetDoc = setDoc;
         window.firebaseCreateUser = createUserWithEmailAndPassword;
 
-        const collections = ['cursos', 'blogs', 'inscripciones', 'pagos', 'gastos', 'clientes', 'proyectos', 'tareas', 'colaboradores', 'visitas', 'anuncios'];
+        const collections = ['cursos', 'blogs', 'inscripciones', 'pagos', 'gastos', 'clientes', 'proyectos', 'tareas', 'colaboradores', 'serviciosCotizacion', 'cotizaciones'];
         collections.forEach(col => {
             const ref = collection(db, col);
             const q = query(ref, orderBy("createdAt", "desc"));
@@ -59,7 +60,8 @@
                 if (col === 'proyectos' && typeof window.renderProyectos === 'function') window.renderProyectos();
                 if (col === 'tareas' && typeof window.renderTareas === 'function') window.renderTareas();
                 if (col === 'colaboradores' && typeof window.renderColaboradores === 'function') window.renderColaboradores();
-                if (col === 'visitas' && typeof window.updateVisitas === 'function') window.updateVisitas();
+                if (col === 'serviciosCotizacion' && typeof window.renderServiciosCotizacion === 'function') window.renderServiciosCotizacion();
+                if (col === 'cotizaciones' && typeof window.renderCotizacionesGuardadas === 'function') window.renderCotizacionesGuardadas();
                 if (typeof window.updateKPIs === 'function') window.updateKPIs();
             });
         });
@@ -113,6 +115,7 @@
                 <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm"></div>
                 <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition">Ingresar</button>
             </form>
+            <p class="text-xs text-gray-500 text-center mt-4">🔒 Acceso protegido con Firebase Authentication</p>
         </div>
     </div>
 
@@ -139,14 +142,14 @@
             <div class="flex gap-2 mb-6 border-b border-gray-300 flex-wrap overflow-x-auto">
                 <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-active px-6 py-3 font-medium whitespace-nowrap">📊 Dashboard</button>
                 <button onclick="showTab('cursos')" id="tab-cursos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📚 Cursos</button>
-                <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📝 Blogs</button>
+                <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap"> Blogs</button>
                 <button onclick="showTab('inscripciones')" id="tab-inscripciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📋 Reservas</button>
+                <button onclick="showTab('comercial')" id="tab-comercial" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">🏢 Gestión Comercial</button>
+                <button onclick="showTab('cotizaciones')" id="tab-cotizaciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📄 Cotizaciones</button>
                 <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">💼 Gestión Financiera</button>
                 <button onclick="showTab('proyectos')" id="tab-proyectos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📁 Proyectos y Tareas</button>
-                <button onclick="showTab('cotizaciones')" id="tab-cotizaciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap"> Cotizaciones</button>
                 <button onclick="showTab('colaboradores')" id="tab-colaboradores" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">👔 Colaboradores</button>
                 <button onclick="showTab('anuncios')" id="tab-anuncios" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📢 Anuncios</button>
-                <button onclick="showTab('financiero')" id="tab-financiero" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">💰 Gestor Financiero</button>
             </div>
 
             <!-- Dashboard KPIs -->
@@ -216,12 +219,12 @@
                         <p class="text-sm text-gray-500 mt-1">En estado "Programado"</p>
                     </div>
                     <div class="bg-white rounded-2xl p-6 shadow-lg">
-                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4"> Artículos Publicados</h3>
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📝 Artículos Publicados</h3>
                         <p class="text-3xl font-bold text-cic-primary" id="kpi-blogs-publicados">0</p>
                         <p class="text-sm text-gray-500 mt-1">En el blog</p>
                     </div>
                     <div class="bg-white rounded-2xl p-6 shadow-lg">
-                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4"> Reservas Pendientes</h3>
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📋 Reservas Pendientes</h3>
                         <p class="text-3xl font-bold text-cic-primary" id="kpi-reservas-pendientes">0</p>
                         <p class="text-sm text-gray-500 mt-1">Por confirmar</p>
                     </div>
@@ -247,7 +250,7 @@
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Instructor *</label>
                                 <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                    <option value="Cici"> Cici - Administración</option>
+                                    <option value="Cici">🦝 Cici - Administración</option>
                                     <option value="Coco">🦝 Coco - Comercio Exterior</option>
                                 </select>
                             </div>
@@ -345,7 +348,7 @@
                             </div>
                         </div>
                         
-                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Publicar Artículo</button>
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Publicar Artículo</button>
                     </form>
                 </div>
 
@@ -358,8 +361,37 @@
             <!-- Inscripciones / Reservas -->
             <div id="panel-inscripciones" class="hidden">
                 <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                        <h3 class="font-bold text-blue-900 mb-2">ℹ️ ¿Cómo se actualizan las reservas?</h3>
+                        <p class="text-sm text-blue-800 mb-2">Las reservas llegan de <strong>2 formas</strong>:</p>
+                        <ul class="text-sm text-blue-800 list-disc pl-5 space-y-1">
+                            <li><strong>Formspree (Email):</strong> El formulario del sitio web envía un correo a admin@cicconsultora.com</li>
+                            <li><strong>Firestore (Automático):</strong> Si configuras el formulario para guardar directo en Firebase, aparecen aquí automáticamente</li>
+                        </ul>
+                        <p class="text-sm text-blue-800 mt-2"><strong>Recomendación:</strong> Usa Formspree para recibir el email y captura manualmente aquí, O cambia el formulario para usar Firebase directo.</p>
+                    </div>
+
+                    <form id="reservaManualForm" class="bg-cic-lighter p-6 rounded-xl mb-6">
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">➕ Capturar Reserva Manualmente</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="resNombre" placeholder="Nombre *" required class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <input type="email" id="resEmail" placeholder="Email *" required class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <input type="tel" id="resTelefono" placeholder="Teléfono *" required class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <select id="resTipo" required class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                                <option value="">Tipo de asesoría *</option>
+                                <option>Diagnóstico gratuito (30 min)</option>
+                                <option>Asesoría administración (1 hora)</option>
+                                <option>Consultoría comercio exterior (1 hora)</option>
+                                <option>Otra consulta</option>
+                            </select>
+                            <input type="text" id="resFecha" placeholder="Fecha preferida (Ej: 25/07/2026 10:00 AM)" class="px-4 py-3 rounded-xl border-2 border-purple-200 md:col-span-2">
+                            <textarea id="resMensaje" placeholder="Mensaje" rows="2" class="px-4 py-3 rounded-xl border-2 border-purple-200 md:col-span-2"></textarea>
+                        </div>
+                        <button type="submit" class="mt-4 w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl">💾 Guardar Reserva</button>
+                    </form>
+
                     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-                        <h2 class="font-heading text-2xl font-bold text-cic-primary">📋 Reservas de Asesorías</h2>
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary"> Reservas de Asesorías</h2>
                         <div class="flex gap-2 text-sm">
                             <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">Nuevas</span>
                             <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium">En proceso</span>
@@ -374,11 +406,216 @@
                 </div>
             </div>
 
+            <!-- GESTIÓN COMERCIAL (CRM) -->
+            <div id="panel-comercial" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6"> Gestión Comercial - Clientes</h2>
+                    <form id="clienteForm" class="space-y-6 mb-8 bg-cic-lighter p-6 rounded-xl">
+                        <input type="hidden" id="clienteId">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Nombre comercial *</label>
+                                <input type="text" id="clienteNombreComercial" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Razón social / Nombre legal *</label>
+                                <input type="text" id="clienteNombreLegal" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">RFC *</label>
+                                <input type="text" id="clienteRFC" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="XAXX010101000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Teléfono *</label>
+                                <input type="tel" id="clienteTelefono" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Correo electrónico *</label>
+                                <input type="email" id="clienteEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Giro de la empresa</label>
+                                <input type="text" id="clienteGiro" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Domicilio fiscal completo</label>
+                                <input type="text" id="clienteDomicilio" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Persona de contacto</label>
+                                <input type="text" id="clienteContacto" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Tamaño de empresa</label>
+                                <select id="clienteTamaño" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona...</option>
+                                    <option value="micro">Micro (1-10 empleados)</option>
+                                    <option value="pequena">Pequeña (11-50 empleados)</option>
+                                    <option value="mediana">Mediana (51-250 empleados)</option>
+                                    <option value="grande">Grande (+250 empleados)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Notas adicionales</label>
+                                <textarea id="clienteNotas" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Cliente</button>
+                            <button type="button" onclick="limpiarClienteForm()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
+                        </div>
+                    </form>
+                    
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">Clientes Registrados</h3>
+                    <div id="clientes-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- COTIZACIONES -->
+            <div id="panel-cotizaciones" class="hidden space-y-6">
+                <!-- Catálogo de Servicios -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">⚙️ Catálogo de Servicios (Editable)</h2>
+                    <form id="servicioForm" class="space-y-6 mb-8 bg-cic-lighter p-6 rounded-xl">
+                        <input type="hidden" id="servicioId">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Nombre del servicio *</label>
+                                <input type="text" id="servicioNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Precio (MXN) *</label>
+                                <input type="number" id="servicioPrecio" required step="0.01" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Categoría *</label>
+                                <select id="servicioCategoria" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona categoría</option>
+                                    <option value="fundamental">🏛️ Servicio Fundamental</option>
+                                    <option value="comercio"> Comercio Exterior</option>
+                                    <option value="capacitacion">📚 Capacitación</option>
+                                    <option value="digital">💻 Digitalización</option>
+                                    <option value="agro">🚜 Agroalimentario</option>
+                                    <option value="otro">📁 Otro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Unidad</label>
+                                <select id="servicioUnidad" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="servicio">Por servicio</option>
+                                    <option value="mes">Por mes</option>
+                                    <option value="persona">Por persona</option>
+                                    <option value="sesion">Por sesión</option>
+                                    <option value="proyecto">Por proyecto</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Descripción</label>
+                            <textarea id="servicioDescripcion" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Servicio</button>
+                            <button type="button" onclick="limpiarServicioForm()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
+                        </div>
+                    </form>
+                    
+                    <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Servicios Disponibles</h3>
+                    <div id="servicios-cot-container" class="grid md:grid-cols-2 gap-4"></div>
+                </div>
+
+                <!-- Generador de Cotización -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">📄 Generar Cotización</h2>
+                    
+                    <!-- Paso 1: Cliente -->
+                    <div class="mb-6 p-6 bg-cic-lighter rounded-xl">
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 1: Seleccionar Cliente</h3>
+                        <select id="cotClienteId" onchange="cargarClienteEnCotizacion()" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 mb-4">
+                            <option value="">-- Selecciona un cliente de Gestión Comercial --</option>
+                        </select>
+                        <div id="cotClienteInfo" class="hidden bg-white p-4 rounded-lg">
+                            <p class="font-bold text-cic-primary" id="cotClienteNombre"></p>
+                            <p class="text-sm text-gray-600" id="cotClienteDetalles"></p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">💡 Los clientes se cargan desde Gestión Comercial. Si no aparece, agrégalo primero.</p>
+                    </div>
+
+                    <!-- Paso 2: Diagnóstico -->
+                    <div class="mb-6 p-6 bg-cic-lighter rounded-xl">
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 2: Datos del Diagnóstico</h3>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <select id="cotTamaño" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                                <option value="">Tamaño de empresa</option>
+                                <option>Micro (1-10)</option>
+                                <option>Pequeña (11-50)</option>
+                                <option>Mediana (51-250)</option>
+                                <option>Grande (+250)</option>
+                            </select>
+                            <input type="number" id="cotProductos" placeholder="Número de productos/servicios" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <select id="cotFacturacion" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                                <option value="">Facturación mensual</option>
+                                <option>Menos de $50,000</option>
+                                <option>$50,000 - $100,000</option>
+                                <option>$100,000 - $500,000</option>
+                                <option>Más de $500,000</option>
+                            </select>
+                        </div>
+                        <textarea id="cotNecesidades" placeholder="Necesidades específicas del cliente (diagnóstico)" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 mt-4"></textarea>
+                    </div>
+
+                    <!-- Paso 3: Servicios -->
+                    <div class="mb-6 p-6 bg-cic-lighter rounded-xl">
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 3: Seleccionar Servicios</h3>
+                        <div id="cotServiciosList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                        <div class="mt-4 pt-4 border-t-2 border-purple-200">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-lg">TOTAL:</span>
+                                <span class="text-2xl font-bold text-cic-primary" id="cotTotal">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 4: Condiciones -->
+                    <div class="mb-6 p-6 bg-cic-lighter rounded-xl">
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 4: Condiciones Comerciales</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="cotVigencia" placeholder="Vigencia (Ej: 30 días)" value="30 días" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <input type="text" id="cotFormaPago" placeholder="Forma de pago" value="50% anticipo, 50% contra entrega" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <input type="text" id="cotTiempoEntrega" placeholder="Tiempo de entrega" value="Según alcance del proyecto" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                            <input type="text" id="cotValidez" placeholder="Condiciones especiales" class="px-4 py-3 rounded-xl border-2 border-purple-200">
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="flex gap-4 flex-wrap">
+                        <button onclick="generarVistaPrevia()" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl">👁️ Vista Previa</button>
+                        <button onclick="generarPDFCotizacion()" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 rounded-xl"> Descargar PDF</button>
+                        <button onclick="guardarCotizacion()" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 rounded-xl">💾 Guardar en Sistema</button>
+                        <button onclick="enviarCotizacionEmail()" class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-bold py-4 rounded-xl">📧 Enviar por Email</button>
+                    </div>
+                </div>
+
+                <!-- Vista Previa -->
+                <div id="cotizacionPreview" class="hidden bg-white rounded-2xl shadow-lg p-8">
+                    <div id="cotizacionContent" class="border-2 border-purple-200 p-8 bg-white"></div>
+                </div>
+
+                <!-- Cotizaciones Guardadas -->
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">📋 Cotizaciones Guardadas</h3>
+                    <div id="cotizaciones-container"></div>
+                </div>
+            </div>
+
             <!-- Gestión Financiera -->
             <div id="panel-admin" class="hidden">
                 <div class="flex gap-2 mb-6">
                     <button onclick="showAdminSubtab('pagos')" id="admin-subtab-pagos" class="tab-active px-6 py-3 font-medium">💵 Pagos de Clientes</button>
-                    <button onclick="showAdminSubtab('gastos')" id="admin-subtab-gastos" class="px-6 py-3 font-medium text-gray-600">💸 Gastos Operativos</button>
+                    <button onclick="showAdminSubtab('gastos')" id="admin-subtab-gastos" class="px-6 py-3 font-medium text-gray-600"> Gastos Operativos</button>
+                    <button onclick="showAdminSubtab('dashboard')" id="admin-subtab-dashboard" class="px-6 py-3 font-medium text-gray-600"> Dashboard Contable</button>
                 </div>
                 
                 <div id="admin-pagos" class="space-y-6">
@@ -387,19 +624,54 @@
                         <form id="pagoForm" class="space-y-6">
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Cliente (de Gestión Comercial)</label>
+                                    <select id="pagoClienteId" onchange="autocompletarClientePago()" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                        <option value="">-- Selecciona cliente --</option>
+                                    </select>
+                                </div>
+                                <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Nombre del cliente *</label>
                                     <input type="text" id="pagoCliente" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Correo del cliente</label>
                                     <input type="email" id="pagoEmail" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Monto (MXN) * <span class="text-xs text-gray-500">(hasta 4 decimales)</span></label>
+                                    <input type="number" id="pagoMonto" required step="0.0001" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                </div>
                             </div>
                             <div class="grid md:grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Monto (MXN) *</label>
-                                    <input type="number" id="pagoMonto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Tipo de servicio *</label>
+                                    <select id="pagoTipoServicio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                        <option value="">Selecciona...</option>
+                                        <option value="curso">📚 Curso</option>
+                                        <option value="asesoria"> Asesoría</option>
+                                        <option value="administrativo">🏢 Servicio administrativo</option>
+                                        <option value="contabilidad">📊 Contabilidad</option>
+                                        <option value="auditoria">🔍 Auditoría</option>
+                                        <option value="modernizacion"> Modernización y digitalización</option>
+                                        <option value="comercio_exterior">🌎 Comercio exterior</option>
+                                        <option value="capacitacion">📚 Capacitación</option>
+                                        <option value="otro">📁 Otro (especificar)</option>
+                                    </select>
                                 </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Especificar si es "Otro"</label>
+                                    <input type="text" id="pagoOtroTipo" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Proyecto/Curso específico</label>
+                                    <select id="pagoSuperClasificacion" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                        <option value="">Selecciona...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de pago *</label>
                                     <input type="date" id="pagoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
@@ -415,10 +687,10 @@
                                         <option>Otro</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Concepto / Servicio *</label>
-                                <input type="text" id="pagoConcepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: Curso de Administración, Consultoría, etc.">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Concepto / Servicio *</label>
+                                    <input type="text" id="pagoConcepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: Curso de Administración, Consultoría, etc.">
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto (factura, comprobante)</label>
@@ -447,7 +719,7 @@
                                 <select id="gastoTipo" onchange="cambiarTipoGasto()" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                     <option value="">Selecciona un tipo</option>
                                     <option value="proyecto">📋 Proyecto específico</option>
-                                    <option value="curso"> Curso</option>
+                                    <option value="curso">📚 Curso</option>
                                     <option value="general">🏢 Gastos generales</option>
                                     <option value="iniciacion">🚀 Gastos de iniciación/lanzamiento</option>
                                     <option value="gestion">💼 Gastos de gestión</option>
@@ -506,22 +778,30 @@
 
                             <div class="grid md:grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Monto (MXN) *</label>
-                                    <input type="number" id="gastoMonto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Monto (MXN) * <span class="text-xs text-gray-500">(hasta 4 decimales)</span></label>
+                                    <input type="number" id="gastoMonto" required step="0.0001" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Fecha del gasto *</label>
                                     <input type="date" id="gastoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 </div>
                                 <div id="gastoCategoriaOldContainer">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Categoría adicional *</label>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Categoría contable *</label>
                                     <select id="gastoCategoria" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                        <option>Infraestructura tecnológica</option>
-                                        <option>Marketing y publicidad</option>
-                                        <option>Servicios profesionales</option>
-                                        <option>Oficina y suministros</option>
-                                        <option>Impuestos</option>
-                                        <option>Otros</option>
+                                        <option value="curso">📚 Curso</option>
+                                        <option value="asesoria">💼 Asesoría</option>
+                                        <option value="administrativo">🏢 Servicio administrativo</option>
+                                        <option value="contabilidad">📊 Contabilidad</option>
+                                        <option value="auditoria">🔍 Auditoría</option>
+                                        <option value="modernizacion"> Modernización</option>
+                                        <option value="comercio_exterior">🌎 Comercio exterior</option>
+                                        <option value="capacitacion">📚 Capacitación</option>
+                                        <option value="infraestructura">🖥️ Infraestructura tecnológica</option>
+                                        <option value="marketing">📢 Marketing y publicidad</option>
+                                        <option value="servicios_prof">👔 Servicios profesionales</option>
+                                        <option value="oficina">🏢 Oficina y suministros</option>
+                                        <option value="impuestos">💰 Impuestos</option>
+                                        <option value="otro">📁 Otro</option>
                                     </select>
                                 </div>
                             </div>
@@ -542,7 +822,7 @@
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📊 Resumen por Categoría</h3>
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6"> Resumen por Categoría</h3>
                         <div class="grid md:grid-cols-4 gap-4 mb-6">
                             <div class="bg-blue-50 p-4 rounded-xl text-center">
                                 <p class="text-2xl font-bold text-blue-600" id="total-proyectos">$0</p>
@@ -566,235 +846,57 @@
                         <div id="gastos-container" class="space-y-4"></div>
                     </div>
                 </div>
-            </div>
-<!-- SECCIÓN DE COTIZACIONES -->
-<div id="panel-cotizaciones" class="hidden space-y-6">
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">📄 Generador de Cotizaciones</h2>
-        
-        <!-- Paso 1: Datos del Cliente -->
-        <div class="mb-8 p-6 bg-cic-lighter rounded-xl">
-            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 1: Datos del Cliente</h3>
-            <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Nombre/Razón Social *</label>
-                    <input type="text" id="cotClienteNombre" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Empresa XYZ S.A. de C.V.">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Correo electrónico *</label>
-                    <input type="email" id="cotClienteEmail" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="cliente@empresa.com">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Teléfono</label>
-                    <input type="tel" id="cotClienteTelefono" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Giro de la empresa</label>
-                    <input type="text" id="cotClienteGiro" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Comercial, Industrial, Servicios...">
-                </div>
-            </div>
-        </div>
 
-        <!-- Paso 2: Entrevista/Diagnóstico -->
-        <div class="mb-8 p-6 bg-cic-lighter rounded-xl">
-            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 2: Diagnóstico de Necesidades</h3>
-            <div class="grid md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Tamaño de la empresa</label>
-                    <select id="cotTamañoEmpresa" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <option value="">Selecciona...</option>
-                        <option value="micro">Micro (1-10 empleados)</option>
-                        <option value="pequena">Pequeña (11-50 empleados)</option>
-                        <option value="mediana">Mediana (51-250 empleados)</option>
-                        <option value="grande">Grande (+250 empleados)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Número de productos/servicios</label>
-                    <input type="number" id="cotNumProductos" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: 25">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Facturación mensual aproximada</label>
-                    <select id="cotFacturacion" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <option value="">Selecciona...</option>
-                        <option value="menos-50k">Menos de $50,000</option>
-                        <option value="50k-100k">$50,000 - $100,000</option>
-                        <option value="100k-500k">$100,000 - $500,000</option>
-                        <option value="mas-500k">Más de $500,000</option>
-                    </select>
-                </div>
-            </div>
-            <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">¿Tiene RFC?</label>
-                    <select id="cotTieneRFC" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <option value="si">Sí</option>
-                        <option value="no">No</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">¿Realiza operaciones de comercio exterior?</label>
-                    <select id="cotComercioExterior" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <option value="no">No</option>
-                        <option value="importacion">Solo Importación</option>
-                        <option value="exportacion">Solo Exportación</option>
-                        <option value="ambos">Ambos</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+                <!-- Dashboard Contable -->
+                <div id="admin-dashboard" class="hidden space-y-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">📊 Dashboard Contable - Doble Partida</h2>
+                        
+                        <div class="grid md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-green-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-green-600" id="dash-ingresos">$0</p>
+                                <p class="text-sm text-gray-600">Total Ingresos (Haber)</p>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-red-600" id="dash-egresos">$0</p>
+                                <p class="text-sm text-gray-600">Total Egresos (Debe)</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-blue-600" id="dash-utilidad">$0</p>
+                                <p class="text-sm text-gray-600">Utilidad Neta</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-purple-600" id="dash-margen">0%</p>
+                                <p class="text-sm text-gray-600">Margen de Utilidad</p>
+                            </div>
+                        </div>
 
-        <!-- Paso 3: Selección de Servicios -->
-        <div class="mb-8 p-6 bg-cic-lighter rounded-xl">
-            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 3: Servicios a Cotizar</h3>
-            <div class="space-y-4" id="serviciosContainer">
-                <!-- Servicios Fundamentales -->
-                <div class="bg-white p-4 rounded-xl">
-                    <h4 class="font-bold text-cic-primary mb-3">Servicios Fundamentales</h4>
-                    <div class="grid md:grid-cols-2 gap-3">
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="constitucion" data-precio="3500">
-                            <div>
-                                <p class="font-bold text-sm">Constitución de Persona Moral</p>
-                                <p class="text-xs text-gray-600">Asesoría y trámite completo</p>
-                                <p class="text-cic-primary font-bold">$3,500</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="cumplimiento-fiscal" data-precio="2500">
-                            <div>
-                                <p class="font-bold text-sm">Cumplimiento Fiscal Especializado</p>
-                                <p class="text-xs text-gray-600">Alta y regularización SAT</p>
-                                <p class="text-cic-primary font-bold">$2,500</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="contabilidad" data-precio="1500">
-                            <div>
-                                <p class="font-bold text-sm">Contabilidad Mensual</p>
-                                <p class="text-xs text-gray-600">Por mes de servicio</p>
-                                <p class="text-cic-primary font-bold">$1,500/mes</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="nomina" data-precio="800">
-                            <div>
-                                <p class="font-bold text-sm">Gestión de Nómina</p>
-                                <p class="text-xs text-gray-600">Por mes (hasta 5 empleados)</p>
-                                <p class="text-cic-primary font-bold">$800/mes</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+                        <div class="mb-6">
+                            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📊 Por Tipo de Servicio (Doble Partida)</h3>
+                            <div id="dash-por-tipo" class="space-y-2"></div>
+                        </div>
 
-                <!-- Comercio Exterior -->
-                <div class="bg-white p-4 rounded-xl">
-                    <h4 class="font-bold text-cic-primary mb-3">Comercio Exterior</h4>
-                    <div class="grid md:grid-cols-2 gap-3">
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="plan-negocios" data-precio="4500">
-                            <div>
-                                <p class="font-bold text-sm">Plan de Negocios Internacionales</p>
-                                <p class="text-xs text-gray-600">Estructuración completa</p>
-                                <p class="text-cic-primary font-bold">$4,500</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="incoterms" data-precio="3000">
-                            <div>
-                                <p class="font-bold text-sm">Asesoría Incoterms 2020</p>
-                                <p class="text-xs text-gray-600">Capacitación y aplicación</p>
-                                <p class="text-cic-primary font-bold">$3,000</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="rna" data-precio="2000">
-                            <div>
-                                <p class="font-bold text-sm">Trámites RNA (Regulaciones No Arancelarias)</p>
-                                <p class="text-xs text-gray-600">Gestión de certificados</p>
-                                <p class="text-cic-primary font-bold">$2,000</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+                        <div class="mb-6">
+                            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4"> Por Proyecto/Curso</h3>
+                            <div id="dash-por-proyecto" class="space-y-2"></div>
+                        </div>
 
-                <!-- Capacitación -->
-                <div class="bg-white p-4 rounded-xl">
-                    <h4 class="font-bold text-cic-primary mb-3">Capacitación</h4>
-                    <div class="grid md:grid-cols-2 gap-3">
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="bootcamp" data-precio="3000">
-                            <div>
-                                <p class="font-bold text-sm">Boot Camp Comercio Exterior</p>
-                                <p class="text-xs text-gray-600">7 módulos completos</p>
-                                <p class="text-cic-primary font-bold">$3,000/persona</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
-                            <input type="checkbox" class="servicio-check w-5 h-5" value="capacitacion-admon" data-precio="2500">
-                            <div>
-                                <p class="font-bold text-sm">Capacitación Administrativa</p>
-                                <p class="text-xs text-gray-600">Por sesión (3 horas)</p>
-                                <p class="text-cic-primary font-bold">$2,500/sesión</p>
-                            </div>
-                        </label>
+                        <button onclick="actualizarDashboardFinanciero()" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 px-6 rounded-xl">🔄 Actualizar Dashboard</button>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Paso 4: Resumen y Generación -->
-        <div class="flex gap-4">
-            <button onclick="generarCotizacion()" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">
-                ️ Vista Previa
-            </button>
-            <button onclick="generarPDF()" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">
-                📄 Generar PDF
-            </button>
-            <button onclick="enviarCotizacion()" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">
-                ️ Enviar por Email
-            </button>
-        </div>
-    </div>
-
-    <!-- Vista Previa de Cotización -->
-    <div id="cotizacionPreview" class="hidden bg-white rounded-2xl shadow-lg p-8">
-        <div id="cotizacionContent" class="border-2 border-purple-200 p-8 rounded-xl bg-white">
-            <!-- Aquí se generará el contenido de la cotización -->
-        </div>
-    </div>
-</div>
-
-<!-- GESTOR FINANCIERO EDITABLE -->
-<div id="panel-financiero" class="hidden space-y-6">
-    <div class="flex gap-2 mb-6">
-        <button onclick="showFinancieroSubtab('pagos')" id="financiero-subtab-pagos" class="tab-active px-6 py-3 font-medium">💵 Pagos</button>
-        <button onclick="showFinancieroSubtab('gastos')" id="financiero-subtab-gastos" class="px-6 py-3 font-medium text-gray-600">💸 Gastos</button>
-    </div>
-
-    <!-- Pagos Editables -->
-    <div id="financiero-pagos" class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">💰 Gestión de Pagos (Editable)</h2>
-        <div id="pagos-editables-container" class="space-y-4"></div>
-    </div>
-
-    <!-- Gastos Editables -->
-    <div id="financiero-gastos" class="hidden bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6"> Gestión de Gastos (Editable)</h2>
-        <div id="gastos-editables-container" class="space-y-4"></div>
-    </div>
-</div>
             <!-- Proyectos y Tareas -->
             <div id="panel-proyectos" class="hidden">
                 <div class="flex gap-2 mb-6">
-                    <button onclick="showProyectosSubtab('proyectos')" id="proyectos-subtab-proyectos" class="tab-active px-6 py-3 font-medium">📁 Proyectos</button>
+                    <button onclick="showProyectosSubtab('proyectos')" id="proyectos-subtab-proyectos" class="tab-active px-6 py-3 font-medium"> Proyectos</button>
                     <button onclick="showProyectosSubtab('tareas')" id="proyectos-subtab-tareas" class="px-6 py-3 font-medium text-gray-600">✅ Dashboard de Tareas</button>
                 </div>
                 
                 <!-- Proyectos -->
                 <div id="proyectos-proyectos" class="space-y-6">
                     <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6"> Gestión de Proyectos</h2>
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">📁 Gestión de Proyectos</h2>
                         <form id="proyectoForm" class="space-y-6 mb-8">
                             <input type="hidden" id="proyectoId">
                             <div class="grid md:grid-cols-2 gap-6">
@@ -831,7 +933,7 @@
                                     <option value="planeado">📋 Planeado</option>
                                     <option value="en_curso">🟡 En curso</option>
                                     <option value="completado">✅ Completado</option>
-                                    <option value="pausado">⏸️ Pausado</option>
+                                    <option value="pausado">️ Pausado</option>
                                 </select>
                             </div>
                             <div>
@@ -843,7 +945,7 @@
 
                         <!-- Módulos del proyecto -->
                         <div id="modulos-section" class="hidden mt-8 pt-8 border-t-2 border-purple-100">
-                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">📦 Módulos del Proyecto</h3>
+                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-4"> Módulos del Proyecto</h3>
                             <form id="moduloForm" class="space-y-4 mb-6 bg-cic-lighter p-6 rounded-xl">
                                 <input type="hidden" id="moduloProyectoId">
                                 <div class="grid md:grid-cols-2 gap-4">
@@ -886,8 +988,8 @@
                             <select id="filtroTareaPrioridad" onchange="renderTareas()" class="px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 <option value="">Todas las prioridades</option>
                                 <option value="alta">🔴 Alta</option>
-                                <option value="media"> Media</option>
-                                <option value="baja">🟢 Baja</option>
+                                <option value="media">🟡 Media</option>
+                                <option value="baja"> Baja</option>
                             </select>
                             <select id="filtroTareaAsignado" onchange="renderTareas()" class="px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 <option value="">Todos los responsables</option>
@@ -978,6 +1080,7 @@
                                 <select id="colaboradorRol" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                     <option value="colaborador">Colaborador</option>
                                     <option value="admin">Administrador</option>
+                                    <option value="auxiliar">Auxiliar</option>
                                 </select>
                             </div>
                         </div>
@@ -994,6 +1097,7 @@
                         </div>
                         <div class="flex gap-4">
                             <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Colaborador</button>
+                            <button type="button" onclick="programarUsuarioAuxiliar()" class="px-6 py-4 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition">🤖 Programar Usuario Auxiliar</button>
                             <button type="button" onclick="limpiarColaboradorForm()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
                         </div>
                     </form>
@@ -1133,15 +1237,15 @@
     <script>
         // Tabs principales
         function showTab(tab) {
-            ['dashboard', 'cursos', 'blogs', 'inscripciones', 'admin', 'proyectos', 'colaboradores', 'anuncios'].forEach(t => {
+            ['dashboard', 'cursos', 'blogs', 'inscripciones', 'comercial', 'cotizaciones', 'admin', 'proyectos', 'colaboradores', 'anuncios'].forEach(t => {
                 document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
                 document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
             });
             if (tab === 'dashboard') updateKPIs();
-            if (tab === 'proyectos') {
-                cargarClientesEnSelect();
-                cargarColaboradoresEnSelect();
-            }
+            if (tab === 'comercial') renderClientes();
+            if (tab === 'cotizaciones') { cargarClientesEnCotizacion(); cargarServiciosEnCotizacion(); }
+            if (tab === 'admin') { cargarClientesEnPagos(); cargarProyectosEnFinanciera(); }
+            if (tab === 'proyectos') { cargarClientesEnProyectos(); cargarColaboradoresEnProyectos(); }
         }
 
         function showCursosSubtab(tab) {
@@ -1161,12 +1265,13 @@
         function showAdminSubtab(tab) {
             document.getElementById('admin-pagos').classList.toggle('hidden', tab !== 'pagos');
             document.getElementById('admin-gastos').classList.toggle('hidden', tab !== 'gastos');
+            document.getElementById('admin-dashboard').classList.toggle('hidden', tab !== 'dashboard');
             document.getElementById('admin-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
             document.getElementById('admin-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-            if (tab === 'gastos') {
-                cargarProyectosEnSelect();
-                cargarCursosEnSelect();
-            }
+            document.getElementById('admin-subtab-dashboard').className = tab === 'dashboard' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            if (tab === 'pagos') { renderPagos(); cargarClientesEnPagos(); cargarProyectosEnFinanciera(); }
+            if (tab === 'gastos') { renderGastos(); cargarProyectosEnFinanciera(); }
+            if (tab === 'dashboard') actualizarDashboardFinanciero();
         }
 
         function showProyectosSubtab(tab) {
@@ -1174,15 +1279,8 @@
             document.getElementById('proyectos-tareas').classList.toggle('hidden', tab !== 'tareas');
             document.getElementById('proyectos-subtab-proyectos').className = tab === 'proyectos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
             document.getElementById('proyectos-subtab-tareas').className = tab === 'tareas' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-            if (tab === 'proyectos') {
-                cargarClientesEnSelect();
-                cargarColaboradoresEnSelect();
-            }
-            if (tab === 'tareas') {
-                cargarColaboradoresEnTareas();
-                cargarProyectosEnTareas();
-                renderTareas();
-            }
+            if (tab === 'proyectos') { cargarClientesEnProyectos(); cargarColaboradoresEnProyectos(); }
+            if (tab === 'tareas') { cargarColaboradoresEnTareas(); cargarProyectosEnTareas(); renderTareas(); }
         }
 
         // Login
@@ -1344,7 +1442,7 @@
                                     <h3 class="font-bold text-cic-primary text-lg">${c.titulo}</h3>
                                     <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${c.estado}</span>
                                 </div>
-                                <p class="text-sm text-gray-600"> ${c.instructor} · ${c.nivel} · $${Number(c.precio).toLocaleString()} MXN</p>
+                                <p class="text-sm text-gray-600">🦝 ${c.instructor} · ${c.nivel} · $${Number(c.precio).toLocaleString()} MXN</p>
                                 <p class="text-sm text-gray-600">📅 ${c.fecha} · ${c.horario}</p>
                             </div>
                             <div class="flex flex-wrap gap-2">
@@ -1395,7 +1493,7 @@
             } catch (error) {
                 alert('❌ Error: ' + error.message);
             } finally {
-                btn.innerHTML = ' Publicar Artículo';
+                btn.innerHTML = '💾 Publicar Artículo';
                 btn.disabled = false;
             }
         });
@@ -1435,14 +1533,33 @@
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editarBlog('${b.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
-                            <button onclick="eliminarBlog('${b.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️</button>
+                            <button onclick="eliminarBlog('${b.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // INSCRIPCIONES
+        // INSCRIPCIONES / RESERVAS
+        document.getElementById('reservaManualForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = {
+                nombre: document.getElementById('resNombre').value,
+                email: document.getElementById('resEmail').value,
+                telefono: document.getElementById('resTelefono').value,
+                tipo: document.getElementById('resTipo').value,
+                fecha: document.getElementById('resFecha').value,
+                mensaje: document.getElementById('resMensaje').value,
+                estado: 'Nueva',
+                createdAt: new Date().toISOString()
+            };
+            try {
+                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "inscripciones"), data);
+                alert('✅ Reserva guardada');
+                document.getElementById('reservaManualForm').reset();
+            } catch (error) { alert('❌ ' + error.message); }
+        });
+
         async function cambiarEstadoInscripcion(id, nuevoEstado) {
             try {
                 await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "inscripciones", id), { estado: nuevoEstado });
@@ -1490,10 +1607,10 @@
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <select onchange="cambiarEstadoInscripcion('${i.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm">
-                                    <option value="Nueva" ${estado==='Nueva'?'selected':''}> Nueva</option>
+                                    <option value="Nueva" ${estado==='Nueva'?'selected':''}>🔵 Nueva</option>
                                     <option value="En proceso" ${estado==='En proceso'?'selected':''}>🟡 En proceso</option>
                                     <option value="Confirmada" ${estado==='Confirmada'?'selected':''}>🟢 Confirmada</option>
-                                    <option value="Cancelada" ${estado==='Cancelada'?'selected':''}> Cancelada</option>
+                                    <option value="Cancelada" ${estado==='Cancelada'?'selected':''}>🔴 Cancelada</option>
                                 </select>
                                 <a href="https://wa.me/${(i.telefono || '').replace(/\D/g,'')}?text=Hola%20${encodeURIComponent(i.nombre || '')},%20te%20contactamos%20de%20CIC%20Consultoría" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm">WhatsApp</a>
                                 <button onclick="eliminarInscripcion('${i.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
@@ -1504,7 +1621,446 @@
             }).join('');
         }
 
-        // PAGOS
+        // GESTIÓN COMERCIAL - CLIENTES
+        document.getElementById('clienteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('clienteId').value;
+                const data = {
+                    nombreComercial: document.getElementById('clienteNombreComercial').value,
+                    nombreLegal: document.getElementById('clienteNombreLegal').value,
+                    rfc: document.getElementById('clienteRFC').value,
+                    telefono: document.getElementById('clienteTelefono').value,
+                    email: document.getElementById('clienteEmail').value,
+                    domicilio: document.getElementById('clienteDomicilio').value,
+                    giro: document.getElementById('clienteGiro').value,
+                    contacto: document.getElementById('clienteContacto').value,
+                    tamaño: document.getElementById('clienteTamaño').value,
+                    notas: document.getElementById('clienteNotas').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "clientes", id), data);
+                    alert('✅ Cliente actualizado');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "clientes"), data);
+                    alert('✅ Cliente registrado');
+                }
+                limpiarClienteForm();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '💾 Guardar Cliente';
+                btn.disabled = false;
+            }
+        });
+
+        function limpiarClienteForm() {
+            document.getElementById('clienteForm').reset();
+            document.getElementById('clienteId').value = '';
+        }
+
+        function editarCliente(id) {
+            const c = window.clientesData.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('clienteId').value = c.id;
+            document.getElementById('clienteNombreComercial').value = c.nombreComercial || '';
+            document.getElementById('clienteNombreLegal').value = c.nombreLegal || '';
+            document.getElementById('clienteRFC').value = c.rfc || '';
+            document.getElementById('clienteTelefono').value = c.telefono || '';
+            document.getElementById('clienteEmail').value = c.email || '';
+            document.getElementById('clienteDomicilio').value = c.domicilio || '';
+            document.getElementById('clienteGiro').value = c.giro || '';
+            document.getElementById('clienteContacto').value = c.contacto || '';
+            document.getElementById('clienteTamaño').value = c.tamaño || '';
+            document.getElementById('clienteNotas').value = c.notas || '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function eliminarCliente(id) {
+            if (!confirm('¿Eliminar cliente?')) return;
+            await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "clientes", id));
+        }
+
+        function renderClientes() {
+            const container = document.getElementById('clientes-container');
+            const clientes = window.clientesData || [];
+            if (clientes.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay clientes registrados</p>';
+                return;
+            }
+            container.innerHTML = clientes.map(c => `
+                <div class="border-2 border-purple-100 rounded-xl p-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-cic-primary text-lg">${c.nombreComercial}</h3>
+                            <p class="text-sm text-gray-600">Legal: ${c.nombreLegal} · RFC: ${c.rfc}</p>
+                            <p class="text-sm text-gray-600"> ${c.email} · 📱 ${c.telefono}</p>
+                            <p class="text-sm text-gray-600">📍 ${c.domicilio || 'Sin domicilio'}</p>
+                            ${c.giro ? `<p class="text-sm text-gray-600"> Giro: ${c.giro}</p>` : ''}
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="editarCliente('${c.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
+                            <button onclick="eliminarCliente('${c.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // COTIZACIONES - Catálogo de Servicios
+        document.getElementById('servicioForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('servicioId').value;
+                const data = {
+                    nombre: document.getElementById('servicioNombre').value,
+                    precio: parseFloat(document.getElementById('servicioPrecio').value),
+                    categoria: document.getElementById('servicioCategoria').value,
+                    unidad: document.getElementById('servicioUnidad').value,
+                    descripcion: document.getElementById('servicioDescripcion').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "serviciosCotizacion", id), data);
+                    alert('✅ Servicio actualizado');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "serviciosCotizacion"), data);
+                    alert('✅ Servicio agregado');
+                }
+                limpiarServicioForm();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '💾 Guardar Servicio';
+                btn.disabled = false;
+            }
+        });
+
+        function limpiarServicioForm() {
+            document.getElementById('servicioForm').reset();
+            document.getElementById('servicioId').value = '';
+        }
+
+        function editarServicio(id) {
+            const s = window.serviciosCotizacionData.find(x => x.id === id);
+            if (!s) return;
+            document.getElementById('servicioId').value = s.id;
+            document.getElementById('servicioNombre').value = s.nombre;
+            document.getElementById('servicioPrecio').value = s.precio;
+            document.getElementById('servicioCategoria').value = s.categoria;
+            document.getElementById('servicioUnidad').value = s.unidad || 'servicio';
+            document.getElementById('servicioDescripcion').value = s.descripcion || '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function eliminarServicio(id) {
+            if (!confirm('¿Eliminar servicio?')) return;
+            await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "serviciosCotizacion", id));
+        }
+
+        function renderServiciosCotizacion() {
+            const container = document.getElementById('servicios-cot-container');
+            const servicios = window.serviciosCotizacionData || [];
+            if (servicios.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8 col-span-2">Sin servicios. Agrega el primero arriba.</p>';
+                return;
+            }
+            const catIcons = { fundamental: '🏛️', comercio: '', capacitacion: '📚', digital: '💻', agro: '🚜', otro: '📁' };
+            const catLabels = { fundamental: 'Fundamental', comercio: 'Comercio Exterior', capacitacion: 'Capacitación', digital: 'Digitalización', agro: 'Agroalimentario', otro: 'Otro' };
+            const unidadLabels = { servicio: 'Por servicio', mes: 'Por mes', persona: 'Por persona', sesion: 'Por sesión', proyecto: 'Por proyecto' };
+            
+            container.innerHTML = servicios.map(s => `
+                <div class="border-2 border-purple-100 rounded-xl p-4">
+                    <div class="flex justify-between">
+                        <div>
+                            <h4 class="font-bold text-cic-primary">${catIcons[s.categoria] || ''} ${s.nombre}</h4>
+                            <p class="text-xs text-gray-500">${catLabels[s.categoria] || 'Otro'} · ${unidadLabels[s.unidad] || 'Por servicio'}</p>
+                            <p class="text-sm text-gray-600">${s.descripcion || ''}</p>
+                            <p class="font-bold text-cic-primary mt-1">$${Number(s.precio).toFixed(2)} MXN</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editarServicio('${s.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">✏️</button>
+                            <button onclick="eliminarServicio('${s.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cargarClientesEnCotizacion() {
+            const select = document.getElementById('cotClienteId');
+            const clientes = window.clientesData || [];
+            select.innerHTML = '<option value="">-- Selecciona un cliente --</option>' + 
+                clientes.map(c => `<option value="${c.id}">${c.nombreComercial} - ${c.nombreLegal}</option>`).join('');
+        }
+
+        function cargarClienteEnCotizacion() {
+            const id = document.getElementById('cotClienteId').value;
+            const info = document.getElementById('cotClienteInfo');
+            if (!id) { info.classList.add('hidden'); return; }
+            const c = window.clientesData.find(x => x.id === id);
+            if (c) {
+                document.getElementById('cotClienteNombre').textContent = c.nombreComercial;
+                document.getElementById('cotClienteDetalles').textContent = `${c.nombreLegal} · RFC: ${c.rfc} · ${c.email} · ${c.telefono}`;
+                document.getElementById('cotTamaño').value = c.tamaño || '';
+                info.classList.remove('hidden');
+            }
+        }
+
+        function cargarServiciosEnCotizacion() {
+            const container = document.getElementById('cotServiciosList');
+            const servicios = window.serviciosCotizacionData || [];
+            if (servicios.length === 0) { container.innerHTML = '<p class="text-gray-500">Agrega servicios en el catálogo de arriba</p>'; return; }
+            const catLabels = { fundamental: '🏛️ Fundamental', comercio: '🌎 Comercio Exterior', capacitacion: '📚 Capacitación', digital: '💻 Digital', agro: '🚜 Agro', otro: '📁 Otro' };
+            container.innerHTML = servicios.map(s => `
+                <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                    <input type="checkbox" class="cot-servicio-check w-5 h-5" value="${s.id}" data-precio="${s.precio}" data-nombre="${s.nombre}" onchange="actualizarTotalCotizacion()">
+                    <div class="flex-1">
+                        <p class="font-bold text-sm">${catLabels[s.categoria] || '📁'} ${s.nombre}</p>
+                        <p class="text-xs text-gray-600">${s.descripcion || ''}</p>
+                    </div>
+                    <p class="font-bold text-cic-primary">$${Number(s.precio).toFixed(2)}</p>
+                </label>
+            `).join('');
+        }
+
+        function actualizarTotalCotizacion() {
+            const checks = document.querySelectorAll('.cot-servicio-check:checked');
+            let total = 0;
+            checks.forEach(c => total += parseFloat(c.dataset.precio));
+            document.getElementById('cotTotal').textContent = '$' + total.toFixed(2) + ' MXN';
+        }
+
+        function generarVistaPrevia() {
+            const clienteId = document.getElementById('cotClienteId').value;
+            if (!clienteId) { alert('⚠️ Selecciona un cliente'); return; }
+            const c = window.clientesData.find(x => x.id === clienteId);
+            const checks = document.querySelectorAll('.cot-servicio-check:checked');
+            if (checks.length === 0) { alert('⚠️ Selecciona al menos un servicio'); return; }
+            
+            const servicios = [];
+            let total = 0;
+            checks.forEach(ch => {
+                servicios.push({ nombre: ch.dataset.nombre, precio: parseFloat(ch.dataset.precio) });
+                total += parseFloat(ch.dataset.precio);
+            });
+
+            const folio = 'COT-' + Date.now().toString().slice(-6);
+            const fecha = new Date().toLocaleDateString('es-MX');
+            
+            const html = `
+                <div style="font-family: Arial, sans-serif; padding: 40px;">
+                    <div style="text-align: center; border-bottom: 3px solid #5E1B96; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="color: #5E1B96; font-size: 32px; margin: 0;">CIC CONSULTORÍA</h1>
+                        <p style="color: #7B3FA8; margin: 5px 0;">Consultoría Estratégica para Empresas en Crecimiento</p>
+                        <p style="font-size: 12px; color: #666;">admin@cicconsultora.com · +52 222 775 6653 · cicconsultoria.mx</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                        <div>
+                            <h3 style="color: #5E1B96; margin-bottom: 10px;">COTIZACIÓN</h3>
+                            <p><strong>Folio:</strong> ${folio}</p>
+                            <p><strong>Fecha:</strong> ${fecha}</p>
+                            <p><strong>Vigencia:</strong> ${document.getElementById('cotVigencia').value || '30 días'}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <h3 style="color: #5E1B96; margin-bottom: 10px;">CLIENTE</h3>
+                            <p><strong>${c.nombreComercial}</strong></p>
+                            <p>${c.nombreLegal}</p>
+                            <p>RFC: ${c.rfc}</p>
+                            <p>${c.domicilio || ''}</p>
+                            <p>${c.email} · ${c.telefono}</p>
+                        </div>
+                    </div>
+
+                    <div style="background: #F3E5F5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #5E1B96; margin-bottom: 8px;">📋 DIAGNÓSTICO</h3>
+                        <p><strong>Tamaño:</strong> ${document.getElementById('cotTamaño').value || 'No especificado'}</p>
+                        <p><strong>Productos/Servicios:</strong> ${document.getElementById('cotProductos').value || 'No especificado'}</p>
+                        <p><strong>Facturación:</strong> ${document.getElementById('cotFacturacion').value || 'No especificado'}</p>
+                        <p style="margin-top: 8px;"><strong>Necesidades:</strong> ${document.getElementById('cotNecesidades').value || 'Sin especificar'}</p>
+                    </div>
+
+                    <h3 style="color: #5E1B96; margin: 20px 0 10px;">SERVICIOS COTIZADOS</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background: #5E1B96; color: white;">
+                                <th style="padding: 10px; text-align: left;">#</th>
+                                <th style="padding: 10px; text-align: left;">Servicio</th>
+                                <th style="padding: 10px; text-align: right;">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${servicios.map((s, i) => `
+                                <tr style="border-bottom: 1px solid #ddd;">
+                                    <td style="padding: 10px;">${i + 1}</td>
+                                    <td style="padding: 10px;">${s.nombre}</td>
+                                    <td style="padding: 10px; text-align: right;">$${s.precio.toFixed(2)} MXN</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #F3E5F5; font-weight: bold;">
+                                <td colspan="2" style="padding: 12px; text-align: right;">TOTAL:</td>
+                                <td style="padding: 12px; text-align: right; color: #5E1B96; font-size: 18px;">$${total.toFixed(2)} MXN</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div style="background: #FAF5FC; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #5E1B96; margin-bottom: 8px;">💼 CONDICIONES COMERCIALES</h3>
+                        <p><strong>Forma de pago:</strong> ${document.getElementById('cotFormaPago').value || 'Por definir'}</p>
+                        <p><strong>Tiempo de entrega:</strong> ${document.getElementById('cotTiempoEntrega').value || 'Por definir'}</p>
+                        <p><strong>Vigencia de la oferta:</strong> ${document.getElementById('cotVigencia').value || '30 días'}</p>
+                        ${document.getElementById('cotValidez').value ? `<p><strong>Condiciones especiales:</strong> ${document.getElementById('cotValidez').value}</p>` : ''}
+                    </div>
+
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #5E1B96; text-align: center; font-size: 12px; color: #666;">
+                        <p>Esta cotización es válida por el período indicado. Precios sujetos a cambios sin previo aviso después de la vigencia.</p>
+                        <p style="margin-top: 10px;"><strong>CIC Consultoría</strong> · Transformamos tu negocio con estrategia y visión global</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('cotizacionContent').innerHTML = html;
+            document.getElementById('cotizacionPreview').classList.remove('hidden');
+            document.getElementById('cotizacionPreview').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generarPDFCotizacion() {
+            const element = document.getElementById('cotizacionContent');
+            if (!element.innerHTML) { alert('⚠️ Genera la vista previa primero'); return; }
+            const opt = {
+                margin: 0.5,
+                filename: 'cotizacion-cic-' + Date.now() + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+
+        async function guardarCotizacion() {
+            const clienteId = document.getElementById('cotClienteId').value;
+            if (!clienteId) { alert('⚠️ Selecciona un cliente'); return; }
+            const checks = document.querySelectorAll('.cot-servicio-check:checked');
+            if (checks.length === 0) { alert('⚠️ Selecciona servicios'); return; }
+            
+            const servicios = [];
+            let total = 0;
+            checks.forEach(ch => {
+                servicios.push({ nombre: ch.dataset.nombre, precio: parseFloat(ch.dataset.precio) });
+                total += parseFloat(ch.dataset.precio);
+            });
+
+            const data = {
+                clienteId: clienteId,
+                clienteNombre: window.clientesData.find(x => x.id === clienteId)?.nombreComercial,
+                servicios: servicios,
+                total: total,
+                tamaño: document.getElementById('cotTamaño').value,
+                productos: document.getElementById('cotProductos').value,
+                facturacion: document.getElementById('cotFacturacion').value,
+                necesidades: document.getElementById('cotNecesidades').value,
+                vigencia: document.getElementById('cotVigencia').value,
+                formaPago: document.getElementById('cotFormaPago').value,
+                tiempoEntrega: document.getElementById('cotTiempoEntrega').value,
+                validez: document.getElementById('cotValidez').value,
+                folio: 'COT-' + Date.now().toString().slice(-6),
+                fecha: new Date().toISOString(),
+                estado: 'Emitida',
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "cotizaciones"), data);
+                alert('✅ Cotización guardada');
+            } catch (error) { alert('❌ ' + error.message); }
+        }
+
+        function enviarCotizacionEmail() {
+            const clienteId = document.getElementById('cotClienteId').value;
+            if (!clienteId) { alert('️ Selecciona un cliente'); return; }
+            const c = window.clientesData.find(x => x.id === clienteId);
+            const subject = 'Cotización de Servicios - CIC Consultoría';
+            const body = `Estimado/a ${c.nombreComercial},\n\nAdjunto encontrará su cotización de servicios profesionales.\n\nSaludos cordiales,\nCIC Consultoría\nadmin@cicconsultora.com\n+52 222 775 6653`;
+            window.location.href = `mailto:${c.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+
+        function renderCotizacionesGuardadas() {
+            const container = document.getElementById('cotizaciones-container');
+            const cots = window.cotizacionesData || [];
+            if (cots.length === 0) { container.innerHTML = '<p class="text-center text-gray-500 py-8">Sin cotizaciones guardadas</p>'; return; }
+            container.innerHTML = cots.map(c => `
+                <div class="border-2 border-purple-100 rounded-xl p-4 mb-3">
+                    <div class="flex justify-between flex-wrap gap-3">
+                        <div>
+                            <h3 class="font-bold text-cic-primary">${c.folio} - ${c.clienteNombre}</h3>
+                            <p class="text-sm">${new Date(c.fecha).toLocaleDateString()} · ${c.servicios.length} servicios</p>
+                            <p class="font-bold text-cic-primary">$${Number(c.total).toFixed(2)} MXN</p>
+                        </div>
+                        <button onclick="eliminarCotizacion('${c.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function eliminarCotizacion(id) {
+            if (!confirm('¿Eliminar?')) return;
+            await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "cotizaciones", id));
+        }
+
+        // GESTIÓN FINANCIERA - PAGOS
+        function cargarClientesEnPagos() {
+            const select = document.getElementById('pagoClienteId');
+            const clientes = window.clientesData || [];
+            select.innerHTML = '<option value="">-- Selecciona cliente --</option>' + 
+                clientes.map(c => `<option value="${c.id}">${c.nombreComercial}</option>`).join('');
+        }
+
+        function autocompletarClientePago() {
+            const id = document.getElementById('pagoClienteId').value;
+            if (!id) return;
+            const c = window.clientesData.find(x => x.id === id);
+            if (c) {
+                document.getElementById('pagoCliente').value = c.nombreComercial;
+                document.getElementById('pagoEmail').value = c.email;
+            }
+        }
+
+        function cargarProyectosEnFinanciera() {
+            const selects = ['pagoSuperClasificacion', 'gastoProyecto', 'gastoCurso'];
+            const proyectos = window.proyectosData || [];
+            const cursos = window.cursosData || [];
+            const opcionesProy = '<option value="">Selecciona un proyecto</option>' + 
+                proyectos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+            const opcionesCurso = '<option value="">Selecciona un curso</option>' + 
+                cursos.map(c => `<option value="${c.id}">${c.titulo}</option>`).join('');
+            const opcionesSuper = '<option value="">Proyecto/Curso</option>' + 
+                proyectos.map(p => `<option value="P-${p.id}">📁 ${p.nombre}</option>`).join('') +
+                cursos.map(c => `<option value="C-${c.id}"> ${c.titulo}</option>`).join('');
+            
+            const elProy = document.getElementById('gastoProyecto');
+            const elCurso = document.getElementById('gastoCurso');
+            const elSuper = document.getElementById('pagoSuperClasificacion');
+            if (elProy) elProy.innerHTML = opcionesProy;
+            if (elCurso) elCurso.innerHTML = opcionesCurso;
+            if (elSuper) elSuper.innerHTML = opcionesSuper;
+        }
+
         document.getElementById('pagoForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -1512,26 +2068,62 @@
             btn.disabled = true;
 
             try {
-                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "pagos"), {
+                const id = document.getElementById('pagoId').value;
+                const data = {
+                    clienteId: document.getElementById('pagoClienteId').value,
                     cliente: document.getElementById('pagoCliente').value,
                     email: document.getElementById('pagoEmail').value,
                     monto: parseFloat(document.getElementById('pagoMonto').value),
+                    tipoServicio: document.getElementById('pagoTipoServicio').value,
+                    otroTipo: document.getElementById('pagoOtroTipo').value,
+                    superClasificacion: document.getElementById('pagoSuperClasificacion').value,
                     fecha: document.getElementById('pagoFecha').value,
                     metodo: document.getElementById('pagoMetodo').value,
                     concepto: document.getElementById('pagoConcepto').value,
                     notas: document.getElementById('pagoNotas').value,
-                    createdAt: new Date().toISOString()
-                });
-                alert('✅ Pago registrado');
-                this.reset();
-                document.getElementById('pagoFecha').value = new Date().toISOString().split('T')[0];
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "pagos", id), data);
+                    alert('✅ Pago actualizado');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "pagos"), data);
+                    alert('✅ Pago registrado');
+                }
+                limpiarPagoForm();
             } catch (error) {
-                alert('❌ Error: ' + error.message);
+                alert(' Error: ' + error.message);
             } finally {
                 btn.innerHTML = '💾 Registrar Pago';
                 btn.disabled = false;
             }
         });
+
+        function limpiarPagoForm() {
+            document.getElementById('pagoForm').reset();
+            document.getElementById('pagoId').value = '';
+            document.getElementById('pagoFecha').value = new Date().toISOString().split('T')[0];
+        }
+
+        function editarPago(id) {
+            const p = window.pagosData.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('pagoId').value = p.id;
+            document.getElementById('pagoClienteId').value = p.clienteId || '';
+            document.getElementById('pagoCliente').value = p.cliente;
+            document.getElementById('pagoEmail').value = p.email || '';
+            document.getElementById('pagoMonto').value = p.monto;
+            document.getElementById('pagoTipoServicio').value = p.tipoServicio || '';
+            document.getElementById('pagoOtroTipo').value = p.otroTipo || '';
+            document.getElementById('pagoSuperClasificacion').value = p.superClasificacion || '';
+            document.getElementById('pagoFecha').value = p.fecha;
+            document.getElementById('pagoMetodo').value = p.metodo;
+            document.getElementById('pagoConcepto').value = p.concepto;
+            document.getElementById('pagoNotas').value = p.notas || '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         async function eliminarPago(id) {
             if (!confirm('¿Eliminar pago?')) return;
@@ -1545,6 +2137,7 @@
                 container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pagos registrados</p>';
                 return;
             }
+            const tipoLabels = { curso: '📚 Curso', asesoria: '💼 Asesoría', administrativo: '🏢 Administrativo', contabilidad: ' Contabilidad', auditoria: ' Auditoría', modernizacion: '💻 Modernización', comercio_exterior: '🌎 Comercio Exterior', capacitacion: '📚 Capacitación', otro: '📁 Otro' };
             container.innerHTML = pagos.map(p => {
                 const fecha = new Date(p.fecha + 'T12:00:00').toLocaleDateString('es-MX');
                 return `
@@ -1553,20 +2146,25 @@
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-2">
                                     <h3 class="font-bold text-green-800 text-lg">${p.cliente}</h3>
-                                    <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">$${Number(p.monto).toLocaleString()} MXN</span>
+                                    <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">$${Number(p.monto).toFixed(4)} MXN</span>
                                 </div>
-                                <p class="text-sm text-green-700">📧 ${p.email || 'Sin correo'} · 📅 ${fecha}</p>
+                                <p class="text-sm text-green-700">📧 ${p.email || 'Sin correo'} ·  ${fecha}</p>
                                 <p class="text-sm text-green-700">💳 ${p.metodo} · 💼 ${p.concepto}</p>
+                                <p class="text-sm text-green-700">${tipoLabels[p.tipoServicio] || '📁 Otro'} ${p.otroTipo ? '- ' + p.otroTipo : ''}</p>
+                                ${p.superClasificacion ? `<p class="text-xs text-green-600 mt-1">📁 ${p.superClasificacion}</p>` : ''}
                                 ${p.notas ? `<p class="text-sm text-green-600 mt-2">📝 ${p.notas}</p>` : ''}
                             </div>
-                            <button onclick="eliminarPago('${p.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="editarPago('${p.id}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
+                                <button onclick="eliminarPago('${p.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // GASTOS
+        // GESTIÓN FINANCIERA - GASTOS
         function cambiarTipoGasto() {
             const tipo = document.getElementById('gastoTipo').value;
             const proyectoContainer = document.getElementById('gastoProyectoContainer');
@@ -1580,53 +2178,17 @@
             
             if (tipo === 'proyecto') {
                 proyectoContainer.classList.remove('hidden');
-                cargarProyectosEnSelect();
+                cargarProyectosEnFinanciera();
                 categoriaOldContainer.classList.add('hidden');
             } else if (tipo === 'curso') {
                 cursoContainer.classList.remove('hidden');
-                cargarCursosEnSelect();
+                cargarProyectosEnFinanciera();
                 categoriaOldContainer.classList.add('hidden');
             } else if (tipo === 'general' || tipo === 'iniciacion' || tipo === 'gestion') {
                 categoriaGeneralContainer.classList.remove('hidden');
                 categoriaOldContainer.classList.add('hidden');
             } else {
                 categoriaOldContainer.classList.remove('hidden');
-            }
-        }
-
-        async function cargarProyectosEnSelect() {
-            const select = document.getElementById('gastoProyecto');
-            select.innerHTML = '<option value="">Cargando proyectos...</option>';
-            
-            try {
-                const proyectos = window.proyectosData || [];
-                if (proyectos.length === 0) {
-                    select.innerHTML = '<option value="">No hay proyectos registrados</option>';
-                    return;
-                }
-                
-                select.innerHTML = '<option value="">Selecciona un proyecto</option>' + 
-                    proyectos.map(p => `<option value="${p.id}">${p.nombre || p.titulo}</option>`).join('');
-            } catch (error) {
-                select.innerHTML = '<option value="">Error al cargar</option>';
-            }
-        }
-
-        async function cargarCursosEnSelect() {
-            const select = document.getElementById('gastoCurso');
-            select.innerHTML = '<option value="">Cargando cursos...</option>';
-            
-            try {
-                const cursos = window.cursosData || [];
-                if (cursos.length === 0) {
-                    select.innerHTML = '<option value="">No hay cursos registrados</option>';
-                    return;
-                }
-                
-                select.innerHTML = '<option value="">Selecciona un curso</option>' + 
-                    cursos.map(c => `<option value="${c.id}">${c.titulo}</option>`).join('');
-            } catch (error) {
-                select.innerHTML = '<option value="">Error al cargar</option>';
             }
         }
 
@@ -1637,6 +2199,7 @@
             btn.disabled = true;
 
             try {
+                const id = document.getElementById('gastoId').value;
                 const tipo = document.getElementById('gastoTipo').value;
                 const data = {
                     tipo: tipo,
@@ -1644,41 +2207,57 @@
                     proveedor: document.getElementById('gastoProveedor').value,
                     monto: parseFloat(document.getElementById('gastoMonto').value),
                     fecha: document.getElementById('gastoFecha').value,
+                    categoria: document.getElementById('gastoCategoria').value,
                     notas: document.getElementById('gastoNotas').value,
-                    createdAt: new Date().toISOString()
+                    updatedAt: new Date().toISOString()
                 };
 
                 if (tipo === 'proyecto') {
                     data.proyectoId = document.getElementById('gastoProyecto').value;
-                    data.categoria = 'proyecto';
                 } else if (tipo === 'curso') {
                     data.cursoId = document.getElementById('gastoCurso').value;
-                    data.categoria = 'curso';
-                } else if (tipo === 'general') {
+                } else if (tipo === 'general' || tipo === 'iniciacion' || tipo === 'gestion') {
                     data.categoriaGeneral = document.getElementById('gastoCategoriaGeneral').value;
-                    data.categoria = 'general';
-                } else if (tipo === 'iniciacion') {
-                    data.categoriaGeneral = document.getElementById('gastoCategoriaGeneral').value;
-                    data.categoria = 'iniciacion';
-                } else if (tipo === 'gestion') {
-                    data.categoriaGeneral = document.getElementById('gastoCategoriaGeneral').value;
-                    data.categoria = 'gestion';
-                } else {
-                    data.categoria = document.getElementById('gastoCategoria').value;
                 }
 
-                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "gastos"), data);
-                alert('✅ Gasto registrado');
-                this.reset();
-                document.getElementById('gastoFecha').value = new Date().toISOString().split('T')[0];
-                cambiarTipoGasto();
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "gastos", id), data);
+                    alert('✅ Gasto actualizado');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "gastos"), data);
+                    alert('✅ Gasto registrado');
+                }
+                limpiarGastoForm();
             } catch (error) {
                 alert('❌ Error: ' + error.message);
             } finally {
-                btn.innerHTML = '💾 Registrar Gasto';
+                btn.innerHTML = ' Registrar Gasto';
                 btn.disabled = false;
             }
         });
+
+        function limpiarGastoForm() {
+            document.getElementById('gastoForm').reset();
+            document.getElementById('gastoId').value = '';
+            document.getElementById('gastoFecha').value = new Date().toISOString().split('T')[0];
+            cambiarTipoGasto();
+        }
+
+        function editarGasto(id) {
+            const g = window.gastosData.find(x => x.id === id);
+            if (!g) return;
+            document.getElementById('gastoId').value = g.id;
+            document.getElementById('gastoTipo').value = g.tipo || '';
+            document.getElementById('gastoConcepto').value = g.concepto;
+            document.getElementById('gastoProveedor').value = g.proveedor || '';
+            document.getElementById('gastoMonto').value = g.monto;
+            document.getElementById('gastoFecha').value = g.fecha;
+            document.getElementById('gastoCategoria').value = g.categoria || '';
+            document.getElementById('gastoNotas').value = g.notas || '';
+            cambiarTipoGasto();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         async function eliminarGasto(id) {
             if (!confirm('¿Eliminar gasto?')) return;
@@ -1700,34 +2279,16 @@
                 iniciacion: gastos.filter(g => g.tipo === 'iniciacion').reduce((sum, g) => sum + g.monto, 0)
             };
             
-            document.getElementById('total-proyectos').textContent = '$' + totales.proyectos.toLocaleString();
-            document.getElementById('total-cursos').textContent = '$' + totales.cursos.toLocaleString();
-            document.getElementById('total-generales').textContent = '$' + totales.generales.toLocaleString();
-            document.getElementById('total-iniciacion').textContent = '$' + totales.iniciacion.toLocaleString();
+            document.getElementById('total-proyectos').textContent = '$' + totales.proyectos.toFixed(2);
+            document.getElementById('total-cursos').textContent = '$' + totales.cursos.toFixed(2);
+            document.getElementById('total-generales').textContent = '$' + totales.generales.toFixed(2);
+            document.getElementById('total-iniciacion').textContent = '$' + totales.iniciacion.toFixed(2);
+            
+            const tipoLabels = { proyecto: ' Proyecto', curso: '📚 Curso', general: '🏢 General', iniciacion: '🚀 Iniciación', gestion: '💼 Gestión' };
             
             container.innerHTML = gastos.map(g => {
                 const fecha = new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-MX');
-                let badge = '';
-                let infoAdicional = '';
-                
-                if (g.tipo === 'proyecto') {
-                    badge = '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">📋 Proyecto</span>';
-                    infoAdicional = 'Proyecto: ' + (g.proyectoId || 'N/A');
-                } else if (g.tipo === 'curso') {
-                    badge = '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">📚 Curso</span>';
-                    infoAdicional = 'Curso: ' + (g.cursoId || 'N/A');
-                } else if (g.tipo === 'general') {
-                    badge = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🏢 General</span>';
-                    infoAdicional = 'Categoría: ' + (g.categoriaGeneral || 'N/A');
-                } else if (g.tipo === 'iniciacion') {
-                    badge = '<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">🚀 Iniciación</span>';
-                    infoAdicional = 'Categoría: ' + (g.categoriaGeneral || 'N/A');
-                } else if (g.tipo === 'gestion') {
-                    badge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">💼 Gestión</span>';
-                    infoAdicional = 'Categoría: ' + (g.categoriaGeneral || 'N/A');
-                } else {
-                    badge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">📁 Otro</span>';
-                }
+                const badge = `<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">${tipoLabels[g.tipo] || '📁 Otro'}</span>`;
                 
                 return `
                     <div class="border-2 border-red-100 bg-red-50 rounded-xl p-6">
@@ -1737,14 +2298,16 @@
                                     <h3 class="font-bold text-red-800 text-lg">${g.concepto}</h3>
                                     ${badge}
                                 </div>
-                                <p class="text-sm text-red-700"> ${g.proveedor || 'Sin proveedor'} ·  ${fecha}</p>
-                                <p class="text-sm text-red-700">${infoAdicional}</p>
-                                <p class="text-sm text-red-700">📂 ${g.categoria || 'General'}</p>
+                                <p class="text-sm text-red-700">🏢 ${g.proveedor || 'Sin proveedor'} · 📅 ${fecha}</p>
+                                <p class="text-sm text-red-700">📂 ${g.categoria || 'General'} ${g.categoriaGeneral ? '- ' + g.categoriaGeneral : ''}</p>
                                 ${g.notas ? `<p class="text-sm text-red-600 mt-2">📝 ${g.notas}</p>` : ''}
                             </div>
                             <div class="text-right">
-                                <p class="text-2xl font-bold text-red-600">$${Number(g.monto).toLocaleString()} MXN</p>
-                                <button onclick="eliminarGasto('${g.id}')" class="mt-2 bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️ Eliminar</button>
+                                <p class="text-2xl font-bold text-red-600">$${Number(g.monto).toFixed(4)} MXN</p>
+                                <div class="flex gap-2 mt-2 justify-end">
+                                    <button onclick="editarGasto('${g.id}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">️ Editar</button>
+                                    <button onclick="eliminarGasto('${g.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1752,41 +2315,74 @@
             }).join('');
         }
 
-        // PROYECTOS
-        async function cargarClientesEnSelect() {
-            const select = document.getElementById('proyectoCliente');
-            select.innerHTML = '<option value="">Cargando clientes...</option>';
+        // DASHBOARD CONTABLE
+        function actualizarDashboardFinanciero() {
+            const pagos = window.pagosData || [];
+            const gastos = window.gastosData || [];
+            const totalIngresos = pagos.reduce((s, p) => s + (Number(p.monto) || 0), 0);
+            const totalEgresos = gastos.reduce((s, g) => s + (Number(g.monto) || 0), 0);
+            const utilidad = totalIngresos - totalEgresos;
+            const margen = totalIngresos > 0 ? (utilidad / totalIngresos * 100) : 0;
+
+            document.getElementById('dash-ingresos').textContent = '$' + totalIngresos.toFixed(2);
+            document.getElementById('dash-egresos').textContent = '$' + totalEgresos.toFixed(2);
+            document.getElementById('dash-utilidad').textContent = '$' + utilidad.toFixed(2);
+            document.getElementById('dash-margen').textContent = margen.toFixed(1) + '%';
+
+            const tiposServicio = ['curso', 'asesoria', 'administrativo', 'contabilidad', 'auditoria', 'modernizacion', 'comercio_exterior', 'capacitacion', 'otro'];
+            const tipoLabels = { curso: '📚 Curso', asesoria: '💼 Asesoría', administrativo: '🏢 Administrativo', contabilidad: ' Contabilidad', auditoria: '🔍 Auditoría', modernizacion: '💻 Modernización', comercio_exterior: '🌎 Comercio Exterior', capacitacion: '📚 Capacitación', otro: '📁 Otro' };
             
-            try {
-                const clientes = window.clientesData || [];
-                if (clientes.length === 0) {
-                    select.innerHTML = '<option value="">No hay clientes registrados</option>';
-                    return;
+            let htmlTipo = '';
+            tiposServicio.forEach(tipo => {
+                const ingresos = pagos.filter(p => p.tipoServicio === tipo).reduce((s, p) => s + (Number(p.monto) || 0), 0);
+                const egresos = gastos.filter(g => g.categoria === tipo).reduce((s, g) => s + (Number(g.monto) || 0), 0);
+                if (ingresos > 0 || egresos > 0) {
+                    htmlTipo += `
+                        <div class="flex justify-between items-center p-3 bg-cic-lighter rounded-lg">
+                            <span class="font-bold">${tipoLabels[tipo] || tipo}</span>
+                            <div class="text-right">
+                                <span class="text-green-600 font-bold">+$${ingresos.toFixed(2)}</span>
+                                <span class="text-red-600 font-bold"> -$${egresos.toFixed(2)}</span>
+                                <span class="text-cic-primary font-bold ml-2">= $${(ingresos - egresos).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
                 }
-                
-                select.innerHTML = '<option value="">Selecciona un cliente</option>' + 
-                    clientes.map(c => `<option value="${c.id}">${c.nombre} - ${c.empresa}</option>`).join('');
-            } catch (error) {
-                select.innerHTML = '<option value="">Error al cargar</option>';
-            }
+            });
+            document.getElementById('dash-por-tipo').innerHTML = htmlTipo || '<p class="text-gray-500 text-center py-4">Sin datos</p>';
+
+            const proyectos = [...new Set([...pagos.map(p => p.superClasificacion), ...gastos.map(g => g.proyectoRel)].filter(Boolean))];
+            let htmlProy = '';
+            proyectos.forEach(proy => {
+                const ing = pagos.filter(p => p.superClasificacion === proy).reduce((s, p) => s + (Number(p.monto) || 0), 0);
+                const egr = gastos.filter(g => g.proyectoRel === proy).reduce((s, g) => s + (Number(g.monto) || 0), 0);
+                htmlProy += `
+                    <div class="flex justify-between items-center p-3 bg-cic-lighter rounded-lg">
+                        <span class="font-bold">${proy}</span>
+                        <div class="text-right">
+                            <span class="text-green-600 font-bold">+$${ing.toFixed(2)}</span>
+                            <span class="text-red-600 font-bold"> -$${egr.toFixed(2)}</span>
+                            <span class="text-cic-primary font-bold ml-2">= $${(ing - egr).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('dash-por-proyecto').innerHTML = htmlProy || '<p class="text-gray-500 text-center py-4">Sin datos</p>';
         }
 
-        async function cargarColaboradoresEnSelect() {
+        // PROYECTOS
+        function cargarClientesEnProyectos() {
+            const select = document.getElementById('proyectoCliente');
+            const clientes = window.clientesData || [];
+            select.innerHTML = '<option value="">Selecciona un cliente</option>' + 
+                clientes.map(c => `<option value="${c.id}">${c.nombreComercial}</option>`).join('');
+        }
+
+        function cargarColaboradoresEnProyectos() {
             const select = document.getElementById('proyectoAsignado');
-            select.innerHTML = '<option value="">Cargando colaboradores...</option>';
-            
-            try {
-                const cols = window.colaboradoresData || [];
-                if (cols.length === 0) {
-                    select.innerHTML = '<option value="">No hay colaboradores registrados</option>';
-                    return;
-                }
-                
-                select.innerHTML = '<option value="">Selecciona colaborador</option>' + 
-                    cols.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
-            } catch (error) {
-                select.innerHTML = '<option value="">Error al cargar</option>';
-            }
+            const cols = window.colaboradoresData || [];
+            select.innerHTML = '<option value="">Selecciona colaborador</option>' + 
+                cols.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
         }
 
         document.getElementById('proyectoForm').addEventListener('submit', async function(e) {
@@ -1816,7 +2412,9 @@
                     await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "proyectos"), data);
                     alert('✅ Proyecto creado');
                 }
-                limpiarProyectoForm();
+                document.getElementById('proyectoForm').reset();
+                document.getElementById('proyectoId').value = '';
+                document.getElementById('modulos-section').classList.add('hidden');
             } catch (error) {
                 alert('❌ Error: ' + error.message);
             } finally {
@@ -1824,12 +2422,6 @@
                 btn.disabled = false;
             }
         });
-
-        function limpiarProyectoForm() {
-            document.getElementById('proyectoForm').reset();
-            document.getElementById('proyectoId').value = '';
-            document.getElementById('modulos-section').classList.add('hidden');
-        }
 
         function editarProyecto(id) {
             const proyecto = window.proyectosData.find(p => p.id === id);
@@ -1862,7 +2454,7 @@
             }
             container.innerHTML = proyectos.map(p => {
                 const estadoClass = p.estado === 'planeado' ? 'bg-blue-100 text-blue-800' : p.estado === 'en_curso' ? 'bg-yellow-100 text-yellow-800' : p.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
-                const estadoText = p.estado === 'planeado' ? '📋 Planeado' : p.estado === 'en_curso' ? '🟡 En curso' : p.estado === 'completado' ? '✅ Completado' : '⏸️ Pausado';
+                const estadoText = p.estado === 'planeado' ? '📋 Planeado' : p.estado === 'en_curso' ? '🟡 En curso' : p.estado === 'completado' ? '✅ Completado' : '️ Pausado';
                 const diasRestantes = Math.ceil((new Date(p.fechaTermino) - new Date()) / (1000 * 60 * 60 * 24));
                 
                 return `
@@ -1875,7 +2467,7 @@
                                 </div>
                                 <p class="text-sm text-gray-600">📅 ${p.fechaInicio} → ${p.fechaTermino}</p>
                                 <p class="text-sm text-gray-600">👤 Asignado: ${p.asignadoId || 'Sin asignar'}</p>
-                                ${diasRestantes > 0 ? `<p class="text-sm text-orange-600 font-medium"> ${diasRestantes} días restantes</p>` : '<p class="text-sm text-red-600 font-medium">⚠️ Fecha vencida</p>'}
+                                ${diasRestantes > 0 ? `<p class="text-sm text-orange-600 font-medium">⏰ ${diasRestantes} días restantes</p>` : '<p class="text-sm text-red-600 font-medium">⚠️ Fecha vencida</p>'}
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <button onclick="editarProyecto('${p.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
@@ -1942,7 +2534,7 @@
                                 <h4 class="font-bold text-cic-primary">${m.nombre}</h4>
                                 <p class="text-sm text-gray-600">📅 Entrega: ${m.fechaEntrega}</p>
                                 ${m.descripcion ? `<p class="text-sm text-gray-500 mt-1">${m.descripcion}</p>` : ''}
-                                ${vencido ? `<p class="text-sm text-red-600 font-medium mt-1">⚠️ Vencido hace ${Math.abs(diasRestantes)} días</p>` : `<p class="text-sm text-green-600 font-medium mt-1"> ${diasRestantes} días restantes</p>`}
+                                ${vencido ? `<p class="text-sm text-red-600 font-medium mt-1">⚠️ Vencido hace ${Math.abs(diasRestantes)} días</p>` : `<p class="text-sm text-green-600 font-medium mt-1">⏰ ${diasRestantes} días restantes</p>`}
                             </div>
                             <button onclick="eliminarModulo('${proyectoId}', '${m.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">️</button>
                         </div>
@@ -2080,7 +2672,7 @@
                 await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "tareas", id), { estado: nuevoEstado });
                 alert(`✅ Estado actualizado a: ${nuevoEstado}`);
             } catch (error) {
-                alert('❌ Error: ' + error.message);
+                alert(' Error: ' + error.message);
             }
         }
 
@@ -2136,7 +2728,7 @@
                                 ${t.descripcion ? `<p class="text-sm text-gray-600 mb-2">${t.descripcion}</p>` : ''}
                                 <p class="text-sm text-gray-600">👤 Asignado: ${t.asignadoId || 'Sin asignar'}</p>
                                 <p class="text-sm text-gray-600">📅 Límite: ${t.fechaLimite}</p>
-                                ${vencida ? `<p class="text-sm text-red-600 font-bold mt-1">⚠️ Vencida hace ${Math.abs(diasRestantes)} días</p>` : t.estado !== 'completada' ? `<p class="text-sm text-orange-600 font-medium mt-1"> ${diasRestantes} días restantes</p>` : ''}
+                                ${vencida ? `<p class="text-sm text-red-600 font-bold mt-1">⚠️ Vencida hace ${Math.abs(diasRestantes)} días</p>` : t.estado !== 'completada' ? `<p class="text-sm text-orange-600 font-medium mt-1">⏰ ${diasRestantes} días restantes</p>` : ''}
                                 <div class="mt-2">
                                     <div class="flex justify-between text-xs text-gray-600 mb-1">
                                         <span>Avance</span>
@@ -2154,7 +2746,7 @@
                                     <option value="en_proceso" ${t.estado==='en_proceso'?'selected':''}>En proceso</option>
                                     <option value="completada" ${t.estado==='completada'?'selected':''}>Completada</option>
                                 </select>
-                                <button onclick="editarTarea('${t.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">️</button>
+                                <button onclick="editarTarea('${t.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️</button>
                                 <button onclick="eliminarTarea('${t.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
                             </div>
                         </div>
@@ -2256,6 +2848,34 @@
             }
         }
 
+        async function programarUsuarioAuxiliar() {
+            const cols = window.colaboradoresData || [];
+            const auxiliares = cols.filter(c => c.rol === 'auxiliar');
+            const numero = auxiliares.length + 1;
+            const nombre = `Auxiliar ${numero}`;
+            const email = `auxiliar${numero}@cicconsultora.com`;
+            const password = 'Auxiliar' + numero + '2026';
+            
+            if (!confirm(`Se creará:\n\nNombre: ${nombre}\nEmail: ${email}\nContraseña: ${password}\n\n¿Continuar?`)) return;
+            
+            try {
+                const cred = await window.firebaseCreateUser(window.firebaseAuth, email, password);
+                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "colaboradores"), {
+                    nombre: nombre,
+                    email: email,
+                    rol: 'auxiliar',
+                    estatus: 'activo',
+                    uid: cred.user.uid,
+                    grado: 'Por definir',
+                    fechaNacimiento: '',
+                    rfc: 'XAXX010101000',
+                    licenciatura: 'Por definir',
+                    createdAt: new Date().toISOString()
+                });
+                alert(`✅ Usuario ${nombre} creado\n\nEmail: ${email}\nContraseña: ${password}\n\n⚠️ Guarda estas credenciales`);
+            } catch (error) { alert('❌ ' + error.message); }
+        }
+
         function renderColaboradores() {
             const container = document.getElementById('colaboradores-container');
             const cols = window.colaboradoresData || [];
@@ -2274,7 +2894,7 @@
                                     <span class="${estatusClass} px-3 py-1 rounded-full text-xs font-bold">${c.estatus}</span>
                                     <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold">${c.rol}</span>
                                 </div>
-                                <p class="text-sm text-gray-600"> ${c.email} · 🎓 ${c.grado} · 📚 ${c.licenciatura}</p>
+                                <p class="text-sm text-gray-600">📧 ${c.email} · 🎓 ${c.grado} ·  ${c.licenciatura}</p>
                                 <p class="text-sm text-gray-600">🎂 ${c.fechaNacimiento} · 🆔 ${c.rfc}</p>
                             </div>
                             <div class="flex flex-wrap gap-2">
@@ -2291,92 +2911,7 @@
             }).join('');
         }
 
-        // CLIENTES
-        document.getElementById('clienteForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
-            btn.disabled = true;
-
-            try {
-                const data = {
-                    nombre: document.getElementById('clienteNombre').value,
-                    empresa: document.getElementById('clienteEmpresa').value,
-                    email: document.getElementById('clienteEmail').value,
-                    telefono: document.getElementById('clienteTelefono').value,
-                    estado: document.getElementById('clienteEstado').value,
-                    notas: document.getElementById('clienteNotas').value,
-                    createdAt: new Date().toISOString()
-                };
-                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "clientes"), data);
-                alert('✅ Cliente registrado');
-                this.reset();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            } finally {
-                btn.innerHTML = '💾 Guardar Cliente';
-                btn.disabled = false;
-            }
-        });
-
-        function renderClientes() {
-            const container = document.getElementById('clientes-container');
-            const clientes = window.clientesData || [];
-            if (clientes.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay clientes registrados</p>';
-                return;
-            }
-            container.innerHTML = clientes.map(c => `
-                <div class="border-2 border-purple-100 rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-cic-primary text-lg">${c.nombre}</h3>
-                            <p class="text-sm text-gray-600"> ${c.empresa} · 📧 ${c.email}</p>
-                            <p class="text-sm text-gray-600">📱 ${c.telefono} · Estado: ${c.estado}</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderProyectos() {
-            const container = document.getElementById('proyectos-container');
-            const proyectos = window.proyectosData || [];
-            if (proyectos.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay proyectos registrados</p>';
-                return;
-            }
-            container.innerHTML = proyectos.map(p => {
-                const estadoClass = p.estado === 'planeado' ? 'bg-blue-100 text-blue-800' : p.estado === 'en_curso' ? 'bg-yellow-100 text-yellow-800' : p.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
-                const estadoText = p.estado === 'planeado' ? '📋 Planeado' : p.estado === 'en_curso' ? '🟡 En curso' : p.estado === 'completado' ? '✅ Completado' : '⏸️ Pausado';
-                return `
-                    <div class="border-2 border-purple-100 rounded-xl p-6">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-bold text-cic-primary text-lg">${p.nombre}</h3>
-                                <p class="text-sm text-gray-600">📅 ${p.fechaInicio} → ${p.fechaTermino}</p>
-                                <p class="text-sm text-gray-600"> Asignado: ${p.asignadoId || 'Sin asignar'}</p>
-                                <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${estadoText}</span>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="editarProyecto('${p.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
-                                <button onclick="eliminarProyecto('${p.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderTareas() {
-            const container = document.getElementById('tareas-container');
-            container.innerHTML = '<p class="text-center text-gray-500 py-8">Cargando tareas...</p>';
-        }
-
-        function updateVisitas() {
-            // Actualizar métricas de visitas
-        }
-
+        // ANUNCIOS
         async function conectarMeta() {
             const token = prompt('Ingresa tu Access Token de Meta Business:\n\nPara obtenerlo:\n1. Ve a https://developers.facebook.com/tools/explorer\n2. Selecciona tu app de Meta Business\n3. Genera un token con permisos de ads_read y ads_management\n4. Copia y pega el token aquí:');
             
@@ -2404,6 +2939,7 @@
             }
         }
 
+        // EXPORTAR
         function exportarDatos() {
             const datos = {
                 cursos: window.cursosData || [],
@@ -2415,6 +2951,8 @@
                 proyectos: window.proyectosData || [],
                 tareas: window.tareasData || [],
                 colaboradores: window.colaboradoresData || [],
+                serviciosCotizacion: window.serviciosCotizacionData || [],
+                cotizaciones: window.cotizacionesData || [],
                 exportado: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(datos, null, 2)], {type: 'application/json'});
@@ -2424,294 +2962,7 @@
             a.download = `cic_backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            alert(' Datos exportados');
-      // FUNCIONES DE COTIZACIONES
-function showTab(tab) {
-    // ... (tu función existing showTab) ...
-    if (tab === 'cotizaciones') {
-        document.getElementById('panel-cotizaciones').classList.remove('hidden');
-        document.getElementById('tab-cotizaciones').classList.add('tab-active');
-    }
-    if (tab === 'financiero') {
-        document.getElementById('panel-financiero').classList.remove('hidden');
-        document.getElementById('tab-financiero').classList.add('tab-active');
-    }
-    // ... resto de tabs ...
-}
-
-function showFinancieroSubtab(tab) {
-    document.getElementById('financiero-pagos').classList.toggle('hidden', tab !== 'pagos');
-    document.getElementById('financiero-gastos').classList.toggle('hidden', tab !== 'gastos');
-    document.getElementById('financiero-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-    document.getElementById('financiero-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
-    if (tab === 'pagos') renderPagosEditables();
-    if (tab === 'gastos') renderGastosEditables();
-}
-
-function generarCotizacion() {
-    const cliente = {
-        nombre: document.getElementById('cotClienteNombre').value,
-        email: document.getElementById('cotClienteEmail').value,
-        telefono: document.getElementById('cotClienteTelefono').value,
-        giro: document.getElementById('cotClienteGiro').value,
-        tamaño: document.getElementById('cotTamañoEmpresa').value,
-        productos: document.getElementById('cotNumProductos').value,
-        facturacion: document.getElementById('cotFacturacion').value
-    };
-
-    // Obtener servicios seleccionados
-    const checks = document.querySelectorAll('.servicio-check:checked');
-    const servicios = [];
-    let total = 0;
-
-    checks.forEach(check => {
-        servicios.push({
-            nombre: check.nextElementSibling.querySelector('.font-bold').textContent,
-            descripcion: check.nextElementSibling.querySelector('.text-xs').textContent,
-            precio: parseFloat(check.dataset.precio)
-        });
-        total += parseFloat(check.dataset.precio);
-    });
-
-    if (servicios.length === 0) {
-        alert('⚠️ Selecciona al menos un servicio');
-        return;
-    }
-
-    // Generar HTML de vista previa
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const folio = 'COT-' + Date.now().toString().slice(-6);
-    
-    let html = `
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-cic-primary mb-2">CIC CONSULTORÍA</h1>
-            <p class="text-gray-600">Cotización de Servicios Profesionales</p>
-        </div>
-        <div class="flex justify-between mb-6">
-            <div>
-                <p class="font-bold">Folio: ${folio}</p>
-                <p class="font-bold">Fecha: ${fecha}</p>
-            </div>
-            <div>
-                <p class="font-bold">Cliente:</p>
-                <p>${cliente.nombre}</p>
-                <p>${cliente.email}</p>
-                <p>${cliente.telefono}</p>
-            </div>
-        </div>
-        <div class="mb-6">
-            <h3 class="font-bold text-lg mb-3">Diagnóstico:</h3>
-            <p><strong>Tamaño:</strong> ${cliente.tamaño}</p>
-            <p><strong>Productos/Servicios:</strong> ${cliente.productos}</p>
-            <p><strong>Facturación:</strong> ${cliente.facturacion}</p>
-            <p><strong>Giro:</strong> ${cliente.giro}</p>
-        </div>
-        <table class="w-full mb-6">
-            <thead class="bg-cic-primary text-white">
-                <tr>
-                    <th class="p-3 text-left">Servicio</th>
-                    <th class="p-3 text-left">Descripción</th>
-                    <th class="p-3 text-right">Precio</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${servicios.map(s => `
-                    <tr class="border-b">
-                        <td class="p-3">${s.nombre}</td>
-                        <td class="p-3 text-sm text-gray-600">${s.descripcion}</td>
-                        <td class="p-3 text-right">$${s.precio.toLocaleString()} MXN</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-            <tfoot class="bg-cic-lighter font-bold">
-                <tr>
-                    <td colspan="2" class="p-3 text-right">TOTAL:</td>
-                    <td class="p-3 text-right text-cic-primary">$${total.toLocaleString()} MXN</td>
-                </tr>
-            </tfoot>
-        </table>
-        <div class="mt-8 text-center text-sm text-gray-600">
-            <p>Válido por 30 días a partir de la fecha de emisión</p>
-            <p>Contacto: admin@cicconsultora.com | Tel: +52 222 775 6653</p>
-        </div>
-    `;
-
-    document.getElementById('cotizacionContent').innerHTML = html;
-    document.getElementById('cotizacionPreview').classList.remove('hidden');
-    document.getElementById('cotizacionPreview').scrollIntoView({ behavior: 'smooth' });
-}
-
-function generarPDF() {
-    // Usar html2pdf.js para generar PDF
-    const element = document.getElementById('cotizacionContent');
-    const opt = {
-        margin: 1,
-        filename: 'cotizacion-cic.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    // Cargar librería html2pdf si no está cargada
-    if (typeof html2pdf === 'undefined') {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.min.js';
-        script.onload = () => html2pdf().from(element).set(opt).save();
-        document.head.appendChild(script);
-    } else {
-        html2pdf().from(element).set(opt).save();
-    }
-}
-
-async function enviarCotizacion() {
-    const email = document.getElementById('cotClienteEmail').value;
-    if (!email) {
-        alert('️ Ingresa el correo del cliente');
-        return;
-    }
-
-    // Aquí podrías integrar con EmailJS o un backend
-    alert('✉️ Para enviar por email, necesitas configurar:\n1. EmailJS (servicio de email desde frontend)\n2. O un backend con Node.js + Nodemailer\n\nPor ahora, puedes descargar el PDF y enviarlo manualmente.');
-    
-    // Opción: Abrir cliente de correo
-    const subject = 'Cotización de Servicios - CIC Consultoría';
-    const body = 'Adjunto encontrará su cotización de servicios profesionales.';
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-
-// FUNCIONES PARA EDITAR REGISTROS FINANCIEROS
-async function renderPagosEditables() {
-    const container = document.getElementById('pagos-editables-container');
-    const pagos = window.pagosData || [];
-    
-    if (pagos.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pagos registrados</p>';
-        return;
-    }
-
-    container.innerHTML = pagos.map(pago => `
-        <div class="border-2 border-green-200 bg-green-50 rounded-xl p-6">
-            <div class="flex justify-between items-start mb-4">
-                <div class="flex-1">
-                    <h3 class="font-bold text-green-800 text-lg">${pago.cliente}</h3>
-                    <p class="text-sm text-green-700">📧 ${pago.email || 'Sin email'} · 💳 ${pago.metodo}</p>
-                    <p class="text-sm text-green-700">💼 ${pago.concepto} · 📅 ${pago.fecha}</p>
-                    ${pago.notas ? `<p class="text-sm text-green-600 mt-2">📝 ${pago.notas}</p>` : ''}
-                </div>
-                <div class="text-right">
-                    <p class="text-2xl font-bold text-green-600">$${Number(pago.monto).toLocaleString()} MXN</p>
-                </div>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="editarPago('${pago.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-                    ✏️ Editar
-                </button>
-                <button onclick="eliminarPago('${pago.id}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-                    🗑️ Eliminar
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-async function renderGastosEditables() {
-    const container = document.getElementById('gastos-editables-container');
-    const gastos = window.gastosData || [];
-    
-    if (gastos.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay gastos registrados</p>';
-        return;
-    }
-
-    container.innerHTML = gastos.map(gasto => {
-        let badge = '';
-        if (gasto.tipo === 'proyecto') badge = '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">📋 Proyecto</span>';
-        else if (gasto.tipo === 'curso') badge = '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">📚 Curso</span>';
-        else if (gasto.tipo === 'general') badge = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🏢 General</span>';
-        else if (gasto.tipo === 'iniciacion') badge = '<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs"> Iniciación</span>';
-        else badge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">📁 Otro</span>';
-
-        return `
-            <div class="border-2 border-red-200 bg-red-50 rounded-xl p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-2">
-                            <h3 class="font-bold text-red-800 text-lg">${gasto.concepto}</h3>
-                            ${badge}
-                        </div>
-                        <p class="text-sm text-red-700">🏢 ${gasto.proveedor || 'Sin proveedor'} ·  ${gasto.fecha}</p>
-                        <p class="text-sm text-red-700">📂 ${gasto.categoria || gasto.categoriaGeneral}</p>
-                        ${gasto.notas ? `<p class="text-sm text-red-600 mt-2">📝 ${gasto.notas}</p>` : ''}
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-red-600">$${Number(gasto.monto).toLocaleString()} MXN</p>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="editarGasto('${gasto.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-                        ✏️ Editar
-                    </button>
-                    <button onclick="eliminarGasto('${gasto.id}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-                        🗑️ Eliminar
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Modales de edición
-async function editarPago(id) {
-    const pago = window.pagosData.find(p => p.id === id);
-    if (!pago) return;
-
-    const nuevoMonto = prompt('Nuevo monto:', pago.monto);
-    const nuevoConcepto = prompt('Nuevo concepto:', pago.concepto);
-    const nuevoMetodo = prompt('Nuevo método de pago:', pago.metodo);
-    const nuevaFecha = prompt('Nueva fecha (YYYY-MM-DD):', pago.fecha);
-
-    if (nuevoMonto && nuevoConcepto) {
-        try {
-            await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "pagos", id), {
-                monto: parseFloat(nuevoMonto),
-                concepto: nuevoConcepto,
-                metodo: nuevoMetodo || pago.metodo,
-                fecha: nuevaFecha || pago.fecha,
-                updatedAt: new Date().toISOString()
-            });
-            alert('✅ Pago actualizado');
-            renderPagosEditables();
-        } catch (error) {
-            alert('❌ Error: ' + error.message);
-        }
-    }
-}
-
-async function editarGasto(id) {
-    const gasto = window.gastosData.find(g => g.id === id);
-    if (!gasto) return;
-
-    const nuevoMonto = prompt('Nuevo monto:', gasto.monto);
-    const nuevoConcepto = prompt('Nuevo concepto:', gasto.concepto);
-    const nuevoProveedor = prompt('Nuevo proveedor:', gasto.proveedor || '');
-    const nuevaCategoria = prompt('Nueva categoría:', gasto.categoria || gasto.categoriaGeneral || '');
-
-    if (nuevoMonto && nuevoConcepto) {
-        try {
-            await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "gastos", id), {
-                monto: parseFloat(nuevoMonto),
-                concepto: nuevoConcepto,
-                proveedor: nuevoProveedor,
-                categoria: nuevaCategoria,
-                updatedAt: new Date().toISOString()
-            });
-            alert('✅ Gasto actualizado');
-            renderGastosEditables();
-        } catch (error) {
-            alert('❌ Error: ' + error.message);
-        }
-    }
-}
+            alert('📥 Datos exportados');
         }
     </script>
 </body>
