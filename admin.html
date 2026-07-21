@@ -57,6 +57,7 @@
                 if (col === 'gastos' && typeof window.renderGastos === 'function') window.renderGastos();
                 if (col === 'clientes' && typeof window.renderClientes === 'function') window.renderClientes();
                 if (col === 'proyectos' && typeof window.renderProyectos === 'function') window.renderProyectos();
+                if (col === 'tareas' && typeof window.renderTareas === 'function') window.renderTareas();
                 if (col === 'colaboradores' && typeof window.renderColaboradores === 'function') window.renderColaboradores();
                 if (col === 'visitas' && typeof window.updateVisitas === 'function') window.updateVisitas();
                 if (typeof window.updateKPIs === 'function') window.updateKPIs();
@@ -141,7 +142,7 @@
                 <button onclick="showTab('blogs')" id="tab-blogs" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📝 Blogs</button>
                 <button onclick="showTab('inscripciones')" id="tab-inscripciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📋 Reservas</button>
                 <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">💼 Gestión Financiera</button>
-                <button onclick="showTab('proyectos')" id="tab-proyectos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap"> Proyectos y Clientes</button>
+                <button onclick="showTab('proyectos')" id="tab-proyectos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📁 Proyectos y Tareas</button>
                 <button onclick="showTab('colaboradores')" id="tab-colaboradores" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">👔 Colaboradores</button>
                 <button onclick="showTab('anuncios')" id="tab-anuncios" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📢 Anuncios</button>
             </div>
@@ -213,12 +214,12 @@
                         <p class="text-sm text-gray-500 mt-1">En estado "Programado"</p>
                     </div>
                     <div class="bg-white rounded-2xl p-6 shadow-lg">
-                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📝 Artículos Publicados</h3>
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4"> Artículos Publicados</h3>
                         <p class="text-3xl font-bold text-cic-primary" id="kpi-blogs-publicados">0</p>
                         <p class="text-sm text-gray-500 mt-1">En el blog</p>
                     </div>
                     <div class="bg-white rounded-2xl p-6 shadow-lg">
-                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">📋 Reservas Pendientes</h3>
+                        <h3 class="font-heading text-lg font-bold text-cic-primary mb-4"> Reservas Pendientes</h3>
                         <p class="text-3xl font-bold text-cic-primary" id="kpi-reservas-pendientes">0</p>
                         <p class="text-sm text-gray-500 mt-1">Por confirmar</p>
                     </div>
@@ -244,7 +245,7 @@
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Instructor *</label>
                                 <select id="cursoInstructor" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                    <option value="Cici">🦝 Cici - Administración</option>
+                                    <option value="Cici"> Cici - Administración</option>
                                     <option value="Coco">🦝 Coco - Comercio Exterior</option>
                                 </select>
                             </div>
@@ -298,13 +299,13 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Estado *</label>
                             <select id="cursoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option value="Programado">📅 Programado</option>
+                                <option value="Programado"> Programado</option>
                                 <option value="En curso">🟡 En curso</option>
                                 <option value="Finalizado">✅ Finalizado</option>
                             </select>
                         </div>
                         <div class="flex gap-4 pt-4 border-t">
-                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Guardar Curso</button>
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Curso</button>
                             <button type="button" onclick="limpiarFormulario()" class="px-6 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Limpiar</button>
                         </div>
                     </form>
@@ -333,7 +334,6 @@
                         <textarea id="blogContenido" placeholder="Contenido completo del artículo *" required rows="8" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
                         <input type="url" id="blogImagen" placeholder="URL de imagen (opcional)" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                         
-                        <!-- Campo para documento adjunto -->
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto (opcional)</label>
                             <input type="file" id="blogDocumento" accept=".pdf,.doc,.docx,.xlsx,.pptx,.jpg,.jpeg,.png" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
@@ -438,18 +438,70 @@
 
                 <div id="admin-gastos" class="hidden space-y-6">
                     <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Registrar Gasto Operativo</h2>
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">💸 Registrar Gasto Operativo</h2>
                         <form id="gastoForm" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Tipo de gasto *</label>
+                                <select id="gastoTipo" onchange="cambiarTipoGasto()" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona un tipo</option>
+                                    <option value="proyecto">📋 Proyecto específico</option>
+                                    <option value="curso"> Curso</option>
+                                    <option value="general">🏢 Gastos generales</option>
+                                    <option value="iniciacion">🚀 Gastos de iniciación/lanzamiento</option>
+                                    <option value="gestion">💼 Gastos de gestión</option>
+                                </select>
+                            </div>
+
+                            <div id="gastoProyectoContainer" class="hidden">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Proyecto *</label>
+                                <select id="gastoProyecto" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona un proyecto</option>
+                                </select>
+                            </div>
+
+                            <div id="gastoCursoContainer" class="hidden">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Curso *</label>
+                                <select id="gastoCurso" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona un curso</option>
+                                </select>
+                            </div>
+
+                            <div id="gastoCategoriaGeneralContainer" class="hidden">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Categoría *</label>
+                                <select id="gastoCategoriaGeneral" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="">Selecciona categoría</option>
+                                    <optgroup label="Gastos Generales">
+                                        <option value="servicios">Servicios (luz, agua, internet)</option>
+                                        <option value="oficina">Oficina y suministros</option>
+                                        <option value="renta">Renta</option>
+                                        <option value="mantenimiento">Mantenimiento</option>
+                                    </optgroup>
+                                    <optgroup label="Gastos de Iniciación/Lanzamiento">
+                                        <option value="marketing">Marketing y publicidad</option>
+                                        <option value="branding">Branding y diseño</option>
+                                        <option value="desarrollo">Desarrollo web/app</option>
+                                        <option value="legal">Trámites legales</option>
+                                    </optgroup>
+                                    <optgroup label="Gastos de Gestión">
+                                        <option value="administracion">Administración</option>
+                                        <option value="contabilidad">Contabilidad</option>
+                                        <option value="software">Software y licencias</option>
+                                        <option value="capacitacion">Capacitación del personal</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Concepto del gasto *</label>
-                                    <input type="text" id="gastoConcepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: Hosting, Software, Publicidad">
+                                    <input type="text" id="gastoConcepto" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: Hosting mensual, Material de oficina">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Proveedor</label>
                                     <input type="text" id="gastoProveedor" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 </div>
                             </div>
+
                             <div class="grid md:grid-cols-3 gap-6">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Monto (MXN) *</label>
@@ -459,8 +511,8 @@
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Fecha del gasto *</label>
                                     <input type="date" id="gastoFecha" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Categoría *</label>
+                                <div id="gastoCategoriaOldContainer">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Categoría adicional *</label>
                                     <select id="gastoCategoria" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                         <option>Infraestructura tecnológica</option>
                                         <option>Marketing y publicidad</option>
@@ -471,81 +523,185 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Documento adjunto (ticket, factura)</label>
                                 <input type="file" id="gastoDocumento" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
                                 <p class="text-xs text-gray-500 mt-1">Soporta: PDF, JPG, PNG (máx. 10MB)</p>
                             </div>
+
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Notas</label>
                                 <textarea id="gastoNotas" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
                             </div>
+
                             <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Registrar Gasto</button>
                         </form>
                     </div>
+
                     <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">Historial de Gastos</h3>
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📊 Resumen por Categoría</h3>
+                        <div class="grid md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-blue-600" id="total-proyectos">$0</p>
+                                <p class="text-sm text-gray-600">Proyectos</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-purple-600" id="total-cursos">$0</p>
+                                <p class="text-sm text-gray-600">Cursos</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-green-600" id="total-generales">$0</p>
+                                <p class="text-sm text-gray-600">Generales</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-orange-600" id="total-iniciacion">$0</p>
+                                <p class="text-sm text-gray-600">Iniciación</p>
+                            </div>
+                        </div>
+
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">Historial de Gastos</h3>
                         <div id="gastos-container" class="space-y-4"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Proyectos y Clientes -->
+            <!-- Proyectos y Tareas -->
             <div id="panel-proyectos" class="hidden">
                 <div class="flex gap-2 mb-6">
-                    <button onclick="showProyectosSubtab('clientes')" id="proyectos-subtab-clientes" class="tab-active px-6 py-3 font-medium">👥 Clientes</button>
-                    <button onclick="showProyectosSubtab('proyectos')" id="proyectos-subtab-proyectos" class="px-6 py-3 font-medium text-gray-600">📋 Proyectos</button>
-                    <button onclick="showProyectosSubtab('tareas')" id="proyectos-subtab-tareas" class="px-6 py-3 font-medium text-gray-600">✅ Tareas</button>
+                    <button onclick="showProyectosSubtab('proyectos')" id="proyectos-subtab-proyectos" class="tab-active px-6 py-3 font-medium">📁 Proyectos</button>
+                    <button onclick="showProyectosSubtab('tareas')" id="proyectos-subtab-tareas" class="px-6 py-3 font-medium text-gray-600">✅ Dashboard de Tareas</button>
                 </div>
                 
-                <div id="proyectos-clientes" class="bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Gestión de Clientes</h2>
-                    <form id="clienteForm" class="space-y-6 mb-8">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Nombre completo *</label>
-                                <input type="text" id="clienteNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                <!-- Proyectos -->
+                <div id="proyectos-proyectos" class="space-y-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6"> Gestión de Proyectos</h2>
+                        <form id="proyectoForm" class="space-y-6 mb-8">
+                            <input type="hidden" id="proyectoId">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Nombre del proyecto *</label>
+                                    <input type="text" id="proyectoNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Cliente *</label>
+                                    <select id="proyectoCliente" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                        <option value="">Selecciona un cliente</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de inicio *</label>
+                                    <input type="date" id="proyectoFechaInicio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de término *</label>
+                                    <input type="date" id="proyectoFechaTermino" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Asignado a *</label>
+                                    <select id="proyectoAsignado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                        <option value="">Selecciona colaborador</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Empresa *</label>
-                                <input type="text" id="clienteEmpresa" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Estado *</label>
+                                <select id="proyectoEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    <option value="planeado">📋 Planeado</option>
+                                    <option value="en_curso">🟡 En curso</option>
+                                    <option value="completado">✅ Completado</option>
+                                    <option value="pausado">⏸️ Pausado</option>
+                                </select>
                             </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Descripción</label>
+                                <textarea id="proyectoDescripcion" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">💾 Guardar Proyecto</button>
+                        </form>
+
+                        <!-- Módulos del proyecto -->
+                        <div id="modulos-section" class="hidden mt-8 pt-8 border-t-2 border-purple-100">
+                            <h3 class="font-heading text-xl font-bold text-cic-primary mb-4">📦 Módulos del Proyecto</h3>
+                            <form id="moduloForm" class="space-y-4 mb-6 bg-cic-lighter p-6 rounded-xl">
+                                <input type="hidden" id="moduloProyectoId">
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">Nombre del módulo *</label>
+                                        <input type="text" id="moduloNombre" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">Fecha de entrega *</label>
+                                        <input type="date" id="moduloFechaEntrega" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Descripción</label>
+                                    <textarea id="moduloDescripcion" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                                </div>
+                                <button type="submit" class="bg-cic-primary text-white px-6 py-3 rounded-xl hover:bg-cic-secondary transition">➕ Agregar Módulo</button>
+                            </form>
+                            <div id="modulos-container" class="space-y-3"></div>
                         </div>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Correo electrónico *</label>
-                                <input type="email" id="clienteEmail" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Teléfono *</label>
-                                <input type="tel" id="clienteTelefono" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Estado *</label>
-                            <select id="clienteEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                                <option value="nuevo">Nuevo</option>
-                                <option value="activo">Activo</option>
-                                <option value="inactivo">Inactivo</option>
+
+                        <h3 class="font-heading text-xl font-bold text-cic-primary mb-4 mt-8">Proyectos Registrados</h3>
+                        <div id="proyectos-container" class="space-y-4"></div>
+                    </div>
+                </div>
+
+                <!-- Dashboard de Tareas -->
+                <div id="proyectos-tareas" class="hidden space-y-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-8">
+                        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">✅ Dashboard de Tareas</h2>
+                        
+                        <!-- Filtros -->
+                        <div class="grid md:grid-cols-4 gap-4 mb-6">
+                            <select id="filtroTareaEstado" onchange="renderTareas()" class="px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="">Todos los estados</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_proceso">En proceso</option>
+                                <option value="completada">Completada</option>
                             </select>
+                            <select id="filtroTareaPrioridad" onchange="renderTareas()" class="px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="">Todas las prioridades</option>
+                                <option value="alta">🔴 Alta</option>
+                                <option value="media"> Media</option>
+                                <option value="baja">🟢 Baja</option>
+                            </select>
+                            <select id="filtroTareaAsignado" onchange="renderTareas()" class="px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                                <option value="">Todos los responsables</option>
+                            </select>
+                            <button onclick="abrirModalTarea()" class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition">
+                                ➕ Nueva Tarea
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Notas</label>
-                            <textarea id="clienteNotas" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+
+                        <!-- Resumen -->
+                        <div class="grid md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-red-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-red-600" id="tareas-pendientes">0</p>
+                                <p class="text-sm text-gray-600">Pendientes</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-yellow-600" id="tareas-proceso">0</p>
+                                <p class="text-sm text-gray-600">En proceso</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-green-600" id="tareas-completadas">0</p>
+                                <p class="text-sm text-gray-600">Completadas</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-xl text-center">
+                                <p class="text-3xl font-bold text-purple-600" id="tareas-vencidas">0</p>
+                                <p class="text-sm text-gray-600">Vencidas</p>
+                            </div>
                         </div>
-                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition"> Guardar Cliente</button>
-                    </form>
-                    <div id="clientes-container" class="space-y-4"></div>
-                </div>
 
-                <div id="proyectos-proyectos" class="hidden bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Gestión de Proyectos</h2>
-                    <div id="proyectos-container" class="space-y-4"></div>
-                </div>
-
-                <div id="proyectos-tareas" class="hidden bg-white rounded-2xl shadow-lg p-8">
-                    <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">Gestión de Tareas</h2>
-                    <div id="tareas-container" class="space-y-4"></div>
+                        <!-- Lista de tareas -->
+                        <div id="tareas-container" class="space-y-4"></div>
+                    </div>
                 </div>
             </div>
 
@@ -639,7 +795,7 @@
                         </button>
                     </div>
                     
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                    <div id="meta-estado" class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
                         <div class="flex items-center gap-3">
                             <i class="fab fa-facebook-f text-blue-600 text-3xl"></i>
                             <div>
@@ -654,15 +810,15 @@
                     
                     <div class="grid md:grid-cols-3 gap-4 mb-6">
                         <div class="bg-cic-lighter p-4 rounded-xl text-center">
-                            <p class="text-3xl font-bold text-cic-primary">0</p>
+                            <p class="text-3xl font-bold text-cic-primary" data-metrica="campanas">0</p>
                             <p class="text-sm text-gray-600">Campañas Activas</p>
                         </div>
                         <div class="bg-cic-lighter p-4 rounded-xl text-center">
-                            <p class="text-3xl font-bold text-cic-primary">0</p>
+                            <p class="text-3xl font-bold text-cic-primary" data-metrica="impresiones">0</p>
                             <p class="text-sm text-gray-600">Impresiones Totales</p>
                         </div>
                         <div class="bg-cic-lighter p-4 rounded-xl text-center">
-                            <p class="text-3xl font-bold text-cic-primary">$0</p>
+                            <p class="text-3xl font-bold text-cic-primary" data-metrica="presupuesto">$0</p>
                             <p class="text-sm text-gray-600">Presupuesto Gastado</p>
                         </div>
                     </div>
@@ -676,6 +832,86 @@
         </div>
     </div>
 
+    <!-- Modal Nueva Tarea -->
+    <div id="modal-tarea" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-heading text-xl font-bold text-cic-primary">Nueva Tarea</h3>
+                    <button onclick="cerrarModalTarea()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+            </div>
+            <form id="tareaForm" class="p-6 space-y-4">
+                <input type="hidden" id="tareaId">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Título de la tarea *</label>
+                    <input type="text" id="tareaTitulo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Descripción</label>
+                    <textarea id="tareaDescripcion" rows="3" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Proyecto relacionado</label>
+                        <select id="tareaProyecto" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="">Sin proyecto</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Módulo relacionado</label>
+                        <select id="tareaModulo" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="">Sin módulo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Asignado a *</label>
+                        <select id="tareaAsignado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="">Selecciona colaborador</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Fecha límite *</label>
+                        <input type="date" id="tareaFechaLimite" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Prioridad *</label>
+                        <select id="tareaPrioridad" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="alta">🔴 Alta</option>
+                            <option value="media">🟡 Media</option>
+                            <option value="baja">🟢 Baja</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Estado *</label>
+                        <select id="tareaEstado" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_proceso">En proceso</option>
+                            <option value="completada">Completada</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">% de avance</label>
+                    <input type="range" id="tareaAvance" min="0" max="100" value="0" class="w-full" oninput="document.getElementById('avance-valor').textContent = this.value + '%'">
+                    <p class="text-center text-sm text-gray-600 mt-1">Avance: <span id="avance-valor">0%</span></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Comentarios</label>
+                    <textarea id="tareaComentarios" rows="2" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-3 rounded-xl hover:shadow-lg transition">💾 Guardar Tarea</button>
+                    <button type="button" onclick="cerrarModalTarea()" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Tabs principales
         function showTab(tab) {
@@ -684,6 +920,10 @@
                 document.getElementById('tab-' + t).className = t === tab ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600 hover:text-cic-primary';
             });
             if (tab === 'dashboard') updateKPIs();
+            if (tab === 'proyectos') {
+                cargarClientesEnSelect();
+                cargarColaboradoresEnSelect();
+            }
         }
 
         function showCursosSubtab(tab) {
@@ -705,15 +945,26 @@
             document.getElementById('admin-gastos').classList.toggle('hidden', tab !== 'gastos');
             document.getElementById('admin-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
             document.getElementById('admin-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            if (tab === 'gastos') {
+                cargarProyectosEnSelect();
+                cargarCursosEnSelect();
+            }
         }
 
         function showProyectosSubtab(tab) {
-            document.getElementById('proyectos-clientes').classList.toggle('hidden', tab !== 'clientes');
             document.getElementById('proyectos-proyectos').classList.toggle('hidden', tab !== 'proyectos');
             document.getElementById('proyectos-tareas').classList.toggle('hidden', tab !== 'tareas');
-            document.getElementById('proyectos-subtab-clientes').className = tab === 'clientes' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
             document.getElementById('proyectos-subtab-proyectos').className = tab === 'proyectos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
             document.getElementById('proyectos-subtab-tareas').className = tab === 'tareas' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+            if (tab === 'proyectos') {
+                cargarClientesEnSelect();
+                cargarColaboradoresEnSelect();
+            }
+            if (tab === 'tareas') {
+                cargarColaboradoresEnTareas();
+                cargarProyectosEnTareas();
+                renderTareas();
+            }
         }
 
         // Login
@@ -763,7 +1014,6 @@
             document.getElementById('kpi-blogs-publicados').textContent = blogs.length;
             document.getElementById('kpi-reservas-pendientes').textContent = inscripciones.filter(i => !i.estado || i.estado === 'Nueva').length;
             
-            // Métricas de tráfico
             document.getElementById('kpi-visitas').textContent = visitas.length;
             document.getElementById('kpi-unicas').textContent = new Set(visitas.map(v => v.ip)).size;
             document.getElementById('kpi-tiempo').textContent = '2:30';
@@ -927,7 +1177,7 @@
             } catch (error) {
                 alert('❌ Error: ' + error.message);
             } finally {
-                btn.innerHTML = '💾 Publicar Artículo';
+                btn.innerHTML = ' Publicar Artículo';
                 btn.disabled = false;
             }
         });
@@ -967,7 +1217,7 @@
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editarBlog('${b.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
-                            <button onclick="eliminarBlog('${b.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            <button onclick="eliminarBlog('${b.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️</button>
                         </div>
                     </div>
                 </div>
@@ -1014,21 +1264,21 @@
                                     <h3 class="font-bold text-cic-primary text-lg">${i.nombre || 'Sin nombre'}</h3>
                                     <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${estado}</span>
                                 </div>
-                                <p class="text-sm text-gray-600"> ${i.email || 'Sin email'} ·  ${i.telefono || 'Sin teléfono'}</p>
-                                <p class="text-sm text-gray-600">📋 ${i.tipo || i.cursoTitulo || 'Sin tipo especificado'}</p>
+                                <p class="text-sm text-gray-600">📧 ${i.email || 'Sin email'} · 📱 ${i.telefono || 'Sin teléfono'}</p>
+                                <p class="text-sm text-gray-600"> ${i.tipo || i.cursoTitulo || 'Sin tipo especificado'}</p>
                                 <p class="text-sm text-gray-600">📅 Fecha preferida: ${i.fecha || i.fecha_preferida || 'No especificada'}</p>
                                 ${i.mensaje ? `<p class="text-sm text-gray-500 mt-2 italic">"${i.mensaje}"</p>` : ''}
                                 <p class="text-xs text-gray-400 mt-2">Recibido: ${fecha}</p>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <select onchange="cambiarEstadoInscripcion('${i.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm">
-                                    <option value="Nueva" ${estado==='Nueva'?'selected':''}>🔵 Nueva</option>
+                                    <option value="Nueva" ${estado==='Nueva'?'selected':''}> Nueva</option>
                                     <option value="En proceso" ${estado==='En proceso'?'selected':''}>🟡 En proceso</option>
-                                    <option value="Confirmada" ${estado==='Confirmada'?'selected':''}> Confirmada</option>
-                                    <option value="Cancelada" ${estado==='Cancelada'?'selected':''}>🔴 Cancelada</option>
+                                    <option value="Confirmada" ${estado==='Confirmada'?'selected':''}>🟢 Confirmada</option>
+                                    <option value="Cancelada" ${estado==='Cancelada'?'selected':''}> Cancelada</option>
                                 </select>
                                 <a href="https://wa.me/${(i.telefono || '').replace(/\D/g,'')}?text=Hola%20${encodeURIComponent(i.nombre || '')},%20te%20contactamos%20de%20CIC%20Consultoría" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm">WhatsApp</a>
-                                <button onclick="eliminarInscripcion('${i.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️</button>
+                                <button onclick="eliminarInscripcion('${i.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
                             </div>
                         </div>
                     </div>
@@ -1087,7 +1337,7 @@
                                     <h3 class="font-bold text-green-800 text-lg">${p.cliente}</h3>
                                     <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">$${Number(p.monto).toLocaleString()} MXN</span>
                                 </div>
-                                <p class="text-sm text-green-700">📧 ${p.email || 'Sin correo'} ·  ${fecha}</p>
+                                <p class="text-sm text-green-700">📧 ${p.email || 'Sin correo'} · 📅 ${fecha}</p>
                                 <p class="text-sm text-green-700">💳 ${p.metodo} · 💼 ${p.concepto}</p>
                                 ${p.notas ? `<p class="text-sm text-green-600 mt-2">📝 ${p.notas}</p>` : ''}
                             </div>
@@ -1099,6 +1349,69 @@
         }
 
         // GASTOS
+        function cambiarTipoGasto() {
+            const tipo = document.getElementById('gastoTipo').value;
+            const proyectoContainer = document.getElementById('gastoProyectoContainer');
+            const cursoContainer = document.getElementById('gastoCursoContainer');
+            const categoriaGeneralContainer = document.getElementById('gastoCategoriaGeneralContainer');
+            const categoriaOldContainer = document.getElementById('gastoCategoriaOldContainer');
+            
+            proyectoContainer.classList.add('hidden');
+            cursoContainer.classList.add('hidden');
+            categoriaGeneralContainer.classList.add('hidden');
+            
+            if (tipo === 'proyecto') {
+                proyectoContainer.classList.remove('hidden');
+                cargarProyectosEnSelect();
+                categoriaOldContainer.classList.add('hidden');
+            } else if (tipo === 'curso') {
+                cursoContainer.classList.remove('hidden');
+                cargarCursosEnSelect();
+                categoriaOldContainer.classList.add('hidden');
+            } else if (tipo === 'general' || tipo === 'iniciacion' || tipo === 'gestion') {
+                categoriaGeneralContainer.classList.remove('hidden');
+                categoriaOldContainer.classList.add('hidden');
+            } else {
+                categoriaOldContainer.classList.remove('hidden');
+            }
+        }
+
+        async function cargarProyectosEnSelect() {
+            const select = document.getElementById('gastoProyecto');
+            select.innerHTML = '<option value="">Cargando proyectos...</option>';
+            
+            try {
+                const proyectos = window.proyectosData || [];
+                if (proyectos.length === 0) {
+                    select.innerHTML = '<option value="">No hay proyectos registrados</option>';
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Selecciona un proyecto</option>' + 
+                    proyectos.map(p => `<option value="${p.id}">${p.nombre || p.titulo}</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
+        async function cargarCursosEnSelect() {
+            const select = document.getElementById('gastoCurso');
+            select.innerHTML = '<option value="">Cargando cursos...</option>';
+            
+            try {
+                const cursos = window.cursosData || [];
+                if (cursos.length === 0) {
+                    select.innerHTML = '<option value="">No hay cursos registrados</option>';
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Selecciona un curso</option>' + 
+                    cursos.map(c => `<option value="${c.id}">${c.titulo}</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
         document.getElementById('gastoForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -1106,20 +1419,43 @@
             btn.disabled = true;
 
             try {
-                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "gastos"), {
+                const tipo = document.getElementById('gastoTipo').value;
+                const data = {
+                    tipo: tipo,
                     concepto: document.getElementById('gastoConcepto').value,
                     proveedor: document.getElementById('gastoProveedor').value,
                     monto: parseFloat(document.getElementById('gastoMonto').value),
                     fecha: document.getElementById('gastoFecha').value,
-                    categoria: document.getElementById('gastoCategoria').value,
                     notas: document.getElementById('gastoNotas').value,
                     createdAt: new Date().toISOString()
-                });
+                };
+
+                if (tipo === 'proyecto') {
+                    data.proyectoId = document.getElementById('gastoProyecto').value;
+                    data.categoria = 'proyecto';
+                } else if (tipo === 'curso') {
+                    data.cursoId = document.getElementById('gastoCurso').value;
+                    data.categoria = 'curso';
+                } else if (tipo === 'general') {
+                    data.categoriaGeneral = document.getElementById('gastoCategoriaGeneral').value;
+                    data.categoria = 'general';
+                } else if (tipo === 'iniciacion') {
+                    data.categoriaGeneral = document.getElementById('gastoCategoriaGeneral').value;
+                    data.categoria = 'iniciacion';
+                } else if (tipo === 'gestion') {
+                    data.categoriaGeneral = document.getElementById('gastoCategoriaGeneral').value;
+                    data.categoria = 'gestion';
+                } else {
+                    data.categoria = document.getElementById('gastoCategoria').value;
+                }
+
+                await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "gastos"), data);
                 alert('✅ Gasto registrado');
                 this.reset();
                 document.getElementById('gastoFecha').value = new Date().toISOString().split('T')[0];
+                cambiarTipoGasto();
             } catch (error) {
-                alert(' Error: ' + error.message);
+                alert('❌ Error: ' + error.message);
             } finally {
                 btn.innerHTML = '💾 Registrar Gasto';
                 btn.disabled = false;
@@ -1138,21 +1474,471 @@
                 container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay gastos registrados</p>';
                 return;
             }
+            
+            const totales = {
+                proyectos: gastos.filter(g => g.tipo === 'proyecto').reduce((sum, g) => sum + g.monto, 0),
+                cursos: gastos.filter(g => g.tipo === 'curso').reduce((sum, g) => sum + g.monto, 0),
+                generales: gastos.filter(g => g.tipo === 'general').reduce((sum, g) => sum + g.monto, 0),
+                iniciacion: gastos.filter(g => g.tipo === 'iniciacion').reduce((sum, g) => sum + g.monto, 0)
+            };
+            
+            document.getElementById('total-proyectos').textContent = '$' + totales.proyectos.toLocaleString();
+            document.getElementById('total-cursos').textContent = '$' + totales.cursos.toLocaleString();
+            document.getElementById('total-generales').textContent = '$' + totales.generales.toLocaleString();
+            document.getElementById('total-iniciacion').textContent = '$' + totales.iniciacion.toLocaleString();
+            
             container.innerHTML = gastos.map(g => {
                 const fecha = new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-MX');
+                let badge = '';
+                let infoAdicional = '';
+                
+                if (g.tipo === 'proyecto') {
+                    badge = '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">📋 Proyecto</span>';
+                    infoAdicional = 'Proyecto: ' + (g.proyectoId || 'N/A');
+                } else if (g.tipo === 'curso') {
+                    badge = '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">📚 Curso</span>';
+                    infoAdicional = 'Curso: ' + (g.cursoId || 'N/A');
+                } else if (g.tipo === 'general') {
+                    badge = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🏢 General</span>';
+                    infoAdicional = 'Categoría: ' + (g.categoriaGeneral || 'N/A');
+                } else if (g.tipo === 'iniciacion') {
+                    badge = '<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">🚀 Iniciación</span>';
+                    infoAdicional = 'Categoría: ' + (g.categoriaGeneral || 'N/A');
+                } else if (g.tipo === 'gestion') {
+                    badge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">💼 Gestión</span>';
+                    infoAdicional = 'Categoría: ' + (g.categoriaGeneral || 'N/A');
+                } else {
+                    badge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">📁 Otro</span>';
+                }
+                
                 return `
-                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                    <div class="border-2 border-red-100 bg-red-50 rounded-xl p-6">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
+                                <div class="flex items-center gap-2 mb-2">
                                     <h3 class="font-bold text-red-800 text-lg">${g.concepto}</h3>
-                                    <span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">$${Number(g.monto).toLocaleString()} MXN</span>
+                                    ${badge}
                                 </div>
-                                <p class="text-sm text-red-700">🏢 ${g.proveedor || 'Sin proveedor'} · 📅 ${fecha}</p>
-                                <p class="text-sm text-red-700">📂 ${g.categoria}</p>
+                                <p class="text-sm text-red-700"> ${g.proveedor || 'Sin proveedor'} ·  ${fecha}</p>
+                                <p class="text-sm text-red-700">${infoAdicional}</p>
+                                <p class="text-sm text-red-700">📂 ${g.categoria || 'General'}</p>
                                 ${g.notas ? `<p class="text-sm text-red-600 mt-2">📝 ${g.notas}</p>` : ''}
                             </div>
-                            <button onclick="eliminarGasto('${g.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️</button>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-red-600">$${Number(g.monto).toLocaleString()} MXN</p>
+                                <button onclick="eliminarGasto('${g.id}')" class="mt-2 bg-red-500 text-white px-4 py-2 rounded-lg text-sm">️ Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // PROYECTOS
+        async function cargarClientesEnSelect() {
+            const select = document.getElementById('proyectoCliente');
+            select.innerHTML = '<option value="">Cargando clientes...</option>';
+            
+            try {
+                const clientes = window.clientesData || [];
+                if (clientes.length === 0) {
+                    select.innerHTML = '<option value="">No hay clientes registrados</option>';
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Selecciona un cliente</option>' + 
+                    clientes.map(c => `<option value="${c.id}">${c.nombre} - ${c.empresa}</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
+        async function cargarColaboradoresEnSelect() {
+            const select = document.getElementById('proyectoAsignado');
+            select.innerHTML = '<option value="">Cargando colaboradores...</option>';
+            
+            try {
+                const cols = window.colaboradoresData || [];
+                if (cols.length === 0) {
+                    select.innerHTML = '<option value="">No hay colaboradores registrados</option>';
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Selecciona colaborador</option>' + 
+                    cols.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
+        document.getElementById('proyectoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('proyectoId').value;
+                const data = {
+                    nombre: document.getElementById('proyectoNombre').value,
+                    clienteId: document.getElementById('proyectoCliente').value,
+                    fechaInicio: document.getElementById('proyectoFechaInicio').value,
+                    fechaTermino: document.getElementById('proyectoFechaTermino').value,
+                    asignadoId: document.getElementById('proyectoAsignado').value,
+                    estado: document.getElementById('proyectoEstado').value,
+                    descripcion: document.getElementById('proyectoDescripcion').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "proyectos", id), data);
+                    alert('✅ Proyecto actualizado');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "proyectos"), data);
+                    alert('✅ Proyecto creado');
+                }
+                limpiarProyectoForm();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '💾 Guardar Proyecto';
+                btn.disabled = false;
+            }
+        });
+
+        function limpiarProyectoForm() {
+            document.getElementById('proyectoForm').reset();
+            document.getElementById('proyectoId').value = '';
+            document.getElementById('modulos-section').classList.add('hidden');
+        }
+
+        function editarProyecto(id) {
+            const proyecto = window.proyectosData.find(p => p.id === id);
+            if (!proyecto) return;
+            document.getElementById('proyectoId').value = proyecto.id;
+            document.getElementById('proyectoNombre').value = proyecto.nombre;
+            document.getElementById('proyectoCliente').value = proyecto.clienteId;
+            document.getElementById('proyectoFechaInicio').value = proyecto.fechaInicio;
+            document.getElementById('proyectoFechaTermino').value = proyecto.fechaTermino;
+            document.getElementById('proyectoAsignado').value = proyecto.asignadoId;
+            document.getElementById('proyectoEstado').value = proyecto.estado;
+            document.getElementById('proyectoDescripcion').value = proyecto.descripcion || '';
+            document.getElementById('modulos-section').classList.remove('hidden');
+            document.getElementById('moduloProyectoId').value = proyecto.id;
+            renderModulos(proyecto.id);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function eliminarProyecto(id) {
+            if (!confirm('¿Eliminar proyecto?')) return;
+            await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "proyectos", id));
+        }
+
+        function renderProyectos() {
+            const container = document.getElementById('proyectos-container');
+            const proyectos = window.proyectosData || [];
+            if (proyectos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay proyectos registrados</p>';
+                return;
+            }
+            container.innerHTML = proyectos.map(p => {
+                const estadoClass = p.estado === 'planeado' ? 'bg-blue-100 text-blue-800' : p.estado === 'en_curso' ? 'bg-yellow-100 text-yellow-800' : p.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+                const estadoText = p.estado === 'planeado' ? '📋 Planeado' : p.estado === 'en_curso' ? '🟡 En curso' : p.estado === 'completado' ? '✅ Completado' : '⏸️ Pausado';
+                const diasRestantes = Math.ceil((new Date(p.fechaTermino) - new Date()) / (1000 * 60 * 60 * 24));
+                
+                return `
+                    <div class="border-2 border-purple-100 rounded-xl p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                                    <h3 class="font-bold text-cic-primary text-lg">${p.nombre}</h3>
+                                    <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${estadoText}</span>
+                                </div>
+                                <p class="text-sm text-gray-600">📅 ${p.fechaInicio} → ${p.fechaTermino}</p>
+                                <p class="text-sm text-gray-600">👤 Asignado: ${p.asignadoId || 'Sin asignar'}</p>
+                                ${diasRestantes > 0 ? `<p class="text-sm text-orange-600 font-medium"> ${diasRestantes} días restantes</p>` : '<p class="text-sm text-red-600 font-medium">⚠️ Fecha vencida</p>'}
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="editarProyecto('${p.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
+                                <button onclick="eliminarProyecto('${p.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // MÓDULOS
+        document.getElementById('moduloForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Agregando...';
+            btn.disabled = true;
+
+            try {
+                const proyectoId = document.getElementById('moduloProyectoId').value;
+                const modulo = {
+                    id: Date.now().toString(),
+                    nombre: document.getElementById('moduloNombre').value,
+                    fechaEntrega: document.getElementById('moduloFechaEntrega').value,
+                    descripcion: document.getElementById('moduloDescripcion').value,
+                    createdAt: new Date().toISOString()
+                };
+
+                const proyecto = window.proyectosData.find(p => p.id === proyectoId);
+                const modulos = proyecto.modulos || [];
+                modulos.push(modulo);
+
+                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "proyectos", proyectoId), { modulos });
+                alert('✅ Módulo agregado');
+                document.getElementById('moduloForm').reset();
+                document.getElementById('moduloProyectoId').value = proyectoId;
+                renderModulos(proyectoId);
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '➕ Agregar Módulo';
+                btn.disabled = false;
+            }
+        });
+
+        function renderModulos(proyectoId) {
+            const container = document.getElementById('modulos-container');
+            const proyecto = window.proyectosData.find(p => p.id === proyectoId);
+            const modulos = proyecto.modulos || [];
+            
+            if (modulos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">No hay módulos registrados</p>';
+                return;
+            }
+            
+            container.innerHTML = modulos.map(m => {
+                const diasRestantes = Math.ceil((new Date(m.fechaEntrega) - new Date()) / (1000 * 60 * 60 * 24));
+                const vencido = diasRestantes < 0;
+                
+                return `
+                    <div class="bg-cic-lighter p-4 rounded-xl border-2 ${vencido ? 'border-red-300' : 'border-purple-100'}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-cic-primary">${m.nombre}</h4>
+                                <p class="text-sm text-gray-600">📅 Entrega: ${m.fechaEntrega}</p>
+                                ${m.descripcion ? `<p class="text-sm text-gray-500 mt-1">${m.descripcion}</p>` : ''}
+                                ${vencido ? `<p class="text-sm text-red-600 font-medium mt-1">⚠️ Vencido hace ${Math.abs(diasRestantes)} días</p>` : `<p class="text-sm text-green-600 font-medium mt-1"> ${diasRestantes} días restantes</p>`}
+                            </div>
+                            <button onclick="eliminarModulo('${proyectoId}', '${m.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function eliminarModulo(proyectoId, moduloId) {
+            if (!confirm('¿Eliminar módulo?')) return;
+            try {
+                const proyecto = window.proyectosData.find(p => p.id === proyectoId);
+                const modulos = proyecto.modulos.filter(m => m.id !== moduloId);
+                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "proyectos", proyectoId), { modulos });
+                renderModulos(proyectoId);
+            } catch (error) {
+                alert(' Error: ' + error.message);
+            }
+        }
+
+        // TAREAS
+        async function cargarColaboradoresEnTareas() {
+            const select = document.getElementById('tareaAsignado');
+            const filtro = document.getElementById('filtroTareaAsignado');
+            select.innerHTML = '<option value="">Cargando...</option>';
+            filtro.innerHTML = '<option value="">Todos los responsables</option>';
+            
+            try {
+                const cols = window.colaboradoresData || [];
+                if (cols.length === 0) {
+                    select.innerHTML = '<option value="">No hay colaboradores</option>';
+                    return;
+                }
+                
+                const options = cols.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+                select.innerHTML = '<option value="">Selecciona colaborador</option>' + options;
+                filtro.innerHTML = '<option value="">Todos los responsables</option>' + options;
+            } catch (error) {
+                select.innerHTML = '<option value="">Error</option>';
+            }
+        }
+
+        async function cargarProyectosEnTareas() {
+            const select = document.getElementById('tareaProyecto');
+            select.innerHTML = '<option value="">Cargando...</option>';
+            
+            try {
+                const proyectos = window.proyectosData || [];
+                if (proyectos.length === 0) {
+                    select.innerHTML = '<option value="">Sin proyectos</option>';
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Sin proyecto</option>' + 
+                    proyectos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+            } catch (error) {
+                select.innerHTML = '<option value="">Error</option>';
+            }
+        }
+
+        function abrirModalTarea() {
+            document.getElementById('modal-tarea').classList.remove('hidden');
+            document.getElementById('modal-tarea').classList.add('flex');
+            cargarColaboradoresEnTareas();
+            cargarProyectosEnTareas();
+        }
+
+        function cerrarModalTarea() {
+            document.getElementById('modal-tarea').classList.add('hidden');
+            document.getElementById('modal-tarea').classList.remove('flex');
+            document.getElementById('tareaForm').reset();
+            document.getElementById('tareaId').value = '';
+            document.getElementById('avance-valor').textContent = '0%';
+        }
+
+        document.getElementById('tareaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<div class="loading-spinner"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                const id = document.getElementById('tareaId').value;
+                const data = {
+                    titulo: document.getElementById('tareaTitulo').value,
+                    descripcion: document.getElementById('tareaDescripcion').value,
+                    proyectoId: document.getElementById('tareaProyecto').value,
+                    moduloId: document.getElementById('tareaModulo').value,
+                    asignadoId: document.getElementById('tareaAsignado').value,
+                    fechaLimite: document.getElementById('tareaFechaLimite').value,
+                    prioridad: document.getElementById('tareaPrioridad').value,
+                    estado: document.getElementById('tareaEstado').value,
+                    avance: parseInt(document.getElementById('tareaAvance').value),
+                    comentarios: document.getElementById('tareaComentarios').value,
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (id) {
+                    await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "tareas", id), data);
+                    alert('✅ Tarea actualizada');
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, "tareas"), data);
+                    alert('✅ Tarea creada');
+                }
+                cerrarModalTarea();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.innerHTML = '💾 Guardar Tarea';
+                btn.disabled = false;
+            }
+        });
+
+        function editarTarea(id) {
+            const tarea = window.tareasData.find(t => t.id === id);
+            if (!tarea) return;
+            document.getElementById('tareaId').value = tarea.id;
+            document.getElementById('tareaTitulo').value = tarea.titulo;
+            document.getElementById('tareaDescripcion').value = tarea.descripcion || '';
+            document.getElementById('tareaProyecto').value = tarea.proyectoId || '';
+            document.getElementById('tareaModulo').value = tarea.moduloId || '';
+            document.getElementById('tareaAsignado').value = tarea.asignadoId;
+            document.getElementById('tareaFechaLimite').value = tarea.fechaLimite;
+            document.getElementById('tareaPrioridad').value = tarea.prioridad;
+            document.getElementById('tareaEstado').value = tarea.estado;
+            document.getElementById('tareaAvance').value = tarea.avance || 0;
+            document.getElementById('avance-valor').textContent = (tarea.avance || 0) + '%';
+            document.getElementById('tareaComentarios').value = tarea.comentarios || '';
+            abrirModalTarea();
+        }
+
+        async function cambiarEstadoTarea(id, nuevoEstado) {
+            try {
+                await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "tareas", id), { estado: nuevoEstado });
+                alert(`✅ Estado actualizado a: ${nuevoEstado}`);
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function eliminarTarea(id) {
+            if (!confirm('¿Eliminar tarea?')) return;
+            await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "tareas", id));
+        }
+
+        function renderTareas() {
+            const container = document.getElementById('tareas-container');
+            const tareas = window.tareasData || [];
+            
+            const filtroEstado = document.getElementById('filtroTareaEstado').value;
+            const filtroPrioridad = document.getElementById('filtroTareaPrioridad').value;
+            const filtroAsignado = document.getElementById('filtroTareaAsignado').value;
+            
+            let tareasFiltradas = tareas;
+            if (filtroEstado) tareasFiltradas = tareasFiltradas.filter(t => t.estado === filtroEstado);
+            if (filtroPrioridad) tareasFiltradas = tareasFiltradas.filter(t => t.prioridad === filtroPrioridad);
+            if (filtroAsignado) tareasFiltradas = tareasFiltradas.filter(t => t.asignadoId === filtroAsignado);
+            
+            const pendientes = tareas.filter(t => t.estado === 'pendiente').length;
+            const enProceso = tareas.filter(t => t.estado === 'en_proceso').length;
+            const completadas = tareas.filter(t => t.estado === 'completada').length;
+            const vencidas = tareas.filter(t => t.estado !== 'completada' && new Date(t.fechaLimite) < new Date()).length;
+            
+            document.getElementById('tareas-pendientes').textContent = pendientes;
+            document.getElementById('tareas-proceso').textContent = enProceso;
+            document.getElementById('tareas-completadas').textContent = completadas;
+            document.getElementById('tareas-vencidas').textContent = vencidas;
+            
+            if (tareasFiltradas.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay tareas que mostrar</p>';
+                return;
+            }
+            
+            container.innerHTML = tareasFiltradas.map(t => {
+                const diasRestantes = Math.ceil((new Date(t.fechaLimite) - new Date()) / (1000 * 60 * 60 * 24));
+                const vencida = diasRestantes < 0 && t.estado !== 'completada';
+                const prioridadClass = t.prioridad === 'alta' ? 'bg-red-100 text-red-800' : t.prioridad === 'media' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+                const estadoClass = t.estado === 'pendiente' ? 'bg-gray-100 text-gray-800' : t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                const estadoText = t.estado === 'pendiente' ? 'Pendiente' : t.estado === 'en_proceso' ? 'En proceso' : 'Completada';
+                
+                return `
+                    <div class="border-2 ${vencida ? 'border-red-300 bg-red-50' : 'border-purple-100 bg-white'} rounded-xl p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                    <h3 class="font-bold text-cic-primary text-lg">${t.titulo}</h3>
+                                    <span class="${prioridadClass} px-2 py-1 rounded text-xs font-bold">${t.prioridad === 'alta' ? '🔴' : t.prioridad === 'media' ? '🟡' : '🟢'} ${t.prioridad}</span>
+                                    <span class="${estadoClass} px-2 py-1 rounded text-xs font-bold">${estadoText}</span>
+                                </div>
+                                ${t.descripcion ? `<p class="text-sm text-gray-600 mb-2">${t.descripcion}</p>` : ''}
+                                <p class="text-sm text-gray-600">👤 Asignado: ${t.asignadoId || 'Sin asignar'}</p>
+                                <p class="text-sm text-gray-600">📅 Límite: ${t.fechaLimite}</p>
+                                ${vencida ? `<p class="text-sm text-red-600 font-bold mt-1">⚠️ Vencida hace ${Math.abs(diasRestantes)} días</p>` : t.estado !== 'completada' ? `<p class="text-sm text-orange-600 font-medium mt-1"> ${diasRestantes} días restantes</p>` : ''}
+                                <div class="mt-2">
+                                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                        <span>Avance</span>
+                                        <span>${t.avance || 0}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-cic-primary h-2 rounded-full" style="width: ${t.avance || 0}%"></div>
+                                    </div>
+                                </div>
+                                ${t.comentarios ? `<p class="text-xs text-gray-500 mt-2 italic">💬 ${t.comentarios}</p>` : ''}
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <select onchange="cambiarEstadoTarea('${t.id}', this.value)" class="px-3 py-2 border-2 border-purple-200 rounded-lg text-sm">
+                                    <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
+                                    <option value="en_proceso" ${t.estado==='en_proceso'?'selected':''}>En proceso</option>
+                                    <option value="completada" ${t.estado==='completada'?'selected':''}>Completada</option>
+                                </select>
+                                <button onclick="editarTarea('${t.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">️</button>
+                                <button onclick="eliminarTarea('${t.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1185,11 +1971,9 @@
                 };
 
                 if (id) {
-                    // Actualizar colaborador existente
                     await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "colaboradores", id), data);
                     alert('✅ Colaborador actualizado');
                 } else {
-                    // Crear nuevo usuario en Firebase Auth
                     try {
                         const userCredential = await window.firebaseCreateUser(window.firebaseAuth, email, password);
                         data.uid = userCredential.user.uid;
@@ -1198,7 +1982,7 @@
                         alert('✅ Colaborador creado exitosamente. Ya puede iniciar sesión con sus credenciales.');
                     } catch (authError) {
                         if (authError.code === 'auth/email-already-in-use') {
-                            alert('️ Este correo ya está registrado. Usa otro correo o edita el usuario existente.');
+                            alert('⚠️ Este correo ya está registrado. Usa otro correo o edita el usuario existente.');
                         } else {
                             throw authError;
                         }
@@ -1248,7 +2032,7 @@
             if (!confirm('¿Eliminar colaborador? Los archivos se mantendrán en historial.')) return;
             try {
                 await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "colaboradores", id), { estatus: 'eliminado', eliminadoEn: new Date().toISOString() });
-                alert('️ Colaborador marcado como eliminado. Los archivos permanecen en historial.');
+                alert('🗑️ Colaborador marcado como eliminado. Los archivos permanecen en historial.');
             } catch (error) {
                 alert('❌ Error: ' + error.message);
             }
@@ -1272,7 +2056,7 @@
                                     <span class="${estatusClass} px-3 py-1 rounded-full text-xs font-bold">${c.estatus}</span>
                                     <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold">${c.rol}</span>
                                 </div>
-                                <p class="text-sm text-gray-600">📧 ${c.email} ·  ${c.grado} ·  ${c.licenciatura}</p>
+                                <p class="text-sm text-gray-600"> ${c.email} · 🎓 ${c.grado} · 📚 ${c.licenciatura}</p>
                                 <p class="text-sm text-gray-600">🎂 ${c.fechaNacimiento} · 🆔 ${c.rfc}</p>
                             </div>
                             <div class="flex flex-wrap gap-2">
@@ -1329,7 +2113,7 @@
                     <div class="flex justify-between items-start">
                         <div>
                             <h3 class="font-bold text-cic-primary text-lg">${c.nombre}</h3>
-                            <p class="text-sm text-gray-600">🏢 ${c.empresa} · 📧 ${c.email}</p>
+                            <p class="text-sm text-gray-600"> ${c.empresa} · 📧 ${c.email}</p>
                             <p class="text-sm text-gray-600">📱 ${c.telefono} · Estado: ${c.estado}</p>
                         </div>
                     </div>
@@ -1339,20 +2123,67 @@
 
         function renderProyectos() {
             const container = document.getElementById('proyectos-container');
-            container.innerHTML = '<p class="text-center text-gray-500 py-8">Próximamente: Gestión de proyectos</p>';
+            const proyectos = window.proyectosData || [];
+            if (proyectos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay proyectos registrados</p>';
+                return;
+            }
+            container.innerHTML = proyectos.map(p => {
+                const estadoClass = p.estado === 'planeado' ? 'bg-blue-100 text-blue-800' : p.estado === 'en_curso' ? 'bg-yellow-100 text-yellow-800' : p.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+                const estadoText = p.estado === 'planeado' ? '📋 Planeado' : p.estado === 'en_curso' ? '🟡 En curso' : p.estado === 'completado' ? '✅ Completado' : '⏸️ Pausado';
+                return `
+                    <div class="border-2 border-purple-100 rounded-xl p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-cic-primary text-lg">${p.nombre}</h3>
+                                <p class="text-sm text-gray-600">📅 ${p.fechaInicio} → ${p.fechaTermino}</p>
+                                <p class="text-sm text-gray-600"> Asignado: ${p.asignadoId || 'Sin asignar'}</p>
+                                <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${estadoText}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editarProyecto('${p.id}')" class="bg-cic-primary text-white px-4 py-2 rounded-lg text-sm">✏️ Editar</button>
+                                <button onclick="eliminarProyecto('${p.id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function renderTareas() {
             const container = document.getElementById('tareas-container');
-            container.innerHTML = '<p class="text-center text-gray-500 py-8">Próximamente: Gestión de tareas</p>';
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">Cargando tareas...</p>';
         }
 
         function updateVisitas() {
             // Actualizar métricas de visitas
         }
 
-        function conectarMeta() {
-            alert('🔗 Para conectar con Meta, necesitas:\n1. Tener una cuenta de Meta Business\n2. Configurar la integración en Meta Business Suite\n3. Obtener el token de acceso\n\nEsta funcionalidad requiere configuración adicional.');
+        async function conectarMeta() {
+            const token = prompt('Ingresa tu Access Token de Meta Business:\n\nPara obtenerlo:\n1. Ve a https://developers.facebook.com/tools/explorer\n2. Selecciona tu app de Meta Business\n3. Genera un token con permisos de ads_read y ads_management\n4. Copia y pega el token aquí:');
+            
+            if (token && token.trim()) {
+                try {
+                    await window.firebaseSetDoc(window.firebaseDoc(window.firebaseDb, "configuracion", "meta"), {
+                        accessToken: token,
+                        conectado: true,
+                        fechaConexion: new Date().toISOString()
+                    });
+                    
+                    alert('✅ Conexión con Meta realizada exitosamente');
+                    document.getElementById('meta-estado').innerHTML = `
+                        <div class="flex items-center gap-3 text-green-600">
+                            <i class="fas fa-check-circle text-3xl"></i>
+                            <div>
+                                <h3 class="font-bold text-lg">Conectado con Meta</h3>
+                                <p class="text-sm">Tu cuenta está sincronizada</p>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    alert('❌ Error al conectar: ' + error.message);
+                }
+            }
         }
 
         function exportarDatos() {
@@ -1363,6 +2194,8 @@
                 pagos: window.pagosData || [],
                 gastos: window.gastosData || [],
                 clientes: window.clientesData || [],
+                proyectos: window.proyectosData || [],
+                tareas: window.tareasData || [],
                 colaboradores: window.colaboradoresData || [],
                 exportado: new Date().toISOString()
             };
@@ -1373,7 +2206,7 @@
             a.download = `cic_backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            alert('📥 Datos exportados');
+            alert(' Datos exportados');
         }
     </script>
 </body>
