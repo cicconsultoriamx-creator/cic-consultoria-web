@@ -64,7 +64,6 @@
         .whatsapp-float:hover { transform: scale(1.1); }
         .indicator-card { background: linear-gradient(135deg, #5E1B96 0%, #7B3FA8 100%); }
         
-        /* MODAL CON SCROLL FUNCIONAL */
         .modal { 
             display: none; 
             position: fixed; 
@@ -99,7 +98,6 @@
         }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Custom scrollbar */
         .modal::-webkit-scrollbar { width: 8px; }
         .modal::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
         .modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.5); border-radius: 4px; }
@@ -195,21 +193,16 @@
                 <p class="text-gray-600 text-lg">Experiencia especializada en los sectores más exigentes del mercado.</p>
             </div>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Sector Agroalimentario -->
                 <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover">
                     <div class="text-3xl mb-4">🚜</div>
                     <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Sector Primario y Agrocomercialización</h3>
                     <p class="text-gray-600 text-sm">Apoyamos a productores y agroindustrias a estructurar costos de cultivo, empaque y distribución. Exportación alimentaria con cumplimiento de NOMs, certificaciones de origen e inocuidad, y logística internacional.</p>
                 </div>
-                
-                <!-- Sector Médico (NUEVO) -->
                 <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover">
                     <div class="text-3xl mb-4">🏥</div>
                     <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Sector Médico y Salud</h3>
                     <p class="text-gray-600 text-sm">Asesoría especializada para clínicas, hospitales, laboratorios y distribuidores de equipo médico. Cumplimiento con COFEPRIS, NOM-059, buenas prácticas de manufactura, trazabilidad de insumos y gestión administrativa para el sector salud.</p>
                 </div>
-                
-                <!-- Comercializadoras -->
                 <div class="bg-cic-lighter p-8 rounded-2xl border-2 border-purple-100 card-hover">
                     <div class="text-3xl mb-4">🛍️</div>
                     <h3 class="font-heading text-xl font-bold text-cic-primary mb-3">Comercializadoras y Retail</h3>
@@ -252,9 +245,8 @@
                     <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Emprendimiento y Validación</h3>
                     <ul class="text-sm text-gray-700 space-y-1"><li>• Modelado de Negocios</li><li>• Análisis de mercado</li><li>• Plan de acción</li></ul>
                 </div>
-                <!-- Nuevo servicio: Auditoría -->
                 <div class="bg-white p-8 rounded-2xl border-2 border-purple-100 card-hover">
-                    <div class="text-3xl mb-4">⚖️</div>
+                    <div class="text-3xl mb-4">️</div>
                     <h3 class="font-heading text-lg font-bold text-cic-primary mb-2">Auditoría en Cumplimiento Normativo</h3>
                     <ul class="text-sm text-gray-700 space-y-1">
                         <li>• Revisión de cumplimiento fiscal y legal</li>
@@ -286,12 +278,10 @@
                 </div>
             </div>
             
-            <!-- Cursos Grid -->
             <div id="cursos-container" class="grid lg:grid-cols-2 gap-8 mb-12">
                 <div class="col-span-2 text-center py-8 text-purple-200">Cargando cursos...</div>
             </div>
 
-            <!-- Calendario de Fechas -->
             <div class="bg-white text-gray-800 p-8 rounded-2xl shadow-2xl border-4 border-cic-accent/30">
                 <div class="flex items-center gap-3 mb-6">
                     <span class="text-3xl">🦝</span>
@@ -353,7 +343,6 @@
                         <textarea name="mensaje" rows="4" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Describe brevemente qué necesitas..."></textarea>
                     </div>
                     
-                    <!-- Campos ocultos para Formspree -->
                     <input type="hidden" name="_subject" value="Nueva solicitud de asesoría - CIC Consultoría">
                     <input type="hidden" name="_next" value="https://cicconsultoria.mx/#booking">
                     
@@ -383,74 +372,73 @@
         </div>
     </section>
 
-   <!-- Contacto -->
-<section id="contacto" class="py-20 bg-cic-lighter">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-12">
-            <div>
-                <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-6">Hablemos de tu negocio</h2>
-                <p class="text-gray-600 text-lg mb-8">Agendamos una sesión de 30 minutos sin costo.</p>
-                <div class="space-y-6">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white">
-                            <i class="fas fa-envelope"></i>
+    <!-- Contacto -->
+    <section id="contacto" class="py-20 bg-cic-lighter">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div>
+                    <h2 class="font-heading text-3xl lg:text-4xl font-bold text-cic-primary mb-6">Hablemos de tu negocio</h2>
+                    <p class="text-gray-600 text-lg mb-8">Agendamos una sesión de 30 minutos sin costo.</p>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Correo</p>
+                                <p class="font-bold text-cic-primary">admin@cicconsultora.com</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Correo</p>
-                            <p class="font-bold text-cic-primary">admin@cicconsultora.com</p>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">WhatsApp</p>
+                                <p class="font-bold text-cic-primary">+52 222 775 6653</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-cic-primary to-cic-secondary rounded-full flex items-center justify-center text-white">
-                            <i class="fab fa-whatsapp"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600">WhatsApp</p>
-                            <p class="font-bold text-cic-primary">+52 222 775 6653</p>
+                    <div class="mt-8">
+                        <p class="text-gray-700 font-bold mb-4">Síguenos en redes sociales:</p>
+                        <div class="flex gap-4">
+                            <a href="https://www.facebook.com/share/18yMgc5nyg/?mibextid=wwXIfr" target="_blank" class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition">
+                                <i class="fab fa-facebook-f text-xl"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/company/cic-consultor%C3%ADa/" target="_blank" class="w-12 h-12 bg-blue-700 rounded-full flex items-center justify-center text-white hover:bg-blue-800 transition">
+                                <i class="fab fa-linkedin-in text-xl"></i>
+                            </a>
                         </div>
                     </div>
-                </div>
-                <div class="mt-8">
-                    <p class="text-gray-700 font-bold mb-4">Síguenos en redes sociales:</p>
-                    <div class="flex gap-4">
-                        <a href="https://www.facebook.com/share/18yMgc5nyg/?mibextid=wwXIfr" target="_blank" class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition">
-                            <i class="fab fa-facebook-f text-xl"></i>
-                        </a>
-                        <a href="https://www.linkedin.com/company/cic-consultor%C3%ADa/" target="_blank" class="w-12 h-12 bg-blue-700 rounded-full flex items-center justify-center text-white hover:bg-blue-800 transition">
-                            <i class="fab fa-linkedin-in text-xl"></i>
-                        </a>
+                    <div class="mt-8">
+                        <p class="text-gray-700 font-bold mb-4">O escanea nuestro QR:</p>
+                        <img src="qr-code Whats.png" alt="WhatsApp QR" class="w-48 h-48 rounded-xl shadow-lg">
                     </div>
                 </div>
-                <div class="mt-8">
-                    <p class="text-gray-700 font-bold mb-4">O escanea nuestro QR:</p>
-                    <img src="qr-code Whats.png" alt="WhatsApp QR" class="w-48 h-48 rounded-xl shadow-lg">
+                <div class="bg-white p-8 rounded-2xl shadow-xl">
+                    <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📨 Envíanos un mensaje</h3>
+                    <form action="https://formspree.io/f/mqerbnrz" method="POST" class="space-y-4">
+                        <input type="text" name="nombre" placeholder="Nombre completo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <input type="email" name="email" placeholder="Correo electrónico" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <select name="servicio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                            <option value="">Selecciona una opción</option>
+                            <option>Administración y Procesos</option>
+                            <option>Comercio Exterior</option>
+                            <option>Modernización</option>
+                            <option>Capacitación</option>
+                            <option>Otro</option>
+                        </select>
+                        <textarea name="mensaje" rows="3" placeholder="Cuéntanos brevemente tu situación" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
+                        
+                        <input type="hidden" name="_subject" value="Mensaje desde formulario de contacto - CIC Consultoría">
+                        <input type="hidden" name="_next" value="https://cicconsultoria.mx/#contacto">
+                        
+                        <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">Enviar mensaje</button>
+                    </form>
                 </div>
-            </div>
-            <div class="bg-white p-8 rounded-2xl shadow-xl">
-                <h3 class="font-heading text-xl font-bold text-cic-primary mb-6">📨 Envíanos un mensaje</h3>
-                <form action="https://formspree.io/f/mqerbnrz" method="POST" class="space-y-4">
-                    <input type="text" name="nombre" placeholder="Nombre completo" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                    <input type="email" name="email" placeholder="Correo electrónico" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                    <select name="servicio" required class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
-                        <option value="">Selecciona una opción</option>
-                        <option>Administración y Procesos</option>
-                        <option>Comercio Exterior</option>
-                        <option>Modernización</option>
-                        <option>Capacitación</option>
-                        <option>Otro</option>
-                    </select>
-                    <textarea name="mensaje" rows="3" placeholder="Cuéntanos brevemente tu situación" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none"></textarea>
-                    
-                    <!-- Campos ocultos para Formspree -->
-                    <input type="hidden" name="_subject" value="Mensaje desde formulario de contacto - CIC Consultoría">
-                    <input type="hidden" name="_next" value="https://cicconsultoria.mx/#contacto">
-                    
-                    <button type="submit" class="w-full bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">Enviar mensaje</button>
-                </form>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <!-- Footer -->
     <footer class="bg-gradient-to-r from-cic-primary to-cic-secondary text-white py-12">
@@ -548,7 +536,7 @@
             }).join('');
         }
 
-        // Ver detalle del curso - MODAL CON SCROLL
+        // Ver detalle del curso
         function verDetalleCurso(id) {
             const cursos = window.cursosData || [];
             const curso = cursos.find(c => c.id === id);
@@ -667,48 +655,43 @@
         }
 
         // Cargar indicadores económicos
-        async function cargarIndicadores() {
+        function cargarIndicadores() {
+            console.log('🔄 Cargando indicadores...');
             try {
-                const tcUSD = (17.50 + Math.random() * 0.5).toFixed(2);
-                const tcEUR = (19.20 + Math.random() * 0.5).toFixed(2);
-                const bolsa = Math.floor(50000 + Math.random() * 5000);
+                const tcUSD = 17.52;
+                const tcEUR = 19.25;
+                const bolsa = 52340;
                 const salario = 248.93;
-                const udis = (7.5 + Math.random() * 0.1).toFixed(4);
+                const udis = 7.5842;
                 const uma = 108.41;
                 
-                document.getElementById('tc-usd').textContent = '$' + tcUSD;
-                document.getElementById('tc-eur').textContent = '$' + tcEUR;
-                document.getElementById('bolsa').textContent = bolsa.toLocaleString();
-                document.getElementById('salario').textContent = '$' + salario.toFixed(2);
-                document.getElementById('udis').textContent = '$' + udis;
-                document.getElementById('uma').textContent = '$' + uma.toFixed(2);
-                document.getElementById('fecha-actualizacion').textContent = new Date().toLocaleString('es-MX');
+                const elUsd = document.getElementById('tc-usd');
+                const elEur = document.getElementById('tc-eur');
+                const elBolsa = document.getElementById('bolsa');
+                const elSalario = document.getElementById('salario');
+                const elUdis = document.getElementById('udis');
+                const elUma = document.getElementById('uma');
+                const elFecha = document.getElementById('fecha-actualizacion');
+                
+                if (elUsd) elUsd.textContent = '$' + tcUSD.toFixed(2);
+                if (elEur) elEur.textContent = '$' + tcEUR.toFixed(2);
+                if (elBolsa) elBolsa.textContent = bolsa.toLocaleString('es-MX');
+                if (elSalario) elSalario.textContent = '$' + salario.toFixed(2);
+                if (elUdis) elUdis.textContent = '$' + udis.toFixed(4);
+                if (elUma) elUma.textContent = '$' + uma.toFixed(2);
+                if (elFecha) elFecha.textContent = new Date().toLocaleString('es-MX');
+                
+                console.log('✅ Indicadores cargados correctamente');
             } catch (error) {
-                console.error('Error cargando indicadores:', error);
+                console.error('❌ Error cargando indicadores:', error);
             }
         }
 
-        // Formulario de contacto - Envía mailto
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const nombre = document.getElementById('contactNombre').value;
-            const email = document.getElementById('contactEmail').value;
-            const servicio = document.getElementById('contactServicio').value;
-            const mensaje = document.getElementById('contactMensaje').value;
-            
-            const asunto = `Mensaje desde web - ${servicio} - ${nombre}`;
-            const cuerpo = `Nuevo mensaje desde el formulario de contacto:\n\n` +
-                           `Nombre: ${nombre}\n` +
-                           `Email: ${email}\n` +
-                           `Servicio de interés: ${servicio}\n\n` +
-                           `Mensaje:\n${mensaje}`;
-            
-            window.location.href = `mailto:admin@cicconsultora.com?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarIndicadores();
         });
 
-        // Cargar indicadores al iniciar
-        window.addEventListener('load', () => {
+        window.addEventListener('load', function() {
             cargarIndicadores();
         });
 
