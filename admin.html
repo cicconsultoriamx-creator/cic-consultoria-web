@@ -143,8 +143,10 @@
                 <button onclick="showTab('inscripciones')" id="tab-inscripciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📋 Reservas</button>
                 <button onclick="showTab('admin')" id="tab-admin" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">💼 Gestión Financiera</button>
                 <button onclick="showTab('proyectos')" id="tab-proyectos" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📁 Proyectos y Tareas</button>
+                <button onclick="showTab('cotizaciones')" id="tab-cotizaciones" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap"> Cotizaciones</button>
                 <button onclick="showTab('colaboradores')" id="tab-colaboradores" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">👔 Colaboradores</button>
                 <button onclick="showTab('anuncios')" id="tab-anuncios" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">📢 Anuncios</button>
+                <button onclick="showTab('financiero')" id="tab-financiero" class="px-6 py-3 font-medium text-gray-600 whitespace-nowrap">💰 Gestor Financiero</button>
             </div>
 
             <!-- Dashboard KPIs -->
@@ -565,7 +567,223 @@
                     </div>
                 </div>
             </div>
+<!-- SECCIÓN DE COTIZACIONES -->
+<div id="panel-cotizaciones" class="hidden space-y-6">
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">📄 Generador de Cotizaciones</h2>
+        
+        <!-- Paso 1: Datos del Cliente -->
+        <div class="mb-8 p-6 bg-cic-lighter rounded-xl">
+            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 1: Datos del Cliente</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Nombre/Razón Social *</label>
+                    <input type="text" id="cotClienteNombre" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Empresa XYZ S.A. de C.V.">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Correo electrónico *</label>
+                    <input type="email" id="cotClienteEmail" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="cliente@empresa.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Teléfono</label>
+                    <input type="tel" id="cotClienteTelefono" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Giro de la empresa</label>
+                    <input type="text" id="cotClienteGiro" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Comercial, Industrial, Servicios...">
+                </div>
+            </div>
+        </div>
 
+        <!-- Paso 2: Entrevista/Diagnóstico -->
+        <div class="mb-8 p-6 bg-cic-lighter rounded-xl">
+            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 2: Diagnóstico de Necesidades</h3>
+            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tamaño de la empresa</label>
+                    <select id="cotTamañoEmpresa" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <option value="">Selecciona...</option>
+                        <option value="micro">Micro (1-10 empleados)</option>
+                        <option value="pequena">Pequeña (11-50 empleados)</option>
+                        <option value="mediana">Mediana (51-250 empleados)</option>
+                        <option value="grande">Grande (+250 empleados)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Número de productos/servicios</label>
+                    <input type="number" id="cotNumProductos" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none" placeholder="Ej: 25">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Facturación mensual aproximada</label>
+                    <select id="cotFacturacion" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <option value="">Selecciona...</option>
+                        <option value="menos-50k">Menos de $50,000</option>
+                        <option value="50k-100k">$50,000 - $100,000</option>
+                        <option value="100k-500k">$100,000 - $500,000</option>
+                        <option value="mas-500k">Más de $500,000</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">¿Tiene RFC?</label>
+                    <select id="cotTieneRFC" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">¿Realiza operaciones de comercio exterior?</label>
+                    <select id="cotComercioExterior" class="w-full px-4 py-3 rounded-xl border-2 border-purple-200 focus:border-cic-secondary outline-none">
+                        <option value="no">No</option>
+                        <option value="importacion">Solo Importación</option>
+                        <option value="exportacion">Solo Exportación</option>
+                        <option value="ambos">Ambos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 3: Selección de Servicios -->
+        <div class="mb-8 p-6 bg-cic-lighter rounded-xl">
+            <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 3: Servicios a Cotizar</h3>
+            <div class="space-y-4" id="serviciosContainer">
+                <!-- Servicios Fundamentales -->
+                <div class="bg-white p-4 rounded-xl">
+                    <h4 class="font-bold text-cic-primary mb-3">Servicios Fundamentales</h4>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="constitucion" data-precio="3500">
+                            <div>
+                                <p class="font-bold text-sm">Constitución de Persona Moral</p>
+                                <p class="text-xs text-gray-600">Asesoría y trámite completo</p>
+                                <p class="text-cic-primary font-bold">$3,500</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="cumplimiento-fiscal" data-precio="2500">
+                            <div>
+                                <p class="font-bold text-sm">Cumplimiento Fiscal Especializado</p>
+                                <p class="text-xs text-gray-600">Alta y regularización SAT</p>
+                                <p class="text-cic-primary font-bold">$2,500</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="contabilidad" data-precio="1500">
+                            <div>
+                                <p class="font-bold text-sm">Contabilidad Mensual</p>
+                                <p class="text-xs text-gray-600">Por mes de servicio</p>
+                                <p class="text-cic-primary font-bold">$1,500/mes</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="nomina" data-precio="800">
+                            <div>
+                                <p class="font-bold text-sm">Gestión de Nómina</p>
+                                <p class="text-xs text-gray-600">Por mes (hasta 5 empleados)</p>
+                                <p class="text-cic-primary font-bold">$800/mes</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Comercio Exterior -->
+                <div class="bg-white p-4 rounded-xl">
+                    <h4 class="font-bold text-cic-primary mb-3">Comercio Exterior</h4>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="plan-negocios" data-precio="4500">
+                            <div>
+                                <p class="font-bold text-sm">Plan de Negocios Internacionales</p>
+                                <p class="text-xs text-gray-600">Estructuración completa</p>
+                                <p class="text-cic-primary font-bold">$4,500</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="incoterms" data-precio="3000">
+                            <div>
+                                <p class="font-bold text-sm">Asesoría Incoterms 2020</p>
+                                <p class="text-xs text-gray-600">Capacitación y aplicación</p>
+                                <p class="text-cic-primary font-bold">$3,000</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="rna" data-precio="2000">
+                            <div>
+                                <p class="font-bold text-sm">Trámites RNA (Regulaciones No Arancelarias)</p>
+                                <p class="text-xs text-gray-600">Gestión de certificados</p>
+                                <p class="text-cic-primary font-bold">$2,000</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Capacitación -->
+                <div class="bg-white p-4 rounded-xl">
+                    <h4 class="font-bold text-cic-primary mb-3">Capacitación</h4>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="bootcamp" data-precio="3000">
+                            <div>
+                                <p class="font-bold text-sm">Boot Camp Comercio Exterior</p>
+                                <p class="text-xs text-gray-600">7 módulos completos</p>
+                                <p class="text-cic-primary font-bold">$3,000/persona</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer">
+                            <input type="checkbox" class="servicio-check w-5 h-5" value="capacitacion-admon" data-precio="2500">
+                            <div>
+                                <p class="font-bold text-sm">Capacitación Administrativa</p>
+                                <p class="text-xs text-gray-600">Por sesión (3 horas)</p>
+                                <p class="text-cic-primary font-bold">$2,500/sesión</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paso 4: Resumen y Generación -->
+        <div class="flex gap-4">
+            <button onclick="generarCotizacion()" class="flex-1 bg-gradient-to-r from-cic-primary to-cic-secondary text-white font-bold py-4 rounded-xl hover:shadow-lg transition">
+                ️ Vista Previa
+            </button>
+            <button onclick="generarPDF()" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">
+                📄 Generar PDF
+            </button>
+            <button onclick="enviarCotizacion()" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 rounded-xl hover:shadow-lg transition">
+                ️ Enviar por Email
+            </button>
+        </div>
+    </div>
+
+    <!-- Vista Previa de Cotización -->
+    <div id="cotizacionPreview" class="hidden bg-white rounded-2xl shadow-lg p-8">
+        <div id="cotizacionContent" class="border-2 border-purple-200 p-8 rounded-xl bg-white">
+            <!-- Aquí se generará el contenido de la cotización -->
+        </div>
+    </div>
+</div>
+
+<!-- GESTOR FINANCIERO EDITABLE -->
+<div id="panel-financiero" class="hidden space-y-6">
+    <div class="flex gap-2 mb-6">
+        <button onclick="showFinancieroSubtab('pagos')" id="financiero-subtab-pagos" class="tab-active px-6 py-3 font-medium">💵 Pagos</button>
+        <button onclick="showFinancieroSubtab('gastos')" id="financiero-subtab-gastos" class="px-6 py-3 font-medium text-gray-600">💸 Gastos</button>
+    </div>
+
+    <!-- Pagos Editables -->
+    <div id="financiero-pagos" class="bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6">💰 Gestión de Pagos (Editable)</h2>
+        <div id="pagos-editables-container" class="space-y-4"></div>
+    </div>
+
+    <!-- Gastos Editables -->
+    <div id="financiero-gastos" class="hidden bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="font-heading text-2xl font-bold text-cic-primary mb-6"> Gestión de Gastos (Editable)</h2>
+        <div id="gastos-editables-container" class="space-y-4"></div>
+    </div>
+</div>
             <!-- Proyectos y Tareas -->
             <div id="panel-proyectos" class="hidden">
                 <div class="flex gap-2 mb-6">
@@ -2207,6 +2425,293 @@
             a.click();
             URL.revokeObjectURL(url);
             alert(' Datos exportados');
+      // FUNCIONES DE COTIZACIONES
+function showTab(tab) {
+    // ... (tu función existing showTab) ...
+    if (tab === 'cotizaciones') {
+        document.getElementById('panel-cotizaciones').classList.remove('hidden');
+        document.getElementById('tab-cotizaciones').classList.add('tab-active');
+    }
+    if (tab === 'financiero') {
+        document.getElementById('panel-financiero').classList.remove('hidden');
+        document.getElementById('tab-financiero').classList.add('tab-active');
+    }
+    // ... resto de tabs ...
+}
+
+function showFinancieroSubtab(tab) {
+    document.getElementById('financiero-pagos').classList.toggle('hidden', tab !== 'pagos');
+    document.getElementById('financiero-gastos').classList.toggle('hidden', tab !== 'gastos');
+    document.getElementById('financiero-subtab-pagos').className = tab === 'pagos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+    document.getElementById('financiero-subtab-gastos').className = tab === 'gastos' ? 'tab-active px-6 py-3 font-medium' : 'px-6 py-3 font-medium text-gray-600';
+    if (tab === 'pagos') renderPagosEditables();
+    if (tab === 'gastos') renderGastosEditables();
+}
+
+function generarCotizacion() {
+    const cliente = {
+        nombre: document.getElementById('cotClienteNombre').value,
+        email: document.getElementById('cotClienteEmail').value,
+        telefono: document.getElementById('cotClienteTelefono').value,
+        giro: document.getElementById('cotClienteGiro').value,
+        tamaño: document.getElementById('cotTamañoEmpresa').value,
+        productos: document.getElementById('cotNumProductos').value,
+        facturacion: document.getElementById('cotFacturacion').value
+    };
+
+    // Obtener servicios seleccionados
+    const checks = document.querySelectorAll('.servicio-check:checked');
+    const servicios = [];
+    let total = 0;
+
+    checks.forEach(check => {
+        servicios.push({
+            nombre: check.nextElementSibling.querySelector('.font-bold').textContent,
+            descripcion: check.nextElementSibling.querySelector('.text-xs').textContent,
+            precio: parseFloat(check.dataset.precio)
+        });
+        total += parseFloat(check.dataset.precio);
+    });
+
+    if (servicios.length === 0) {
+        alert('⚠️ Selecciona al menos un servicio');
+        return;
+    }
+
+    // Generar HTML de vista previa
+    const fecha = new Date().toLocaleDateString('es-MX');
+    const folio = 'COT-' + Date.now().toString().slice(-6);
+    
+    let html = `
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-cic-primary mb-2">CIC CONSULTORÍA</h1>
+            <p class="text-gray-600">Cotización de Servicios Profesionales</p>
+        </div>
+        <div class="flex justify-between mb-6">
+            <div>
+                <p class="font-bold">Folio: ${folio}</p>
+                <p class="font-bold">Fecha: ${fecha}</p>
+            </div>
+            <div>
+                <p class="font-bold">Cliente:</p>
+                <p>${cliente.nombre}</p>
+                <p>${cliente.email}</p>
+                <p>${cliente.telefono}</p>
+            </div>
+        </div>
+        <div class="mb-6">
+            <h3 class="font-bold text-lg mb-3">Diagnóstico:</h3>
+            <p><strong>Tamaño:</strong> ${cliente.tamaño}</p>
+            <p><strong>Productos/Servicios:</strong> ${cliente.productos}</p>
+            <p><strong>Facturación:</strong> ${cliente.facturacion}</p>
+            <p><strong>Giro:</strong> ${cliente.giro}</p>
+        </div>
+        <table class="w-full mb-6">
+            <thead class="bg-cic-primary text-white">
+                <tr>
+                    <th class="p-3 text-left">Servicio</th>
+                    <th class="p-3 text-left">Descripción</th>
+                    <th class="p-3 text-right">Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${servicios.map(s => `
+                    <tr class="border-b">
+                        <td class="p-3">${s.nombre}</td>
+                        <td class="p-3 text-sm text-gray-600">${s.descripcion}</td>
+                        <td class="p-3 text-right">$${s.precio.toLocaleString()} MXN</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+            <tfoot class="bg-cic-lighter font-bold">
+                <tr>
+                    <td colspan="2" class="p-3 text-right">TOTAL:</td>
+                    <td class="p-3 text-right text-cic-primary">$${total.toLocaleString()} MXN</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="mt-8 text-center text-sm text-gray-600">
+            <p>Válido por 30 días a partir de la fecha de emisión</p>
+            <p>Contacto: admin@cicconsultora.com | Tel: +52 222 775 6653</p>
+        </div>
+    `;
+
+    document.getElementById('cotizacionContent').innerHTML = html;
+    document.getElementById('cotizacionPreview').classList.remove('hidden');
+    document.getElementById('cotizacionPreview').scrollIntoView({ behavior: 'smooth' });
+}
+
+function generarPDF() {
+    // Usar html2pdf.js para generar PDF
+    const element = document.getElementById('cotizacionContent');
+    const opt = {
+        margin: 1,
+        filename: 'cotizacion-cic.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    // Cargar librería html2pdf si no está cargada
+    if (typeof html2pdf === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.min.js';
+        script.onload = () => html2pdf().from(element).set(opt).save();
+        document.head.appendChild(script);
+    } else {
+        html2pdf().from(element).set(opt).save();
+    }
+}
+
+async function enviarCotizacion() {
+    const email = document.getElementById('cotClienteEmail').value;
+    if (!email) {
+        alert('️ Ingresa el correo del cliente');
+        return;
+    }
+
+    // Aquí podrías integrar con EmailJS o un backend
+    alert('✉️ Para enviar por email, necesitas configurar:\n1. EmailJS (servicio de email desde frontend)\n2. O un backend con Node.js + Nodemailer\n\nPor ahora, puedes descargar el PDF y enviarlo manualmente.');
+    
+    // Opción: Abrir cliente de correo
+    const subject = 'Cotización de Servicios - CIC Consultoría';
+    const body = 'Adjunto encontrará su cotización de servicios profesionales.';
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// FUNCIONES PARA EDITAR REGISTROS FINANCIEROS
+async function renderPagosEditables() {
+    const container = document.getElementById('pagos-editables-container');
+    const pagos = window.pagosData || [];
+    
+    if (pagos.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pagos registrados</p>';
+        return;
+    }
+
+    container.innerHTML = pagos.map(pago => `
+        <div class="border-2 border-green-200 bg-green-50 rounded-xl p-6">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <h3 class="font-bold text-green-800 text-lg">${pago.cliente}</h3>
+                    <p class="text-sm text-green-700">📧 ${pago.email || 'Sin email'} · 💳 ${pago.metodo}</p>
+                    <p class="text-sm text-green-700">💼 ${pago.concepto} · 📅 ${pago.fecha}</p>
+                    ${pago.notas ? `<p class="text-sm text-green-600 mt-2">📝 ${pago.notas}</p>` : ''}
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold text-green-600">$${Number(pago.monto).toLocaleString()} MXN</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="editarPago('${pago.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                    ✏️ Editar
+                </button>
+                <button onclick="eliminarPago('${pago.id}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                    🗑️ Eliminar
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function renderGastosEditables() {
+    const container = document.getElementById('gastos-editables-container');
+    const gastos = window.gastosData || [];
+    
+    if (gastos.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay gastos registrados</p>';
+        return;
+    }
+
+    container.innerHTML = gastos.map(gasto => {
+        let badge = '';
+        if (gasto.tipo === 'proyecto') badge = '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">📋 Proyecto</span>';
+        else if (gasto.tipo === 'curso') badge = '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">📚 Curso</span>';
+        else if (gasto.tipo === 'general') badge = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🏢 General</span>';
+        else if (gasto.tipo === 'iniciacion') badge = '<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs"> Iniciación</span>';
+        else badge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">📁 Otro</span>';
+
+        return `
+            <div class="border-2 border-red-200 bg-red-50 rounded-xl p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="font-bold text-red-800 text-lg">${gasto.concepto}</h3>
+                            ${badge}
+                        </div>
+                        <p class="text-sm text-red-700">🏢 ${gasto.proveedor || 'Sin proveedor'} ·  ${gasto.fecha}</p>
+                        <p class="text-sm text-red-700">📂 ${gasto.categoria || gasto.categoriaGeneral}</p>
+                        ${gasto.notas ? `<p class="text-sm text-red-600 mt-2">📝 ${gasto.notas}</p>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-red-600">$${Number(gasto.monto).toLocaleString()} MXN</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="editarGasto('${gasto.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                        ✏️ Editar
+                    </button>
+                    <button onclick="eliminarGasto('${gasto.id}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                        🗑️ Eliminar
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Modales de edición
+async function editarPago(id) {
+    const pago = window.pagosData.find(p => p.id === id);
+    if (!pago) return;
+
+    const nuevoMonto = prompt('Nuevo monto:', pago.monto);
+    const nuevoConcepto = prompt('Nuevo concepto:', pago.concepto);
+    const nuevoMetodo = prompt('Nuevo método de pago:', pago.metodo);
+    const nuevaFecha = prompt('Nueva fecha (YYYY-MM-DD):', pago.fecha);
+
+    if (nuevoMonto && nuevoConcepto) {
+        try {
+            await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "pagos", id), {
+                monto: parseFloat(nuevoMonto),
+                concepto: nuevoConcepto,
+                metodo: nuevoMetodo || pago.metodo,
+                fecha: nuevaFecha || pago.fecha,
+                updatedAt: new Date().toISOString()
+            });
+            alert('✅ Pago actualizado');
+            renderPagosEditables();
+        } catch (error) {
+            alert('❌ Error: ' + error.message);
+        }
+    }
+}
+
+async function editarGasto(id) {
+    const gasto = window.gastosData.find(g => g.id === id);
+    if (!gasto) return;
+
+    const nuevoMonto = prompt('Nuevo monto:', gasto.monto);
+    const nuevoConcepto = prompt('Nuevo concepto:', gasto.concepto);
+    const nuevoProveedor = prompt('Nuevo proveedor:', gasto.proveedor || '');
+    const nuevaCategoria = prompt('Nueva categoría:', gasto.categoria || gasto.categoriaGeneral || '');
+
+    if (nuevoMonto && nuevoConcepto) {
+        try {
+            await window.firebaseUpdateDoc(window.firebaseDoc(window.firebaseDb, "gastos", id), {
+                monto: parseFloat(nuevoMonto),
+                concepto: nuevoConcepto,
+                proveedor: nuevoProveedor,
+                categoria: nuevaCategoria,
+                updatedAt: new Date().toISOString()
+            });
+            alert('✅ Gasto actualizado');
+            renderGastosEditables();
+        } catch (error) {
+            alert('❌ Error: ' + error.message);
+        }
+    }
+}
         }
     </script>
 </body>
