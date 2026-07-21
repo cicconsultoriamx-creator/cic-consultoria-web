@@ -2107,22 +2107,38 @@
             document.getElementById('pagoFecha').value = new Date().toISOString().split('T')[0];
         }
 
-        function editarPago(id) {
-            const p = window.pagosData.find(x => x.id === id);
-            if (!p) return;
-            document.getElementById('pagoId').value = p.id;
-            document.getElementById('pagoClienteId').value = p.clienteId || '';
-            document.getElementById('pagoCliente').value = p.cliente;
-            document.getElementById('pagoEmail').value = p.email || '';
-            document.getElementById('pagoMonto').value = p.monto;
-            document.getElementById('pagoTipoServicio').value = p.tipoServicio || '';
-            document.getElementById('pagoOtroTipo').value = p.otroTipo || '';
-            document.getElementById('pagoSuperClasificacion').value = p.superClasificacion || '';
-            document.getElementById('pagoFecha').value = p.fecha;
-            document.getElementById('pagoMetodo').value = p.metodo;
-            document.getElementById('pagoConcepto').value = p.concepto;
-            document.getElementById('pagoNotas').value = p.notas || '';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+       function editarGasto(id) {
+    const g = window.gastosData.find(x => x.id === id);
+    if (!g) return;
+    
+    // Cargar valores básicos
+    document.getElementById('gastoId').value = g.id;
+    document.getElementById('gastoTipo').value = g.tipo || '';
+    document.getElementById('gastoConcepto').value = g.concepto;
+    document.getElementById('gastoProveedor').value = g.proveedor || '';
+    document.getElementById('gastoMonto').value = g.monto;
+    document.getElementById('gastoFecha').value = g.fecha;
+    document.getElementById('gastoCategoria').value = g.categoria || '';
+    document.getElementById('gastoNotas').value = g.notas || '';
+    
+    // Primero cambiar el tipo para mostrar/ocultar contenedores
+    cambiarTipoGasto();
+    
+    // Esperar un momento para que los contenedores se muestren
+    setTimeout(() => {
+        // Cargar valores específicos según el tipo
+        if (g.tipo === 'proyecto' && g.proyectoId) {
+            document.getElementById('gastoProyecto').value = g.proyectoId;
+        } else if (g.tipo === 'curso' && g.cursoId) {
+            document.getElementById('gastoCurso').value = g.cursoId;
+        } else if ((g.tipo === 'general' || g.tipo === 'iniciacion' || g.tipo === 'gestion') && g.categoriaGeneral) {
+            document.getElementById('gastoCategoriaGeneral').value = g.categoriaGeneral;
+        }
+    }, 100);
+    
+    // Scroll al formulario
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
         }
 
         async function eliminarPago(id) {
