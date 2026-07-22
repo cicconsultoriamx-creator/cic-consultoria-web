@@ -2244,40 +2244,55 @@
             cambiarTipoGasto();
         }
 
-       function editarGasto(id) {
-    const g = window.gastosData.find(x => x.id === id);
-    if (!g) return;
+      function editarGasto(id) {
+    const gasto = window.gastosData.find(x => x.id === id);
+    if (!gasto) {
+        console.error('❌ No se encontró el gasto con ID:', id);
+        alert('Error: No se encontró el gasto');
+        return;
+    }
     
-    // Cargar valores básicos
-    document.getElementById('gastoId').value = g.id;
-    document.getElementById('gastoTipo').value = g.tipo || '';
-    document.getElementById('gastoConcepto').value = g.concepto;
-    document.getElementById('gastoProveedor').value = g.proveedor || '';
-    document.getElementById('gastoMonto').value = g.monto;
-    document.getElementById('gastoFecha').value = g.fecha;
-    document.getElementById('gastoCategoria').value = g.categoria || '';
-    document.getElementById('gastoNotas').value = g.notas || '';
-    
-    // Primero cambiar el tipo para mostrar/ocultar contenedores
-    cambiarTipoGasto();
-    
-    // Esperar un momento para que los contenedores se muestren
-    setTimeout(() => {
-        // Cargar valores específicos según el tipo
-        if (g.tipo === 'proyecto' && g.proyectoId) {
-            document.getElementById('gastoProyecto').value = g.proyectoId;
-        } else if (g.tipo === 'curso' && g.cursoId) {
-            document.getElementById('gastoCurso').value = g.cursoId;
-        } else if ((g.tipo === 'general' || g.tipo === 'iniciacion' || g.tipo === 'gestion') && g.categoriaGeneral) {
-            document.getElementById('gastoCategoriaGeneral').value = g.categoriaGeneral;
-        }
-    }, 100);
-    
-    // Scroll al formulario
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-        }
+    try {
+        // Cargar valores básicos con validación
+        const setId = (elementId, value) => {
+            const element = document.getElementById(elementId);
+            if (element) element.value = value || '';
+        };
 
+        setId('gastoId', gasto.id);
+        setId('gastoTipo', gasto.tipo);
+        setId('gastoConcepto', gasto.concepto);
+        setId('gastoProveedor', gasto.proveedor);
+        setId('gastoMonto', gasto.monto);
+        setId('gastoFecha', gasto.fecha);
+        setId('gastoCategoria', gasto.categoria);
+        setId('gastoNotas', gasto.notas);
+        
+        // Cambiar tipo para mostrar/ocultar contenedores
+        if (typeof cambiarTipoGasto === 'function') {
+            cambiarTipoGasto();
+        }
+        
+        // Esperar y cargar valores específicos
+        setTimeout(() => {
+            if (gasto.tipo === 'proyecto' && gasto.proyectoId) {
+                setId('gastoProyecto', gasto.proyectoId);
+            } else if (gasto.tipo === 'curso' && gasto.cursoId) {
+                setId('gastoCurso', gasto.cursoId);
+            } else if ((gasto.tipo === 'general' || gasto.tipo === 'iniciacion' || gasto.tipo === 'gestion') && gasto.categoriaGeneral) {
+                setId('gastoCategoriaGeneral', gasto.categoriaGeneral);
+            }
+        }, 100);
+        
+        // Scroll al formulario
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        console.log('✅ Gasto cargado para editar:', gasto.id);
+    } catch (error) {
+        console.error('❌ Error al editar gasto:', error);
+        alert('Error al cargar el gasto: ' + error.message);
+    }
+}
         async function eliminarGasto(id) {
             if (!confirm('¿Eliminar gasto?')) return;
             await window.firebaseDeleteDoc(window.firebaseDoc(window.firebaseDb, "gastos", id));
