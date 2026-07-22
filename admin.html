@@ -2244,19 +2244,38 @@
             cambiarTipoGasto();
         }
 
-        function editarGasto(id) {
-            const g = window.gastosData.find(x => x.id === id);
-            if (!g) return;
-            document.getElementById('gastoId').value = g.id;
-            document.getElementById('gastoTipo').value = g.tipo || '';
-            document.getElementById('gastoConcepto').value = g.concepto;
-            document.getElementById('gastoProveedor').value = g.proveedor || '';
-            document.getElementById('gastoMonto').value = g.monto;
-            document.getElementById('gastoFecha').value = g.fecha;
-            document.getElementById('gastoCategoria').value = g.categoria || '';
-            document.getElementById('gastoNotas').value = g.notas || '';
-            cambiarTipoGasto();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+       function editarGasto(id) {
+    const g = window.gastosData.find(x => x.id === id);
+    if (!g) return;
+    
+    // Cargar valores básicos
+    document.getElementById('gastoId').value = g.id;
+    document.getElementById('gastoTipo').value = g.tipo || '';
+    document.getElementById('gastoConcepto').value = g.concepto;
+    document.getElementById('gastoProveedor').value = g.proveedor || '';
+    document.getElementById('gastoMonto').value = g.monto;
+    document.getElementById('gastoFecha').value = g.fecha;
+    document.getElementById('gastoCategoria').value = g.categoria || '';
+    document.getElementById('gastoNotas').value = g.notas || '';
+    
+    // Primero cambiar el tipo para mostrar/ocultar contenedores
+    cambiarTipoGasto();
+    
+    // Esperar un momento para que los contenedores se muestren
+    setTimeout(() => {
+        // Cargar valores específicos según el tipo
+        if (g.tipo === 'proyecto' && g.proyectoId) {
+            document.getElementById('gastoProyecto').value = g.proyectoId;
+        } else if (g.tipo === 'curso' && g.cursoId) {
+            document.getElementById('gastoCurso').value = g.cursoId;
+        } else if ((g.tipo === 'general' || g.tipo === 'iniciacion' || g.tipo === 'gestion') && g.categoriaGeneral) {
+            document.getElementById('gastoCategoriaGeneral').value = g.categoriaGeneral;
+        }
+    }, 100);
+    
+    // Scroll al formulario
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
         }
 
         async function eliminarGasto(id) {
