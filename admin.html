@@ -793,10 +793,17 @@
                         </div>
 
                         <div class="mb-6 p-6 bg-cic-lighter rounded-xl">
+                            <div class="flex justify-between items-center mb-4">
+    <h3 class="font-heading text-lg font-bold text-cic-primary">Paso 4: Estructura de Cotización</h3>
+    <div class="flex gap-2">
+        <button onclick="setEstructuraCotizacion('plan')" id="btnPlan" class="px-4 py-2 rounded-lg font-medium transition bg-cic-primary text-white">📋 Por Plan</button>
+        <button onclick="setEstructuraCotizacion('paso')" id="btnPaso" class="px-4 py-2 rounded-lg font-medium transition bg-gray-300 text-gray-700">📝 Por Pasos</button>
+    </div>
+</div>
+<input type="hidden" id="estructuraCotizacion" value="plan">
                             <h3 class="font-heading text-lg font-bold text-cic-primary mb-4">Paso 4: Planes de Trabajo</h3>
                             
-                            <button onclick="agregarPlan()" class="mb-4 bg-cic-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-cic-secondary transition">
-                                ➕ Agregar Plan de Trabajo
+                       <button onclick="agregarPlan()" class="w-full bg-cic-primary text-white px-4 py-2 rounded-lg font-medium transition hover:bg-cic-secondary">➕ Agregar Plan/Paso</button>
                             </button>
                             
                             <div id="planesContainer" class="space-y-4"></div>
@@ -3832,7 +3839,66 @@
             a.click();
             URL.revokeObjectURL(url);
             alert(' Datos exportados');
-        }
+            // Estructura Plan/Paso
+let estructuraActual = 'plan';
+
+function setEstructuraCotizacion(tipo) {
+    estructuraActual = tipo;
+    document.getElementById('estructuraCotizacion').value = tipo;
+    document.getElementById('btnPlan').className = tipo === 'plan' ? 'px-4 py-2 rounded-lg font-medium transition bg-cic-primary text-white' : 'px-4 py-2 rounded-lg font-medium transition bg-gray-300 text-gray-700';
+    document.getElementById('btnPaso').className = tipo === 'paso' ? 'px-4 py-2 rounded-lg font-medium transition bg-cic-primary text-white' : 'px-4 py-2 rounded-lg font-medium transition bg-gray-300 text-gray-700';
+    renderPlanes();
+}
+
+let planes = [];
+let planCounter = 0;
+
+function agregarPlan() {
+    planCounter++;
+    const planId = `${estructuraActual}-${planCounter}`;
+    const etiqueta = estructuraActual === 'plan' ? 'Plan' : 'Paso';
+    planes.push({ id: planId, nombre: '', descripcion: '', condicionPago: '100% al inicio', servicios: [], etiqueta: etiqueta });
+    renderPlanes();
+}
+
+function eliminarPlan(planId) {
+    if (!confirm('¿Eliminar este ' + (estructuraActual === 'plan' ? 'plan' : 'paso') + '?')) return;
+    planes = planes.filter(p => p.id !== planId);
+    renderPlanes();
+    actualizarTotalCotizacion();
+}
+
+function actualizarPlan(planId, campo, valor) {
+    const plan = planes.find(p => p.id === planId);
+    if (plan) plan[campo] = valor;
+}
+
+function toggleServicioEnPlan(planId, servicioId) {
+    const plan = planes.find(p => p.id === planId);
+    if (!plan) return;
+    const index = plan.servicios.indexOf(servicioId);
+    if (index > -1) plan.servicios.splice(index, 1);
+    else plan.servicios.push(servicioId);
+    actualizarTotalCotizacion();
+}
+
+function renderPlanes() {
+    const container = document.getElementById('planesContainer');
+    if (!container) return;
+    const servicios = window.serviciosCotizacionData || [];
+    const formatPrice = (p) => Number(p).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+    const etiqueta = estructuraActual === 'plan' ? 'Plan' : 'Paso';
+    container.innerHTML = planes.map((plan, index) => {
+        const serviciosEnPlan = servicios.filter(s => plan.servicios.includes(s.id));
+        const subtotalPlan = serviciosEnPlan.reduce((sum, s) => sum + parseFloat(s.precio), 0);
+        const ivaPlan = serviciosEnPlan.reduce((sum, s) => {
+            const ivaTasa = s.iva || '16';
+            return sum + (ivaTasa !== 'exento' && ivaTasa !== '0' ? parseFloat(s.precio) * (parseFloat(ivaTasa) / 100) : 0);
+        }, 0);
+        const totalPlan = subtotalPlan + ivaPlan;
+        return `<div class="bg-white p-4 rounded-xl border-2 border-purple-100"><div class="flex justify-between items-start mb-3"><div class="flex-1"><input type="text" placeholder="${etiqueta} ${index + 1}: Nombre" value="${plan.nombre}" onchange="actualizarPlan('${plan.id}', 'nombre', this.value)" class="w-full px-3 py-2 rounded-lg border-2 border-purple-200 font-bold text-cic-primary mb-2"><textarea placeholder="Descripción del ${etiqueta.toLowerCase()}" onchange="actualizarPlan('${plan.id}', 'descripcion', this.value)" class="w-full px-3 py-2 rounded-lg border-2 border-purple-200 text-sm" rows="2">${plan.descripcion}</textarea><div class="mt-2"><label class="text-xs font-bold text-gray-700">Condición de pago:</label><select onchange="actualizarPlan('${plan.id}', 'condicionPago', this.value)" class="w-full px-3 py-2 rounded-lg border-2 border-purple-200 text-sm"><option value="100% al inicio" ${plan.condicionPago === '100% al inicio' ? 'selected' : ''}>100% al inicio</option><option value="50% anticipo / 50% entrega" ${plan.condicionPago === '50% anticipo / 50% entrega' ? 'selected' : ''}>50% anticipo / 50% entrega</option><option value="30% anticipo / 70% entrega" ${plan.condicionPago === '30% anticipo / 70% entrega' ? 'selected' : ''}>30% anticipo / 70% entrega</option><option value="Contra entrega" ${plan.condicionPago === 'Contra entrega' ? 'selected' : ''}>Contra entrega</option><option value="Por evento" ${plan.condicionPago === 'Por evento' ? 'selected' : ''}>Por evento</option><option value="Por mes" ${plan.condicionPago === 'Por mes' ? 'selected' : ''}>Por mes</option><option value="Por proyecto" ${plan.condicionPago === 'Por proyecto' ? 'selected' : ''}>Por proyecto</option></select></div></div><button onclick="eliminarPlan('${plan.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm ml-2">🗑️</button></div><div class="space-y-2"><p class="text-sm font-bold text-gray-700">Selecciona servicios:</p>${servicios.map(s => `<label class="flex items-start gap-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"><input type="checkbox" class="mt-1" ${plan.servicios.includes(s.id) ? 'checked' : ''} onchange="toggleServicioEnPlan('${plan.id}', '${s.id}')"><div class="flex-1"><p class="text-sm font-bold">${s.nombre}</p><p class="text-xs text-gray-600">${formatPrice(s.precio)}</p></div></label>`).join('')}</div><div class="mt-3 pt-3 border-t border-gray-200"><div class="text-right space-y-1"><p class="text-xs text-gray-600">Subtotal: ${formatPrice(subtotalPlan)}</p><p class="text-xs text-gray-600">IVA: ${formatPrice(ivaPlan)}</p><p class="text-lg font-bold text-cic-primary">Total: ${formatPrice(totalPlan)}</p></div></div></div>`;
+    }).join('');
+}
     </script>
 </body>
 </html>
