@@ -1800,20 +1800,19 @@
             const ivaLabels = { '16': 'IVA 16%', '8': 'IVA 8%', '0': 'IVA 0%', 'exento': 'Exento' };
             const tipoCobroLabels = { unico: 'Pago único', mensual: 'Mensual', trimestral: 'Trimestral', anual: 'Anual', embarque: 'Por embarque', factura: 'Por factura', evento: 'Por evento', proyecto: 'Por proyecto', anticipo: '50/50', contraentrega: 'Contra entrega' };
             
-            container.innerHTML = servicios.map(s => `
-                <label class="flex items-start gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer transition">
-                    <input type="checkbox" class="cot-servicio-check mt-1 w-5 h-5" value="${s.id}" data-precio="${s.precio}" data-nombre="${s.nombre}" data-descripcion="${s.descripcion || 'Sin descripción'}" data-iva="${s.iva || '16'}" data-tipocobro="${s.tipoCobro || 'unico'}" onchange="actualizarTotalCotizacion()">
-                    <div class="flex-1">
-                        <p class="font-bold text-sm text-cic-primary">${catLabels[s.categoria] || '📁'} ${s.nombre}</p>
-                        <p class="text-xs text-gray-600 mb-1">${s.descripcion || ''}</p>
-                        <div class="flex justify-between items-center">
-                            <p class="font-bold text-sm text-cic-primary">${formatPrice(s.precio)} <span class="text-xs text-gray-500">(${tipoCobroLabels[s.tipoCobro] || 'Único'})</span></p>
-                            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">${ivaLabels[s.iva] || 'IVA 16%'}</span>
-                        </div>
-                    </div>
-                </label>
-            `).join('');
-        }
+           container.innerHTML = servicios.map(s => `
+    <label class="flex items-start gap-3 p-3 border-2 border-purple-100 rounded-lg hover:bg-cic-lighter cursor-pointer transition servicio-cot-item" data-nombre="${s.nombre.toLowerCase()}" data-categoria="${s.categoria}">
+        <input type="checkbox" class="cot-servicio-check mt-1 w-5 h-5" value="${s.id}" data-precio="${s.precio}" data-nombre="${s.nombre}" data-descripcion="${s.descripcion || 'Sin descripción'}" data-iva="${s.iva || '16'}" onchange="actualizarTotalCotizacion()">
+        <div class="flex-1">
+            <p class="font-bold text-sm text-cic-primary">${catLabels[s.categoria] || '📁'} ${s.nombre}</p>
+            <p class="text-xs text-gray-600 mb-1">${s.descripcion || ''}</p>
+            <div class="flex justify-between items-center">
+                <p class="font-bold text-sm text-cic-primary">${formatPrice(s.precio)}</p>
+                <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">${ivaLabels[s.iva] || 'IVA 16%'}</span>
+            </div>
+        </div>
+    </label>
+`).join('');
 
         // --- FUNCIONES DE PLANES DE TRABAJO ---
         function agregarPlan() {
