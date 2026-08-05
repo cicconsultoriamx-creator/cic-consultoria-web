@@ -1742,6 +1742,8 @@
         }
 
         function renderServiciosCotizacion() {
+           <button onclick="verHistorialServicio('${s.id}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm mr-2">📊</button>
+<button onclick="editarServicio('${s.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">✏️</button>
             const container = document.getElementById('servicios-cot-container');
             const servicios = window.serviciosCotizacionData || [];
             if (servicios.length === 0) {
@@ -3940,7 +3942,73 @@ function renderPlanes() {
             </div>
             <div id="historial-container" class="space-y-3 max-h-96 overflow-y-auto"></div>
         </div>
-    </div>
+        function verHistorialServicio(id) {
+    const s = window.serviciosCotizacionData.find(x => x.id === id);
+    if (!s) return;
+    const historial = s.historialPrecios || [];
+    const fechaIngreso = s.fechaIngreso ? new Date(s.fechaIngreso).toLocaleDateString('es-MX') : 'N/A';
+    
+    let html = `<h3 class="font-bold text-cic-primary text-lg mb-2">📊 Historial de: ${s.nombre}</h3>`;
+    html += `<p class="text-sm text-gray-600 mb-3">📅 Fecha de ingreso: ${fechaIngreso}</p>`;
+    
+    if (historial.length === 0) {
+        html += '<p class="text-gray-500">Sin cambios de precio registrados.</p>';
+    } else {
+        html += '<div class="space-y-2">';
+        historial.forEach(h => {
+            const cambio = ((h.precioNuevo - h.precioAnterior) / h.precioAnterior * 100).toFixed(1);
+            const color = cambio > 0 ? 'text-green-600' : 'text-red-600';
+            html += `<div class="flex justify-between bg-gray-50 p-2 rounded"><span>${new Date(h.fecha).toLocaleDateString('es-MX')}</span><span class="font-bold">$${h.precioAnterior} → $${h.precioNuevo} MXN <span class="${color}">(${cambio}%)</span></span></div>`;
+        });
+        html += '</div>';
+    }
+    html += `<p class="mt-3 font-bold text-cic-primary"> Precio actual: $${s.precio} MXN</p>`;
+    alert(html);
+}
+
+function filtrarHistorial() {
+    const filtroServicio = document.getElementById('filtroHistorialServicio').value.toLowerCase();
+    const filtroCategoria = document.getElementById('filtroHistorialCategoria').value;
+    const filtroFecha = document.getElementById('filtroHistorialFecha').value;
+    const servicios = window.serviciosCotizacionData || [];
+    const container = document.getElementById('historial-container');
+    
+    let todosCambios = [];
+    servicios.forEach(s => {
+        if (filtroCategoria && s.categoria !== filtroCategoria) return;
+        if (filtroServicio && !s.nombre.toLowerCase().includes(filtroServicio)) return;
+        
+        (s.historialPrecios || []).forEach(h => {
+            if (filtroFecha && !h.fecha.startsWith(filtroFecha)) return;
+            todosCambios.push({
+                servicio: s.nombre,
+                categoria: s.categoria,
+                precioAnterior: h.precioAnterior,
+                precioNuevo: h.precioNuevo,
+                fecha: h.fecha,
+                usuario: h.usuario || 'admin'
+            });
+        });
+    });
+    
+    todosCambios.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    
+    if (todosCambios.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay cambios registrados con esos filtros</p>';
+    } else {
+        container.innerHTML = todosCambios.map(c => {
+            const cambio = ((c.precioNuevo - c.precioAnterior) / c.precioAnterior * 100).toFixed(1);
+            const color = cambio > 0 ? 'text-green-600' : 'text-red-600';
+            const icon = cambio > 0 ? '📈' : '📉';
+            const catLabels = { fundamental: '🏛️', comercio: '', capacitacion: '📚', digital: '💻', agro: '🚜', otro: '📁' };
+            return `<div class="border border-gray-200 rounded-lg p-3"><div class="flex justify-between items-start"><div><p class="font-bold text-cic-primary">${c.servicio}</p><p class="text-xs text-gray-500">📁 ${catLabels[c.categoria] || '📁'} ${c.categoria} · 📅 ${new Date(c.fecha).toLocaleString('es-MX')} · 👤 ${c.usuario}</p></div><div class="text-right"><p class="font-bold">$${c.precioAnterior} → $${c.precioNuevo}</p><p class="${color} text-sm font-bold">${icon} ${cambio}%</p></div></div></div>`;
+        }).join('');
+    }
+}
+
+function cerrarModalHistorial() {
+    document.getElementById('modal-historial').classList.add('hidden');
+}
 </div>
 </body>
 </html>
