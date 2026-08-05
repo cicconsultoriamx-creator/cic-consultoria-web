@@ -2221,42 +2221,63 @@
             `;
         }
 
-        function generarPDFCotizacion() {
-            const content = document.getElementById('cotizacionContent');
-            if (!content.innerHTML) { 
-                alert('⚠️ Primero genera la Vista Previa'); 
-                return; 
-            }
-            
-            const folio = document.getElementById('cotFolio').value || 'COT-2026-000';
-            const clienteId = document.getElementById('cotClienteId').value;
-            const cliente = window.clientesData.find(x => x.id === clienteId);
-            
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: `Cotizacion_${folio}_${cliente ? cliente.nombreComercial.replace(/\s+/g, '_') : 'Cliente'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-            };
-
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<div class="loading-spinner"></div> Generando...';
-            btn.disabled = true;
-
-            html2pdf().set(opt).from(content).save().then(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                alert('✅ PDF descargado exitosamente. Ahora puedes adjuntarlo al correo.');
-            }).catch(err => {
-                console.error(err);
-                alert('❌ Error al generar PDF');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            });
-        }
-
+       function generarPDFCotizacion() {
+    const content = document.getElementById('cotizacionContent');
+    if (!content.innerHTML) { 
+        alert('⚠️ Primero genera la Vista Previa'); 
+        return; 
+    }
+    
+    const folio = document.getElementById('cotFolio').value || 'COT-2026-000';
+    const clienteId = document.getElementById('cotClienteId').value;
+    const cliente = window.clientesData.find(x => x.id === clienteId);
+    
+    // Crear un contenedor temporal visible para el PDF
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'fixed';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '800px';
+    tempContainer.style.background = 'white';
+    tempContainer.style.padding = '40px';
+    tempContainer.style.fontFamily = 'Arial, sans-serif';
+    tempContainer.innerHTML = content.innerHTML;
+    document.body.appendChild(tempContainer);
+    
+    const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `Cotizacion_${folio}_${cliente ? cliente.nombreComercial.replace(/\s+/g, '_') : 'Cliente'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            logging: false,
+            allowTaint: true
+        },
+        jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    };
+    
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<div class="loading-spinner"></div> Generando...';
+    btn.disabled = true;
+    
+    // Esperar un momento para que el contenido se renderice
+    setTimeout(() => {
+        html2pdf().set(opt).from(tempContainer).save().then(() => {
+            document.body.removeChild(tempContainer);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert('✅ PDF descargado exitosamente.');
+        }).catch(err => {
+            document.body.removeChild(tempContainer);
+            console.error(err);
+            alert('❌ Error al generar PDF: ' + err.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }, 500);
+}
         function enviarCotizacionEmail() {
             const clienteId = document.getElementById('cotClienteId').value;
             if (!clienteId) { alert('⚠️ Selecciona un cliente'); return; }
